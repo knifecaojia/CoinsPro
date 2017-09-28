@@ -1,0 +1,8 @@
+M:\BTC Codes\EncStratumProxy\Server\bin\Debug\Server.exe.config
+M:\BTC Codes\EncStratumProxy\Server\bin\Debug\Server.exe
+M:\BTC Codes\EncStratumProxy\Server\bin\Debug\Server.pdb
+M:\BTC Codes\EncStratumProxy\Server\bin\Debug\CoreLib.dll
+M:\BTC Codes\EncStratumProxy\Server\bin\Debug\CoreLib.pdb
+M:\BTC Codes\EncStratumProxy\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache
+M:\BTC Codes\EncStratumProxy\Server\obj\Debug\Server.exe
+M:\BTC Codes\EncStratumProxy\Server\obj\Debug\Server.pdb

@@ -1,0 +1,14 @@
+E:\minerdog\MinerDOG\MinerDOG\bin\MinerDOG.dll
+E:\minerdog\MinerDOG\MinerDOG\bin\MinerDOG.pdb
+E:\minerdog\MinerDOG\MinerDOG\bin\Newtonsoft.Json.dll
+E:\minerdog\MinerDOG\MinerDOG\bin\Newtonsoft.Json.xml
+E:\minerdog\MinerDOG\MinerDOG\obj\Debug\MinerDOG.dll
+E:\minerdog\MinerDOG\MinerDOG\obj\Debug\MinerDOG.pdb
+M:\BTC Codes\mdog\MinerDOG\bin\MinerDOG.dll.config
+M:\BTC Codes\mdog\MinerDOG\bin\MinerDOG.dll
+M:\BTC Codes\mdog\MinerDOG\bin\MinerDOG.pdb
+M:\BTC Codes\mdog\MinerDOG\obj\Debug\MinerDOG.dll
+M:\BTC Codes\mdog\MinerDOG\obj\Debug\MinerDOG.pdb
+M:\BTC Codes\mdog\MinerDOG\bin\HtmlAgilityPack.dll
+M:\BTC Codes\mdog\MinerDOG\bin\HtmlAgilityPack.pdb
+M:\BTC Codes\mdog\MinerDOG\bin\HtmlAgilityPack.xml

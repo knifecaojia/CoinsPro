@@ -1,0 +1,10 @@
+M:\BTC Codes\EncStratumProxy\Proxy\bin\Debug\Proxy.exe.config
+M:\BTC Codes\EncStratumProxy\Proxy\bin\Debug\Proxy.exe
+M:\BTC Codes\EncStratumProxy\Proxy\bin\Debug\Proxy.pdb
+M:\BTC Codes\EncStratumProxy\Proxy\bin\Debug\CoreLib.dll
+M:\BTC Codes\EncStratumProxy\Proxy\bin\Debug\Newtonsoft.Json.dll
+M:\BTC Codes\EncStratumProxy\Proxy\bin\Debug\CoreLib.pdb
+M:\BTC Codes\EncStratumProxy\Proxy\bin\Debug\Newtonsoft.Json.xml
+M:\BTC Codes\EncStratumProxy\Proxy\obj\Debug\Proxy.csprojResolveAssemblyReference.cache
+M:\BTC Codes\EncStratumProxy\Proxy\obj\Debug\Proxy.exe
+M:\BTC Codes\EncStratumProxy\Proxy\obj\Debug\Proxy.pdb
