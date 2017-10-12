@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RawDataCollect", "RawDataCollect\RawDataCollect.csproj", "{6CEC8444-CAA7-48B9-A589-0FB296D13DF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLib", "..\..\CommonLib\CommonLib\CommonLib\CommonLib.csproj", "{A230B9BD-963E-40FF-9BED-8780ED5CB471}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealDataMonWSS", "RealDataMonWSS\RealDataMonWSS.csproj", "{82129642-2A7D-485A-9F69-F58F5C062C3B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6CEC8444-CAA7-48B9-A589-0FB296D13DF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CEC8444-CAA7-48B9-A589-0FB296D13DF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CEC8444-CAA7-48B9-A589-0FB296D13DF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CEC8444-CAA7-48B9-A589-0FB296D13DF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A230B9BD-963E-40FF-9BED-8780ED5CB471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A230B9BD-963E-40FF-9BED-8780ED5CB471}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A230B9BD-963E-40FF-9BED-8780ED5CB471}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A230B9BD-963E-40FF-9BED-8780ED5CB471}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82129642-2A7D-485A-9F69-F58F5C062C3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82129642-2A7D-485A-9F69-F58F5C062C3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82129642-2A7D-485A-9F69-F58F5C062C3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82129642-2A7D-485A-9F69-F58F5C062C3B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
