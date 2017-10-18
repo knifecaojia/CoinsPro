@@ -31,8 +31,8 @@ namespace RealDataMonWSS
                 Console.WriteLine("Socket.EVENT_CONNECT" );
                 JArray ja = new JArray();
                 ja.Add("2~Bitstamp~BTC~USD"); // aggregate BTC
-                ja.Add("2~Poloniex~ETH~USD"); // aggregate ETH
-                ja.Add("2~Poloniex~LTC~USD"); // aggregate ETH
+                //ja.Add("2~Poloniex~ETH~USD"); // aggregate ETH
+                //ja.Add("2~Poloniex~LTC~USD"); // aggregate ETH
                 JObject obj = new JObject();
                 try
                 {
@@ -51,8 +51,35 @@ namespace RealDataMonWSS
                 //Console.WriteLine(System.Text.Encoding.Default.GetString((byte[])data));
                 //socket.Disconnect();
             });
+            var socket1 = IO.Socket("wss://streamer.cryptocompare.com");
+            socket1.On(Socket.EVENT_CONNECT, () =>
+            {
+
+                Console.WriteLine("Socket.EVENT_CONNECT");
+                JArray ja = new JArray();
+                //ja.Add("2~Bitstamp~BTC~USD"); // aggregate BTC
+                ja.Add("2~Poloniex~ETH~USD"); // aggregate ETH
+                //ja.Add("2~Poloniex~LTC~USD"); // aggregate ETH
+                JObject obj = new JObject();
+                try
+                {
+                    obj.Add("subs", ja);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                socket1.Emit("SubAdd", obj);
+            });
+
+            socket1.On("m", (data) =>
+            {
+                Console.WriteLine(data);
+                //Console.WriteLine(System.Text.Encoding.Default.GetString((byte[])data));
+                //socket.Disconnect();
+            });
             Console.ReadKey();
-            socket.Disconnect();
+            socket1.Disconnect();
         }
      
         private static void Client_DataReceived(object sender, DataReceivedEventArgs e)

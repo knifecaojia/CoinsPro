@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Exchanges
+namespace CommonLab
 {
-    public interface IExchangesServer
+    public class MarketOrder
     {
+
+        public double Price;//:价格
+        public double Amount;//	:数量
+
     }
 }
