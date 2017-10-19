@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExchangeInterface", "Exchanges\ExchangeInterface.csproj", "{ACAEEC48-25F8-4675-9FBC-3EF1F17E0E68}"
 EndProject
@@ -12,6 +12,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EBitstamp", "EBitstamp\EBitstamp.csproj", "{7D02CE45-07BD-4B54-8032-800D5A38F6FC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoinDog", "CoinDog\CoinDog.csproj", "{74F9843F-A6A6-4486-B379-AA989FF111FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F6660288-0EFA-4B6D-A41B-19FF7AE0AEA6}"
+	ProjectSection(SolutionItems) = preProject
+		TEST.txt = TEST.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,5 +47,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D44D9903-B24D-4444-9B68-DB6D9049FA17}
 	EndGlobalSection
 EndGlobal
