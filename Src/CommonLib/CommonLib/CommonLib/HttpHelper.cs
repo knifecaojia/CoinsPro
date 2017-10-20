@@ -429,7 +429,7 @@ namespace KFSoft.CommonLib
         #endregion
     }
 
-    #region public calss
+    #region public class
     /// <summary>
     /// Http请求参考类
     /// </summary>

@@ -8,8 +8,8 @@ namespace CommonLab
 {
     public class ExchangeEventWarper
     {
-        public delegate void TickerEventHander(object sender,Ticker t,EventTypes et);
-        public delegate void DepthEventHander(object sender, Depth d, EventTypes et);
+        public delegate void TickerEventHander(object sender,Ticker t,EventTypes et,string tradingpair);
+        public delegate void DepthEventHander(object sender, Depth d, EventTypes et, string tradingpair);
     }
     public enum EventTypes
     {
@@ -17,4 +17,11 @@ namespace CommonLab
         WSS,
         THIRDWSS
     }
+    public enum SubscribeTypes
+    {
+        RESTAPI,
+        WSS,
+        THIRDWSS
+    }
+    
 }
