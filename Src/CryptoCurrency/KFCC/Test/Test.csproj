@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{ACAEEC48-25F8-4675-9FBC-3EF1F17E0E68}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Exchanges</RootNamespace>
-    <AssemblyName>Exchanges</AssemblyName>
+    <ProjectGuid>{1637BA55-8464-4F85-9011-D8C5F4D3D675}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Test</RootNamespace>
+    <AssemblyName>Test</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -40,14 +42,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbsExchanges.cs" />
-    <Compile Include="Interface\IExchanges.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLab\CommonLab.csproj">
       <Project>{09f95fc2-52a7-45f4-9624-25912dc293fa}</Project>
       <Name>CommonLab</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EBitstamp\EBitstamp.csproj">
+      <Project>{7d02ce45-07bd-4b54-8032-800d5a38f6fc}</Project>
+      <Name>EBitstamp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Exchanges\ExchangeInterface.csproj">
+      <Project>{acaeec48-25f8-4675-9fbc-3ef1f17e0e68}</Project>
+      <Name>ExchangeInterface</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -19,5 +19,8 @@ namespace CommonLab
         /// </summary>
         public List<MarketOrder> Bids;//	:
 
+        public double ExchangeTimeStamp;//时间戳 交易所返回的
+        public double LocalServerTimeStamp;//本地时间戳
+
     }
 }

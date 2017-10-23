@@ -16,5 +16,8 @@ namespace CommonLab
         public double Buy;//	:买一价
         public double Last;//	:最后成交价
         public double Volume;//	:最近成交量
+        public double Open;//开盘价
+        public double ExchangeTimeStamp;//时间戳 交易所返回的
+        public double LocalServerTimeStamp;//本地时间戳
     }
 }

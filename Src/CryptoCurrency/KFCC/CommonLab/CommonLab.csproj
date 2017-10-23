@@ -42,13 +42,17 @@
   <ItemGroup>
     <Compile Include="Depth.cs" />
     <Compile Include="ExchangeEventWarper.cs" />
+    <Compile Include="Global.cs" />
     <Compile Include="HttpHelper.cs" />
     <Compile Include="MarketOrder.cs" />
     <Compile Include="Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Proxy.cs" />
     <Compile Include="Record.cs" />
     <Compile Include="Ticker.cs" />
+    <Compile Include="TimerHelper.cs" />
     <Compile Include="TradePair.cs" />
+    <Compile Include="Utility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

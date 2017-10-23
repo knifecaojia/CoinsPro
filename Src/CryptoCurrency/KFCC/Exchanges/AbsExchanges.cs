@@ -1,12 +1,28 @@
-﻿using System;
+﻿/*
+ * Author:knifeandcj
+ * Date:20171017
+ * 交易所虚类
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Exchanges
+namespace KFCC.ExchangeInterface
 {
-    class AbsExchanges
+    abstract class AbsExchanges
     {
+        //AbsExchanges();
     }
 }
