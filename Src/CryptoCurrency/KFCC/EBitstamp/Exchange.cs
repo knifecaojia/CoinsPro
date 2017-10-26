@@ -22,6 +22,9 @@ namespace KFCC.EBitstamp
       
         static private string ApiUrl = @"https://www.bitstamp.net/api/v2/";
         static private BitstampExchange _instance=null;
+        static private Dictionary<string, CommonLab.TradingInfo> _subscribedtradingpairs = null;
+        static private Dictionary<string, PusherHelper> _wssdic = null;
+
         public string Name { get { return "Bitstamp"; } }
         public string ExchangeUrl {  get { return "www.bitstamp.net"; } }
         public string Remark { get { return "bitstamp exchange remark"; } }
@@ -30,7 +33,7 @@ namespace KFCC.EBitstamp
         public string UID { get { return _uid; } set { _uid = value; } }
         public string UserName { get { return _username; } set { _username = value; } }
      
-        public Dictionary<string, int> SubscribeTradingPairs { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Dictionary<string, CommonLab.TradingInfo> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
         public Ticker LastTicker { get { return _lastticker; } set { _lastticker = value; } }
         public Depth LastDepth { get { return _lastdepth; } set { _lastdepth = value; } }
 
@@ -57,9 +60,29 @@ namespace KFCC.EBitstamp
             
         }
 
-        public bool Subscribe(string tradingpairs, SubscribeTypes st)
+        public bool Subscribe(string tradingpairs, SubscribeTypes st,out string msg)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            //订阅 
+            if (st == SubscribeTypes.WSS)
+            {
+                if (_subscribedtradingpairs == null)
+                {
+                    _subscribedtradingpairs = new Dictionary<string, TradingInfo>();
+                    _wssdic = new Dictionary<string, PusherHelper>();
+                }
+                if (_subscribedtradingpairs.ContainsKey(tradingpairs))
+                {
+                    //有这个订阅
+                }
+                else
+                {
+                    _subscribedtradingpairs.Add(tradingpairs, new TradingInfo());
+                    _wssdic.Add(tradingpairs, new PusherHelper(tradingpairs));
+                }
+            }
+            msg = "";
+            return true;
         }
 
         public Ticker GetTicker(string tradingpair,  out string rawresponse, CommonLab.Proxy p = null)
@@ -112,10 +135,30 @@ namespace KFCC.EBitstamp
             _lastdepth = d;
             return d;
         }
+        /// <summary>
+        /// 更新深度数据
+        /// </summary>
+        /// <param name="d"></param>
+        protected void UpdateDepth(Depth d)
+        {
 
+        }
+        /// <summary>
+        /// 更新深度数据
+        /// </summary>
+        /// <param name="t"></param>
+        protected void UpdateTicker(Ticker t)
+        {
+
+        }
         public string GetPublicApiURL(string tradingpair, string method)
         {
             return ApiUrl + method + "/" + tradingpair;
+        }
+
+        public string GetLocalTradingPairString(TradePair t)
+        {
+            return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
         }
     }
 }

@@ -8,9 +8,9 @@ namespace CommonLab
 {
     public class TradePair
     {
-        string FromSymbol { get; set; }
+        public string FromSymbol { get; set; }
 
-        string ToSymbol { get; set; }
+        public string ToSymbol { get; set; }
 
     }
 }

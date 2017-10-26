@@ -21,6 +21,39 @@ namespace CommonLab
 
         public double ExchangeTimeStamp;//时间戳 交易所返回的
         public double LocalServerTimeStamp;//本地时间戳
-
+        public Depth()
+        {
+            Asks = new List<MarketOrder>();
+            Bids = new List<MarketOrder>();
+        }
+        public void AddNewBid(MarketOrder m)
+        {
+            Bids.Add(m);
+            Bids.Sort(delegate (MarketOrder x, MarketOrder y)
+            {
+                return y.Price.CompareTo(x.Price);
+            });
+            CutLast();
+        }
+        public void AddNewAsk(MarketOrder m)
+        {
+            Asks.Add(m);
+            Asks.Sort(delegate (MarketOrder x, MarketOrder y)
+            {
+                return x.Price.CompareTo(y.Price);
+            });
+            CutLast();
+        }
+        private void CutLast()
+        {
+            if (Asks.Count > 100)
+            {
+                Asks.RemoveRange(100, Asks.Count - 100);
+            }
+            if (Bids.Count > 100)
+            {
+                Bids.RemoveRange(100, Bids.Count - 100);
+            }
+        }
     }
 }

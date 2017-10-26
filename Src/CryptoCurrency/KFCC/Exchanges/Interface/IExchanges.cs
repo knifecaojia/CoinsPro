@@ -52,7 +52,7 @@ namespace KFCC.ExchangeInterface
        
         CommonLab.Ticker LastTicker { get; set; }
         CommonLab.Depth LastDepth { get; set; }
-        Dictionary<string, int> SubscribeTradingPairs { get; set; }
+        Dictionary<string, CommonLab.TradingInfo> SubscribedTradingPairs { get;  }
         /// <summary>
         /// 该交易所是否原生支持wss
         /// </summary>
@@ -76,7 +76,7 @@ namespace KFCC.ExchangeInterface
         /// <param name="tradingpairs"></param>
         /// <param name="st"></param>
         /// <returns></returns>
-        bool Subscribe(string tradingpairs,CommonLab.SubscribeTypes st);
+        bool Subscribe(string tradingpairs,CommonLab.SubscribeTypes st,out string msg);
         /// <summary>
         /// 获取ticker
         /// </summary>
@@ -95,6 +95,8 @@ namespace KFCC.ExchangeInterface
         /// <param name="tradingpair"></param>
         /// <returns></returns>
         string GetPublicApiURL(string tradingpair,string method);
+
+        string GetLocalTradingPairString(CommonLab.TradePair t);
         #endregion
     }
 }
