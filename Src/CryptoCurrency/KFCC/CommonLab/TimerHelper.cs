@@ -27,5 +27,9 @@ namespace CommonLab
 
             return dtStart.AddSeconds(timeStamp);
         }
+        static public string GetTimeStampNonce()
+        {
+            return GetTimeStamp(DateTime.Now).ToString();
+        }
     }
 }

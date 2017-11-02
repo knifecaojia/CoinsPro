@@ -36,11 +36,25 @@ namespace CommonLab
             Sell = d.Asks[0].Price;
             Buy = d.Bids[0].Price;
         }
+        public override string  ToString()
+        {
+            return "H:"+High+ " L:" + Low + " S:" + Sell + " B:" + Buy + " La:" + Last + " V:" + Volume + " O:"+ Open;
+        }
     }
     public class TradingInfo
     {
         public Ticker t;
         public Depth d;
+        public CommonLab.SubscribeTypes type;
+        public  string tradingpair;
+        public TradingInfo(CommonLab.SubscribeTypes _type,string _tradingpair)
+        {
+            t = new Ticker();
+            d = new Depth();
+            type = _type;
+            tradingpair = _tradingpair;
+        }
+
     }
     public class Trade
     {
@@ -50,12 +64,13 @@ namespace CommonLab
         public TradeType Type;
         public double ExchangeTimeStamp;//时间戳 交易所返回的
         public double LocalServerTimeStamp;//本地时间戳
-        public string OrderID;//成交的交易号
+        public string BuyOrderID;//成交的交易号
+        public string SellOrderID;//成交的交易号
     }
     public enum TradeType
     {
-        Buy,
-        Sell,
+        Buy=0,
+        Sell=1,
 
     }
 }

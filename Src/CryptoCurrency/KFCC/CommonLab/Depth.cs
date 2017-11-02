@@ -55,5 +55,23 @@ namespace CommonLab
                 Bids.RemoveRange(100, Bids.Count - 100);
             }
         }
+        public string ToString(int count=3)
+        {
+            string bids = "bids:";
+            if (count > (Math.Min(Asks.Count, Bids.Count)))
+            {
+                count = Math.Min(Asks.Count, Bids.Count);
+            }
+            for (int i = 0; i < count; i++)
+            {
+                bids += Bids[i].Amount + "@" + Bids[i].Price;
+            }
+            string asks = "asks:";
+            for (int i = 0; i < count; i++)
+            {
+                asks += Asks[i].Amount + "@" + Asks[i].Price;
+            }
+            return bids + "----" + asks;
+        }
     }
 }

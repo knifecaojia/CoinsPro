@@ -9,21 +9,49 @@ using System.Threading.Tasks;
 
 namespace KFCC.EBitstamp
 {
-    public class PusherHelper
+    public class PusherHelper:KFCC.ExchangeInterface.SubscribeInterface
     {
         private string _tradingpair;
         private string _appkey;
         private Channel _live_trades_channel;
         private Channel _live_diff_order_book_channel;
         private Pusher _pusher;
-        public PusherHelper(string tradingpair,string appkey= "de504dc5763aeef9ff52")
+        private TradingInfo _tradinginfo;
+        public event ExchangeEventWarper.TradeInfoEventHander TradeInfoEvent;
+
+        public TradingInfo TradeInfo { get { return _tradinginfo; } }
+
+        public PusherHelper(string tradingpair, Ticker t, Depth d, string appkey = "de504dc5763aeef9ff52")
         {
             _tradingpair = tradingpair;
+            _tradinginfo = new TradingInfo(SubscribeTypes.WSS, tradingpair);
+            _tradinginfo.t = t;
+            _tradinginfo.d = d;
+            _appkey = appkey;
+            _pusher = new Pusher(_appkey);
             _pusher.ConnectionStateChanged += _pusher_ConnectionStateChanged;
             _pusher.Error += _pusher_Error;
             _pusher.Connect();
         }
 
+            public PusherHelper(string tradingpair,string appkey= "de504dc5763aeef9ff52")
+        {
+            _tradingpair = tradingpair;
+            _tradinginfo = new TradingInfo(SubscribeTypes.WSS,tradingpair);
+            _appkey = appkey;
+            _pusher = new Pusher(_appkey);
+            _pusher.ConnectionStateChanged += _pusher_ConnectionStateChanged;
+            _pusher.Error += _pusher_Error;
+            _pusher.Connect();
+        }
+        public void UpdateDepth(Depth d)
+        {
+            _tradinginfo.d = d;
+        }
+        public void UpdateTicker(Ticker t)
+        {
+            _tradinginfo.t = t;
+        }
         private void _pusher_Error(object sender, PusherException error)
         {
             throw new NotImplementedException();
@@ -34,9 +62,9 @@ namespace KFCC.EBitstamp
             //throw new NotImplementedException();
             if (state == ConnectionState.Connected)
             {
-                _live_trades_channel = _pusher.Subscribe("live_trades_" + _tradingpair);
+                _live_trades_channel = _pusher.Subscribe("live_trades" + _tradingpair);
                 _live_trades_channel.Subscribed += live_trades_channel_Subscribed;
-                _live_diff_order_book_channel = _pusher.Subscribe("diff_order_book_" + _tradingpair);
+                _live_diff_order_book_channel = _pusher.Subscribe("diff_order_book" + _tradingpair);
                 _live_diff_order_book_channel.Subscribed += live_diff_order_book_channel_Subscribed;
             }
         }
@@ -45,49 +73,65 @@ namespace KFCC.EBitstamp
         {
             _live_diff_order_book_channel.Bind("data", (dynamic data) =>
             {
-                LiveOrderBook(data.message);
+                LiveOrderBook(data);
             });
-        }
+                                   }
 
         private void live_trades_channel_Subscribed(object sender)
         {
             
            _live_trades_channel.Bind("trade", (dynamic data) =>
             {
-                LiveTickerMsg(data.message);
+                LiveTickerMsg(data);
             });
         }
-        private void LiveTickerMsg(string msg)
+        private void LiveTickerMsg(dynamic data)
+        {
+            //{ "event":"trade","data":"{\"amount\": 0.77256895999999997, \"buy_order_id\": 432580350, \"sell_order_id\": 432577777, \"amount_str\": \"0.77256896\", \"price_str\": \"6132.98\", \"timestamp\": \"1509415625\", \"price\": 6132.9799999999996, \"type\": 0, \"id\": 24689742}","channel":"live_trades"}
+            CommonLab.Trade t = new Trade();
+            //CommonLab.Ticker t = new Ticker();
+            t.TradeID = data.id;
+            t.Price = data.price;
+            t.Amount = data.amount;
+
+            t.Type = (CommonLab.TradeType)data.type;
+            t.SellOrderID = data.sell_order_id;
+            t.BuyOrderID = data.buy_order_id;
+            t.ExchangeTimeStamp = data.timestamp;
+            t.LocalServerTimeStamp= CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+
+
+            _tradinginfo.t.UpdateTickerBuyTrade(t);
+           
+            TradeInfoEvent(_tradinginfo,TradeEventType.TRADE);
+        }
+        private void LiveOrderBook(dynamic data)
         {
 
-        }
-        private void LiveOrderBook(string msg)
-        {
            
-            CommonLab.Depth d = new Depth();
-            d.Asks = new List<MarketOrder>();
-            d.Bids = new List<MarketOrder>();
-            JObject obj = JObject.Parse(msg);
-            JArray jasks = JArray.Parse(obj["asks"].ToString());
+            
+
+            dynamic jasks = data.asks;
             for (int i = 0; i < jasks.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
-                m.Price = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[0]);
-                m.Amount = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[1]);
-                d.Asks.Add(m);
+                m.Price = Convert.ToDouble(jasks[i][0]);
+                m.Amount = Convert.ToDouble(jasks[i][1]);
+                _tradinginfo.d.AddNewAsk(m);
             }
 
-            JArray jbids = JArray.Parse(obj["bids"].ToString());
+            dynamic jbids =data.bids;
             for (int i = 0; i < jbids.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
-                m.Price = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[0]);
-                m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
-                d.Bids.Add(m);
+                m.Price = Convert.ToDouble(jbids[i][0]);
+                m.Amount = Convert.ToDouble(jbids[i][1]);
+                _tradinginfo.d.AddNewBid(m);
             }
-            d.ExchangeTimeStamp = Convert.ToDouble(obj["timestamp"].ToString());
-            d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
-            //_lastdepth = d;
+            _tradinginfo.d.ExchangeTimeStamp = Convert.ToDouble(data.timestamp);
+            _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+         
+            TradeInfoEvent(_tradinginfo,TradeEventType.ORDERS);
             //return d;
         }
     }

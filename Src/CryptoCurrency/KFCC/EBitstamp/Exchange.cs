@@ -9,21 +9,25 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
+using RestSharp;
+
 namespace KFCC.EBitstamp
 {
     public class BitstampExchange : IExchanges
     {
-        private string _secret;
-        private string _key;
-        private string _uid;
-        private string _username;
-        static private CommonLab.Ticker _lastticker;
-        static private CommonLab.Depth _lastdepth;
+        private static string _secret;
+        private static string _key;
+        private static string _uid;
+        private static string _username;
+
       
         static private string ApiUrl = @"https://www.bitstamp.net/api/v2/";
-        static private BitstampExchange _instance=null;
-        static private Dictionary<string, CommonLab.TradingInfo> _subscribedtradingpairs = null;
-        static private Dictionary<string, PusherHelper> _wssdic = null;
+        //static private BitstampExchange _instance=null;
+
+       
+
+        static private Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> _subscribedtradingpairs = null;
+ 
 
         public string Name { get { return "Bitstamp"; } }
         public string ExchangeUrl {  get { return "www.bitstamp.net"; } }
@@ -33,9 +37,8 @@ namespace KFCC.EBitstamp
         public string UID { get { return _uid; } set { _uid = value; } }
         public string UserName { get { return _username; } set { _username = value; } }
      
-        public Dictionary<string, CommonLab.TradingInfo> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
-        public Ticker LastTicker { get { return _lastticker; } set { _lastticker = value; } }
-        public Depth LastDepth { get { return _lastdepth; } set { _lastdepth = value; } }
+        public Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
+
 
 
         //public bool SportWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -43,33 +46,45 @@ namespace KFCC.EBitstamp
 
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
-        private  BitstampExchange(string key, string secret, string uid, string username)
+        public BitstampExchange(string key, string secret, string uid, string username)
         {
             _key = key;
             _secret = secret;
             _uid = uid;
             _username = username;
         }
-        public static BitstampExchange Create(string key,string secret,string uid,string username)
-        {
-            if (_instance == null)
-            {
-                _instance = new BitstampExchange(key,secret,uid,username);
-            }
-            return _instance; 
-            
-        }
+        //public static BitstampExchange Create(string key,string secret,string uid,string username)
+        //{
+        //    if (_instance == null)
+        //    {
+        //        _instance = new BitstampExchange(key, secret, uid, username);
+        //    }
+        //    else
+        //    {
+        //        if (_key == key && _secret == secret && _uid == uid && _username == username)
+        //        {
+        //            return _instance;
+        //        }
+        //        else
+        //        {
 
-        public bool Subscribe(string tradingpairs, SubscribeTypes st,out string msg)
+        //        }
+        //    }
+        //    return _instance; 
+            
+        //}
+
+        public bool Subscribe(CommonLab.TradePair tp, SubscribeTypes st)
         {
             //throw new NotImplementedException();
             //订阅 
+            string tradingpairs = GetLocalTradingPairString(tp,st);
             if (st == SubscribeTypes.WSS)
             {
                 if (_subscribedtradingpairs == null)
                 {
-                    _subscribedtradingpairs = new Dictionary<string, TradingInfo>();
-                    _wssdic = new Dictionary<string, PusherHelper>();
+                    _subscribedtradingpairs = new Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface>();
+                    
                 }
                 if (_subscribedtradingpairs.ContainsKey(tradingpairs))
                 {
@@ -77,19 +92,34 @@ namespace KFCC.EBitstamp
                 }
                 else
                 {
-                    _subscribedtradingpairs.Add(tradingpairs, new TradingInfo());
-                    _wssdic.Add(tradingpairs, new PusherHelper(tradingpairs));
+                    string raw;
+                    Ticker t = GetTicker(GetLocalTradingPairString(tp), out raw);
+                    Depth d = GetDepth(GetLocalTradingPairString(tp), out raw);
+                    _subscribedtradingpairs.Add(tradingpairs, new PusherHelper(tradingpairs,t,d));
+                    _subscribedtradingpairs[tradingpairs].TradeInfoEvent += BitstampExchange_TradeInfoEvent;
                 }
             }
-            msg = "";
+    
             return true;
+        }
+
+        private void BitstampExchange_TradeInfoEvent(TradingInfo ti,TradeEventType tt)
+        {
+            if (TickerEvent != null&&tt==TradeEventType.TRADE)
+            {
+                TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tradingpair);
+            }
+            if (DepthEvent != null&&tt==TradeEventType.ORDERS)
+            {
+                DepthEvent(this, ti.d, (CommonLab.EventTypes)ti.type, ti.tradingpair);
+            }
         }
 
         public Ticker GetTicker(string tradingpair,  out string rawresponse, CommonLab.Proxy p = null)
         {
             //throw new NotImplementedException();
             string url = GetPublicApiURL(tradingpair,"ticker");
-            rawresponse = CommonLab.Utility.GetHttpContent(url,p);
+            rawresponse = CommonLab.Utility.GetHttpContent(url,"GET","",p);
             CommonLab.Ticker t = new Ticker();
             JObject obj = JObject.Parse(rawresponse);
             t.High = Convert.ToDouble(obj["high"].ToString());
@@ -101,14 +131,14 @@ namespace KFCC.EBitstamp
             t.Open = Convert.ToDouble(obj["open"].ToString());
             t.ExchangeTimeStamp= Convert.ToDouble(obj["timestamp"].ToString());
             t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
-            _lastticker = t;
+            UpdateTicker(tradingpair, t);
             return t;
         }
 
         public Depth GetDepth(string tradingpair, out string rawresponse, CommonLab.Proxy p = null)
         {
             string url = GetPublicApiURL(tradingpair, "order_book");
-            rawresponse = CommonLab.Utility.GetHttpContent(url, p);
+            rawresponse = CommonLab.Utility.GetHttpContent( url, "GET", "", p);
             CommonLab.Depth d = new Depth();
             d.Asks = new List<MarketOrder>();
             d.Bids = new List<MarketOrder>();
@@ -132,33 +162,105 @@ namespace KFCC.EBitstamp
             }
             d.ExchangeTimeStamp = Convert.ToDouble(obj["timestamp"].ToString());
             d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
-            _lastdepth = d;
+            UpdateDepth(tradingpair, d);
             return d;
         }
         /// <summary>
         /// 更新深度数据
         /// </summary>
         /// <param name="d"></param>
-        protected void UpdateDepth(Depth d)
+        protected void UpdateDepth(string tradingpair,Depth d)
         {
-
+            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            {
+                ((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateDepth(d);
+            }
         }
         /// <summary>
         /// 更新深度数据
         /// </summary>
         /// <param name="t"></param>
-        protected void UpdateTicker(Ticker t)
+        protected void UpdateTicker(string tradingpair, Ticker t)
         {
-
+            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            {
+                ((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateTicker(t);
+            }
         }
         public string GetPublicApiURL(string tradingpair, string method)
         {
             return ApiUrl + method + "/" + tradingpair;
         }
 
-        public string GetLocalTradingPairString(TradePair t)
+        public string GetLocalTradingPairString(TradePair t,SubscribeTypes st=CommonLab.SubscribeTypes.RESTAPI)
         {
+            if (st == SubscribeTypes.WSS)
+            {
+                if (t.FromSymbol.ToLower() == "btc" && t.ToSymbol.ToLower() == "usd")
+                    return "";
+                return "_" + t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
+            }
+            else if (st == SubscribeTypes.RESTAPI)
+            {
+                return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
+            }
             return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
+        }
+
+        public Account GetAccount(out string rawresponse, CommonLab.Proxy p = null)
+        {
+            CheckSet();
+            Account account = new Account();
+            string url = @"https://www.bitstamp.net/api/v2/balance/";
+            var response = new RestClient(url).Execute(GetAuthenticatedRequest(Method.POST));
+
+
+            rawresponse = response.Content;
+            return account;
+        }
+
+        public Order GetOrderStatus(string OrderID)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool CancelOrder(string OrderID)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool CancelAllOrders()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Order Buy(string Symbol, double Price, double Amount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Order Sell(string Symbol, double Price, double Amount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void CheckSet()
+        {
+            if (string.IsNullOrEmpty(_key) || string.IsNullOrEmpty(_secret))
+            {
+                throw new Exception("交易所设置有问题！");
+            }
+        }
+        private RestRequest GetAuthenticatedRequest(Method method)
+        {
+            var request = new RestRequest(method);
+            string nonce = TimerHelper.GetTimeStampNonce();
+            var msg = string.Format("{0}{1}{2}", nonce, _uid, _key);
+            var sigsignature = TokenGen.CreateToken(msg, _secret, Encoding.ASCII);        
+            request.AddParameter("key",_key);
+            request.AddParameter("nonce", nonce);
+            request.AddParameter("signature", sigsignature);
+            return request;
         }
     }
 }

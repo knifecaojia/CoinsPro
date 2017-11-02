@@ -12,5 +12,10 @@ namespace CommonLab
 
         public string ToSymbol { get; set; }
 
+        public TradePair(string f, string t)
+        {
+            FromSymbol = f;
+            ToSymbol = t;
+        }
     }
 }

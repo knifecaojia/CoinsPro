@@ -10,6 +10,7 @@ namespace CommonLab
     {
         public delegate void TickerEventHander(object sender,Ticker t,EventTypes et,string tradingpair);
         public delegate void DepthEventHander(object sender, Depth d, EventTypes et, string tradingpair);
+        public delegate void TradeInfoEventHander(TradingInfo ti, TradeEventType tt);
     }
     public enum EventTypes
     {
@@ -22,6 +23,12 @@ namespace CommonLab
         RESTAPI,
         WSS,
         THIRDWSS
+    }
+    public enum TradeEventType
+    {
+        TICKER,
+        TRADE,
+        ORDERS
     }
     
 }

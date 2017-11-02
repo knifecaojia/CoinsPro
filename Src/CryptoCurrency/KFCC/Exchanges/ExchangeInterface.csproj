@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="AbsExchanges.cs" />
     <Compile Include="Interface\IExchanges.cs" />
+    <Compile Include="Interface\SubscribeInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

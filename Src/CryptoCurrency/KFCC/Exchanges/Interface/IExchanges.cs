@@ -50,9 +50,8 @@ namespace KFCC.ExchangeInterface
         string UID { get; set; }
         string UserName { get; set; }
        
-        CommonLab.Ticker LastTicker { get; set; }
-        CommonLab.Depth LastDepth { get; set; }
-        Dictionary<string, CommonLab.TradingInfo> SubscribedTradingPairs { get;  }
+
+        Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get;  }
         /// <summary>
         /// 该交易所是否原生支持wss
         /// </summary>
@@ -76,7 +75,7 @@ namespace KFCC.ExchangeInterface
         /// <param name="tradingpairs"></param>
         /// <param name="st"></param>
         /// <returns></returns>
-        bool Subscribe(string tradingpairs,CommonLab.SubscribeTypes st,out string msg);
+        bool Subscribe(CommonLab.TradePair tp,CommonLab.SubscribeTypes st);
         /// <summary>
         /// 获取ticker
         /// </summary>
@@ -96,7 +95,30 @@ namespace KFCC.ExchangeInterface
         /// <returns></returns>
         string GetPublicApiURL(string tradingpair,string method);
 
-        string GetLocalTradingPairString(CommonLab.TradePair t);
+        /// <summary>
+        /// 通过交易对儿获取不通订阅方式下的交易对儿字符串
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="st"></param>
+        /// <returns></returns>
+        string GetLocalTradingPairString(CommonLab.TradePair t, CommonLab.SubscribeTypes st=CommonLab.SubscribeTypes.RESTAPI);
+
+
+
+        //需要验证的交易函数
+        //获取账户状态 
+        void CheckSet();
+        CommonLab.Account GetAccount(out string rawresponse, CommonLab.Proxy p = null);
+
+        CommonLab.Order GetOrderStatus(string OrderID);
+
+        bool CancelOrder(string OrderID);
+
+        bool CancelAllOrders();
+
+        CommonLab.Order Buy(string Symbol, double Price, double Amount);
+
+        CommonLab.Order Sell(string Symbol, double Price, double Amount);
         #endregion
     }
 }
