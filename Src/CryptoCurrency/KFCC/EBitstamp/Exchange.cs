@@ -10,6 +10,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
 using RestSharp;
+using System.Net;
 
 namespace KFCC.EBitstamp
 {
@@ -19,7 +20,7 @@ namespace KFCC.EBitstamp
         private static string _key;
         private static string _uid;
         private static string _username;
-
+        private Proxy _proxy = null;
       
         static private string ApiUrl = @"https://www.bitstamp.net/api/v2/";
         //static private BitstampExchange _instance=null;
@@ -39,7 +40,7 @@ namespace KFCC.EBitstamp
      
         public Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
 
-
+        public Proxy proxy { get { return _proxy; }set { _proxy = value; } }
 
         //public bool SportWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         //public bool SportThirdPartWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -115,11 +116,11 @@ namespace KFCC.EBitstamp
             }
         }
 
-        public Ticker GetTicker(string tradingpair,  out string rawresponse, CommonLab.Proxy p = null)
+        public Ticker GetTicker(string tradingpair,  out string rawresponse)
         {
             //throw new NotImplementedException();
             string url = GetPublicApiURL(tradingpair,"ticker");
-            rawresponse = CommonLab.Utility.GetHttpContent(url,"GET","",p);
+            rawresponse = CommonLab.Utility.GetHttpContent(url,"GET","",_proxy);
             CommonLab.Ticker t = new Ticker();
             JObject obj = JObject.Parse(rawresponse);
             t.High = Convert.ToDouble(obj["high"].ToString());
@@ -127,7 +128,7 @@ namespace KFCC.EBitstamp
             t.Last = Convert.ToDouble(obj["last"].ToString());
             t.Sell = Convert.ToDouble(obj["ask"].ToString());
             t.Buy = Convert.ToDouble(obj["bid"].ToString());
-            t.Volume = Convert.ToDouble(obj["high"].ToString());
+            t.Volume = Convert.ToDouble(obj["volume"].ToString());
             t.Open = Convert.ToDouble(obj["open"].ToString());
             t.ExchangeTimeStamp= Convert.ToDouble(obj["timestamp"].ToString());
             t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
@@ -135,10 +136,10 @@ namespace KFCC.EBitstamp
             return t;
         }
 
-        public Depth GetDepth(string tradingpair, out string rawresponse, CommonLab.Proxy p = null)
+        public Depth GetDepth(string tradingpair, out string rawresponse)
         {
             string url = GetPublicApiURL(tradingpair, "order_book");
-            rawresponse = CommonLab.Utility.GetHttpContent( url, "GET", "", p);
+            rawresponse = CommonLab.Utility.GetHttpContent( url, "GET", "", _proxy);
             CommonLab.Depth d = new Depth();
             d.Asks = new List<MarketOrder>();
             d.Bids = new List<MarketOrder>();
@@ -207,11 +208,16 @@ namespace KFCC.EBitstamp
             return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
         }
 
-        public Account GetAccount(out string rawresponse, CommonLab.Proxy p = null)
+        public Account GetAccount(out string rawresponse)
         {
             CheckSet();
             Account account = new Account();
-            string url = @"https://www.bitstamp.net/api/v2/balance/";
+            string url = GetPublicApiURL("", "balance");
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
             var response = new RestClient(url).Execute(GetAuthenticatedRequest(Method.POST));
 
 
@@ -219,7 +225,7 @@ namespace KFCC.EBitstamp
             return account;
         }
 
-        public Order GetOrderStatus(string OrderID)
+        public Order GetOrderStatus(string OrderID, string tradingpair)
         {
             throw new NotImplementedException();
         }

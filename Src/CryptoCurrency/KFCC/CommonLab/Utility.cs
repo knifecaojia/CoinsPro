@@ -48,6 +48,7 @@ namespace CommonLab
     }
     public static class TokenGen
     {
+        
         static public string CreateToken(string message, string secret,Encoding encoding)
         {
             secret = secret ?? "";

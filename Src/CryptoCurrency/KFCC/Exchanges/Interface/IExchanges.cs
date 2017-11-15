@@ -49,7 +49,7 @@ namespace KFCC.ExchangeInterface
         string Key { get; set; }
         string UID { get; set; }
         string UserName { get; set; }
-       
+        CommonLab.Proxy proxy { get; set; }
 
         Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get;  }
         /// <summary>
@@ -81,19 +81,19 @@ namespace KFCC.ExchangeInterface
         /// </summary>
         /// <param name="tradingpair"></param>
         /// <returns></returns>
-        CommonLab.Ticker GetTicker(string tradingpair,out string rawresponse,CommonLab.Proxy p=null);
+        CommonLab.Ticker GetTicker(string tradepair, out string rawresponse);
         /// <summary>
         /// 获取市场depth信息
         /// </summary>
         /// <param name="tradingpair"></param>
         /// <returns></returns>
-        CommonLab.Depth GetDepth(string tradingpair, out string rawresponse, CommonLab.Proxy p = null);
+        CommonLab.Depth GetDepth(string tradepair, out string rawresponse);
         /// <summary>
         /// 通过交易对获取公开市场信息api的url 主要用于GET方式取得数据资源
         /// </summary>
         /// <param name="tradingpair"></param>
         /// <returns></returns>
-        string GetPublicApiURL(string tradingpair,string method);
+        string GetPublicApiURL(string tradepair, string method);
 
         /// <summary>
         /// 通过交易对儿获取不通订阅方式下的交易对儿字符串
@@ -108,9 +108,9 @@ namespace KFCC.ExchangeInterface
         //需要验证的交易函数
         //获取账户状态 
         void CheckSet();
-        CommonLab.Account GetAccount(out string rawresponse, CommonLab.Proxy p = null);
+        CommonLab.Account GetAccount(out string rawresponse);
 
-        CommonLab.Order GetOrderStatus(string OrderID);
+        CommonLab.Order GetOrderStatus(string OrderID,string tradingpair);
 
         bool CancelOrder(string OrderID);
 

@@ -8,7 +8,12 @@ namespace CommonLab
 {
     public class Proxy
     {
+        public Proxy(string ip, int port)
+        {
+            this.IP = ip;
+            this.Port = port;
+        }
         public string IP;
-        public string Port;
+        public int Port;
     }
 }

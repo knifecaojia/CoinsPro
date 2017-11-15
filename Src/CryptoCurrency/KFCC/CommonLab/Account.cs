@@ -8,16 +8,21 @@ namespace CommonLab
 {
     public class Account
     {
-        Dictionary<string, Balance> Balances;
-        Dictionary<string, Fee> Fees;
-        string ID;
-
+        public Dictionary<string, Balance> Balances;
+        public Dictionary<string, Fee> Fees;
+        public string ID;
+        public Account()
+        {
+            Balances = new Dictionary<string, Balance>();
+            Fees = new Dictionary<string, Fee>();
+        }
     }
     public class Balance
     {
         public double balance;
-        public double reserved;
-        public double available;
+        public double reserved;//等同交易所冻结金额（待求证）
+        public double available;//可用
+        public double borrow;//借款 okex
     }
     public class Fee
     {
