@@ -113,17 +113,24 @@ namespace KFCC.EOkCoin
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
             CommonLab.Ticker t = new Ticker();
             JObject obj = JObject.Parse(rawresponse);
-            JObject ticker = JObject.Parse(obj["ticker"].ToString());
-            t.High = Convert.ToDouble(ticker["high"].ToString());
-            t.Low = Convert.ToDouble(ticker["low"].ToString());
-            t.Last = Convert.ToDouble(ticker["last"].ToString());
-            t.Sell = Convert.ToDouble(ticker["sell"].ToString());
-            t.Buy = Convert.ToDouble(ticker["buy"].ToString());
-            t.Volume = Convert.ToDouble(ticker["vol"].ToString());
-            t.Open = 0;// Convert.ToDouble(ticker["open"].ToString());
-            t.ExchangeTimeStamp = Convert.ToDouble(obj["date"].ToString());
-            t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
-            UpdateTicker(tradingpair, t);
+            try
+            {
+                JObject ticker = JObject.Parse(obj["ticker"].ToString());
+                t.High = Convert.ToDouble(ticker["high"].ToString());
+                t.Low = Convert.ToDouble(ticker["low"].ToString());
+                t.Last = Convert.ToDouble(ticker["last"].ToString());
+                t.Sell = Convert.ToDouble(ticker["sell"].ToString());
+                t.Buy = Convert.ToDouble(ticker["buy"].ToString());
+                t.Volume = Convert.ToDouble(ticker["vol"].ToString());
+                t.Open = 0;// Convert.ToDouble(ticker["open"].ToString());
+                t.ExchangeTimeStamp = Convert.ToDouble(obj["date"].ToString());
+                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                UpdateTicker(tradingpair, t);
+            }
+            catch
+            {
+
+            }
             return t;
         }
 
@@ -330,11 +337,11 @@ namespace KFCC.EOkCoin
             return account;
         }
 
-        public Order GetOrderStatus(string OrderID,string tradingpair)
+        public Order GetOrderStatus(string OrderID,string tradingpair, out string rawresponse)
         {
             CheckSet();
-            Order order = new Order();
-            string url = GetPublicApiURL("", "trade.do");
+            Order order = null;
+            string url = GetPublicApiURL("", "order_info.do");
             RestClient rc = new RestClient(url);
             if (_proxy != null)
             {
@@ -343,14 +350,88 @@ namespace KFCC.EOkCoin
             RestRequest rr = new RestRequest(Method.POST);
             rr.AddParameter("api_key", _key);
             rr.AddParameter("symbol", tradingpair);
+            rr.AddParameter("order_id", OrderID);
+          
             Dictionary<String, String> paras = new Dictionary<String, String>();
             paras.Add("api_key", _key);
             paras.Add("symbol", tradingpair);
+            paras.Add("order_id", OrderID);
+            String sign = MD5Util.buildMysignV1(paras, _secret);
+            rr.AddParameter("sign", sign);
+            var response = new RestClient(url).Execute(rr);
+
+
+            rawresponse = response.Content;
+            try
+            {
+                JObject obj = JObject.Parse(rawresponse);
+                if (!Convert.ToBoolean(obj["result"]))
+                {
+                    throw (new Exception("error:" + rawresponse));
+                }
+                JArray orders = JArray.Parse(obj["orders"].ToString());
+                if (orders.Count > 0)
+                {
+                    order = new Order();
+                    order.Id = orders[0]["order_id"].ToString();
+                    order.Amount=Convert.ToDouble( orders[0]["amount"].ToString());
+                    order.DealAmount= Convert.ToDouble(orders[0]["deal_amount"].ToString());
+                    order.Price= Convert.ToDouble(orders[0]["price"].ToString());
+                    order.Type = GetOrderTypeFromString(orders[0]["type"].ToString());
+                    order.Status = GetOrderStatus(orders[0]["status"].ToString());
+                    order.TradingPair = orders[0]["symbol"].ToString();
+                }
+              
+            }
+            catch (Exception e)
+            {
+                Exception err = new Exception("订单获取解析json失败" + e.Message);
+                throw err;
+            }
+            return order;
+
         }
 
-        public bool CancelOrder(string OrderID)
+        public bool CancelOrder(string OrderID,string tradingpair, out string rawresponse)
         {
-            throw new NotImplementedException();
+            CheckSet();
+            
+            string url = GetPublicApiURL("", "cancel_order.do");
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            RestRequest rr = new RestRequest(Method.POST);
+            rr.AddParameter("api_key", _key);
+            rr.AddParameter("symbol", tradingpair);
+            rr.AddParameter("order_id", OrderID);
+
+            Dictionary<String, String> paras = new Dictionary<String, String>();
+            paras.Add("api_key", _key);
+            paras.Add("symbol", tradingpair);
+            paras.Add("order_id", OrderID);
+            String sign = MD5Util.buildMysignV1(paras, _secret);
+            rr.AddParameter("sign", sign);
+            var response = new RestClient(url).Execute(rr);
+
+
+            rawresponse = response.Content;
+            try
+            {
+                JObject obj = JObject.Parse(rawresponse);
+                if (Convert.ToBoolean(obj["result"]))
+                {
+                    return true;
+                }
+               
+
+            }
+            catch (Exception e)
+            {
+                //这里应该抛出错误
+            }
+            return false ;
         }
 
         public bool CancelAllOrders()
@@ -358,14 +439,30 @@ namespace KFCC.EOkCoin
             throw new NotImplementedException();
         }
 
-        public Order Buy(string Symbol, double Price, double Amount)
+        public int Buy(string Symbol, double Price, double Amount)
         {
-            throw new NotImplementedException();
+            if (Price > 0)
+            {
+                return Trade(OrderType.ORDER_TYPE_BUY, Symbol, Price, Amount);
+            }
+            else if(Price==0)
+            {
+                return Trade(OrderType.ORDER_TYPE_MARKETBUY, Symbol, Price, Amount);
+            }
+            return 0;
         }
 
-        public Order Sell(string Symbol, double Price, double Amount)
+        public int Sell(string Symbol, double Price, double Amount)
         {
-            throw new NotImplementedException();
+            if (Price > 0)
+            {
+                return Trade(OrderType.ORDER_TYPE_SELL, Symbol, Price, Amount);
+            }
+            else if (Price == 0)
+            {
+                return Trade(OrderType.ORDER_TYPE_MARKETSELL, Symbol, Price, Amount);
+            }
+            return 0;
         }
 
         public void CheckSet()
@@ -375,6 +472,41 @@ namespace KFCC.EOkCoin
                 throw new Exception("交易所设置有问题！");
             }
         }
-       
+        static public OrderType GetOrderTypeFromString(string str)
+        {
+            if (str.ToLower() == "buy")
+                return OrderType.ORDER_TYPE_BUY;
+            if (str.ToLower() == "sell")
+                return OrderType.ORDER_TYPE_SELL;
+            if (str.ToLower() == "buy_market")
+                return OrderType.ORDER_TYPE_MARKETBUY;
+            if (str.ToLower() == "sell_market")
+                return OrderType.ORDER_TYPE_MARKETSELL;
+            return OrderType.ORDER_TYPE_UNKOWN;
+        }
+        static public OrderStatus GetOrderStatus(string str)
+        {
+            //status:-1:已撤销  0:未成交  1:部分成交  2:完全成交 4:撤单处理中
+            if (str.ToLower() == "-1")
+                return OrderStatus.ORDER_STATE_CANCELED;
+            if (str.ToLower() == "0")
+                return OrderStatus.ORDER_STATE_PENDING;
+            if (str.ToLower() == "1")
+                return OrderStatus.ORDER_STATE_PARTITAL;
+            if (str.ToLower() == "2")
+                return OrderStatus.ORDER_STATE_SUCCESS;
+            if (str.ToLower() == "4")
+                return OrderStatus.ORDER_STATE_CANCELING;
+            return OrderStatus.ORDER_STATE_UNKOWN;
+        }
+        private Exception JsonError(JObject obj)
+        {
+            if (obj.Property("error_code") == null || obj.Property("error_code").ToString() == "")
+            {
+                return new Exception("\"error_code\" not found in raw json string!");
+            }
+            else
+                return new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString()));
+        }
     }
 }

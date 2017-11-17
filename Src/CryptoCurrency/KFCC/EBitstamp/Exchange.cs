@@ -225,12 +225,12 @@ namespace KFCC.EBitstamp
             return account;
         }
 
-        public Order GetOrderStatus(string OrderID, string tradingpair)
+        public Order GetOrderStatus(string OrderID, string tradingpair, out string rawresponse)
         {
             throw new NotImplementedException();
         }
 
-        public bool CancelOrder(string OrderID)
+        public bool CancelOrder(string OrderID, string tradingpair, out string rawresponse)
         {
             throw new NotImplementedException();
         }
@@ -240,12 +240,12 @@ namespace KFCC.EBitstamp
             throw new NotImplementedException();
         }
 
-        public Order Buy(string Symbol, double Price, double Amount)
+        public int Buy(string Symbol, double Price, double Amount)
         {
             throw new NotImplementedException();
         }
 
-        public Order Sell(string Symbol, double Price, double Amount)
+        public int Sell(string Symbol, double Price, double Amount)
         {
             throw new NotImplementedException();
         }

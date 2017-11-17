@@ -110,15 +110,15 @@ namespace KFCC.ExchangeInterface
         void CheckSet();
         CommonLab.Account GetAccount(out string rawresponse);
 
-        CommonLab.Order GetOrderStatus(string OrderID,string tradingpair);
+        CommonLab.Order GetOrderStatus(string OrderID,string tradingpair, out string rawresponse);
 
-        bool CancelOrder(string OrderID);
+        bool CancelOrder(string OrderID, string tradingpair, out string rawresponse);
 
         bool CancelAllOrders();
 
-        CommonLab.Order Buy(string Symbol, double Price, double Amount);
+        int Buy(string Symbol, double Price, double Amount);
 
-        CommonLab.Order Sell(string Symbol, double Price, double Amount);
+        int Sell(string Symbol, double Price, double Amount);
         #endregion
     }
 }
