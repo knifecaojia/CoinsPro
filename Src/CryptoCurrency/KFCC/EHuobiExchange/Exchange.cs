@@ -1,17 +1,17 @@
-﻿using KFCC.ExchangeInterface;
+﻿using CommonLab;
+using KFCC.ExchangeInterface;
+using Newtonsoft.Json.Linq;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using CommonLab;
-using Newtonsoft.Json.Linq;
-using RestSharp;
-using System.Net;
 
-namespace KFCC.EOkCoin
+namespace KFCC.EHuobiExchange
 {
-    public class OkCoinExchange : IExchanges
+    public class HuobiExchange : IExchanges
     {
         private static string _secret;
         private static string _key;
@@ -19,11 +19,11 @@ namespace KFCC.EOkCoin
         private static string _username;
         private Proxy _proxy = null;
         static private Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> _subscribedtradingpairs = null;
-        static private string ApiUrl = @"https://www.okex.com/api/v1/";
+        static private string ApiUrl = @"https://api.huobi.pro";
 
-        public string Name { get { return "OkCoin"; } }
-        public string ExchangeUrl { get { return "www.okex.com"; } }
-        public string Remark { get { return "okcoin(okex) exchange remark"; } }
+        public string Name { get { return "Huobi"; } }
+        public string ExchangeUrl { get { return "huobi.pro"; } }
+        public string Remark { get { return "Huobi pro exchange remark"; } }
         public string Secret { get { return _secret; } set { _secret = value; } }
         public string Key { get { return _key; } set { _key = value; } }
         public string UID { get { return _uid; } set { _uid = value; } }
@@ -38,7 +38,7 @@ namespace KFCC.EOkCoin
 
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
-        public OkCoinExchange(string key, string secret, string uid, string username)
+        public HuobiExchange(string key, string secret, string uid, string username)
         {
             _key = key;
             _secret = secret;
@@ -66,8 +66,8 @@ namespace KFCC.EOkCoin
                     string raw;
                     Ticker t = GetTicker(GetLocalTradingPairString(tp), out raw);
                     Depth d = GetDepth(GetLocalTradingPairString(tp), out raw);
-                    _subscribedtradingpairs.Add(tradingpairs, new WssHelper(tp, t, d));
-                    _subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
+                    //_subscribedtradingpairs.Add(tradingpairs, new PusherHelper(tradingpairs, t, d));
+                    _subscribedtradingpairs[tradingpairs].TradeInfoEvent += HuobiExchange_TradeInfoEvent;
                 }
             }
             else if (st == SubscribeTypes.RESTAPI)
@@ -94,7 +94,7 @@ namespace KFCC.EOkCoin
             return true;
         }
 
-        private void OkCoinExchange_TradeInfoEvent(TradingInfo ti, TradeEventType tt)
+        private void HuobiExchange_TradeInfoEvent(TradingInfo ti, TradeEventType tt)
         {
             if (TickerEvent != null && tt == TradeEventType.TRADE)
             {
@@ -109,7 +109,7 @@ namespace KFCC.EOkCoin
         public Ticker GetTicker(string tradingpair, out string rawresponse)
         {
             //throw new NotImplementedException();
-            string url = GetPublicApiURL(tradingpair, "ticker"+ ".do?symbol=" );
+            string url = ApiUrl+ "/market/detail/merged?symbol="+tradingpair;
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
             CommonLab.Ticker t = new Ticker();
             JObject obj = JObject.Parse(rawresponse);
@@ -136,7 +136,7 @@ namespace KFCC.EOkCoin
 
         public Depth GetDepth(string tradingpair, out string rawresponse)
         {
-            string url = GetPublicApiURL(tradingpair, "depth" + ".do?symbol=");
+            string url = ApiUrl+ "/market/depth?symbol="+tradingpair+"&type=step0";
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
             CommonLab.Depth d = new Depth();
             d.Asks = new List<MarketOrder>();
@@ -186,7 +186,7 @@ namespace KFCC.EOkCoin
                 //((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateTicker(t);
             }
         }
-        protected int Trade(OrderType type, string tradingpair,double price, double amount)
+        protected int Trade(OrderType type, string tradingpair, double price, double amount)
         {
             CheckSet();
             string url = GetPublicApiURL("", "trade.do");
@@ -227,9 +227,9 @@ namespace KFCC.EOkCoin
             }
             paras.Add("amount", amount.ToString());
             rr.AddParameter("amount", amount.ToString());
-            String sign = MD5Util.buildMysignV1(paras, _secret);
+            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
             rr.AddParameter("sign", sign);
-            
+
             var response = new RestClient(url).Execute(rr);
 
 
@@ -248,7 +248,7 @@ namespace KFCC.EOkCoin
             {
                 throw e;
             }
-           
+
         }
         /// <summary>
         /// 
@@ -259,21 +259,21 @@ namespace KFCC.EOkCoin
         public string GetPublicApiURL(string tradepair, string method)
         {
             //https://www.okex.com/api/v1/ticker.do?symbol=ltc_btc
-            return ApiUrl + method +  tradepair;
+            return ApiUrl + method + tradepair;
         }
 
-       public string GetLocalTradingPairString(TradePair t, SubscribeTypes st = CommonLab.SubscribeTypes.RESTAPI)
+        public string GetLocalTradingPairString(TradePair t, SubscribeTypes st = CommonLab.SubscribeTypes.RESTAPI)
         {
-            if (st == SubscribeTypes.WSS)
-            {
-                if (t.FromSymbol.ToLower() == "btc" && t.ToSymbol.ToLower() == "usd")
-                    return "";
-                return "_" + t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
-            }
-            else if (st == SubscribeTypes.RESTAPI)
-            {
-                return t.FromSymbol.ToLower() + "_"+ t.ToSymbol.ToLower();
-            }
+            //if (st == SubscribeTypes.WSS)
+            //{
+            //    if (t.FromSymbol.ToLower() == "btc" && t.ToSymbol.ToLower() == "usd")
+            //        return "";
+            //    return "_" + t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
+            //}
+            //else if (st == SubscribeTypes.RESTAPI)
+            //{
+            //    return t.FromSymbol.ToLower() + "_" + t.ToSymbol.ToLower();
+            //}
             return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
         }
 
@@ -290,7 +290,7 @@ namespace KFCC.EOkCoin
             RestRequest rr = new RestRequest(Method.POST);
             Dictionary<String, String> paras = new Dictionary<String, String>();
             paras.Add("api_key", _key);
-            String sign = MD5Util.buildMysignV1(paras,_secret);
+            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
             rr.AddParameter("api_key", _key);
             rr.AddParameter("sign", sign);
             var response = new RestClient(url).Execute(rr);
@@ -304,7 +304,7 @@ namespace KFCC.EOkCoin
                 if (!Convert.ToBoolean(obj["result"]))
                 {
                     throw (new Exception("error:" + rawresponse));
-                }              
+                }
                 JToken borrow = obj["info"]["funds"]["borrow"];
                 JToken free = obj["info"]["funds"]["free"];
                 JToken freezed = obj["info"]["funds"]["freezed"];
@@ -329,15 +329,15 @@ namespace KFCC.EOkCoin
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                
+
                 throw e;
             }
             return account;
         }
 
-        public Order GetOrderStatus(string OrderID,string tradingpair, out string rawresponse)
+        public Order GetOrderStatus(string OrderID, string tradingpair, out string rawresponse)
         {
             CheckSet();
             Order order = null;
@@ -351,12 +351,12 @@ namespace KFCC.EOkCoin
             rr.AddParameter("api_key", _key);
             rr.AddParameter("symbol", tradingpair);
             rr.AddParameter("order_id", OrderID);
-          
+
             Dictionary<String, String> paras = new Dictionary<String, String>();
             paras.Add("api_key", _key);
             paras.Add("symbol", tradingpair);
             paras.Add("order_id", OrderID);
-            String sign = MD5Util.buildMysignV1(paras, _secret);
+            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
             rr.AddParameter("sign", sign);
             var response = new RestClient(url).Execute(rr);
 
@@ -374,14 +374,14 @@ namespace KFCC.EOkCoin
                 {
                     order = new Order();
                     order.Id = orders[0]["order_id"].ToString();
-                    order.Amount=Convert.ToDouble( orders[0]["amount"].ToString());
-                    order.DealAmount= Convert.ToDouble(orders[0]["deal_amount"].ToString());
-                    order.Price= Convert.ToDouble(orders[0]["price"].ToString());
+                    order.Amount = Convert.ToDouble(orders[0]["amount"].ToString());
+                    order.DealAmount = Convert.ToDouble(orders[0]["deal_amount"].ToString());
+                    order.Price = Convert.ToDouble(orders[0]["price"].ToString());
                     order.Type = GetOrderTypeFromString(orders[0]["type"].ToString());
                     order.Status = GetOrderStatus(orders[0]["status"].ToString());
                     order.TradingPair = orders[0]["symbol"].ToString();
                 }
-              
+
             }
             catch (Exception e)
             {
@@ -392,10 +392,10 @@ namespace KFCC.EOkCoin
 
         }
 
-        public bool CancelOrder(string OrderID,string tradingpair, out string rawresponse)
+        public bool CancelOrder(string OrderID, string tradingpair, out string rawresponse)
         {
             CheckSet();
-            
+
             string url = GetPublicApiURL("", "cancel_order.do");
             RestClient rc = new RestClient(url);
             if (_proxy != null)
@@ -411,7 +411,7 @@ namespace KFCC.EOkCoin
             paras.Add("api_key", _key);
             paras.Add("symbol", tradingpair);
             paras.Add("order_id", OrderID);
-            String sign = MD5Util.buildMysignV1(paras, _secret);
+            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
             rr.AddParameter("sign", sign);
             var response = new RestClient(url).Execute(rr);
 
@@ -424,14 +424,14 @@ namespace KFCC.EOkCoin
                 {
                     return true;
                 }
-               
+
 
             }
             catch (Exception e)
             {
                 //这里应该抛出错误
             }
-            return false ;
+            return false;
         }
 
         public bool CancelAllOrders()
@@ -445,7 +445,7 @@ namespace KFCC.EOkCoin
             {
                 return Trade(OrderType.ORDER_TYPE_BUY, Symbol, Price, Amount);
             }
-            else if(Price==0)
+            else if (Price == 0)
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETBUY, Symbol, Price, Amount);
             }
@@ -506,7 +506,7 @@ namespace KFCC.EOkCoin
                 return new Exception("\"error_code\" not found in raw json string!");
             }
             else
-                return new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString()));
+                return new Exception("");// SpotErrcode2Msg.Prase(obj["error_code"].ToString()));
         }
 
         public void DisSubcribe(TradePair tp, SubscribeTypes st)

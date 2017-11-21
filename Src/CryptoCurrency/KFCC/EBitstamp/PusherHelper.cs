@@ -134,5 +134,13 @@ namespace KFCC.EBitstamp
             TradeInfoEvent(_tradinginfo,TradeEventType.ORDERS);
             //return d;
         }
+
+        public void Close()
+        {
+            if (_pusher != null)
+            {
+                _pusher.Disconnect();
+            }
+        }
     }
 }

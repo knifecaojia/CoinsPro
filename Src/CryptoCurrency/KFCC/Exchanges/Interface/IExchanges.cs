@@ -76,6 +76,7 @@ namespace KFCC.ExchangeInterface
         /// <param name="st"></param>
         /// <returns></returns>
         bool Subscribe(CommonLab.TradePair tp,CommonLab.SubscribeTypes st);
+        void DisSubcribe(CommonLab.TradePair tp,CommonLab.SubscribeTypes st);
         /// <summary>
         /// 获取ticker
         /// </summary>

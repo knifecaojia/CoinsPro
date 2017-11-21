@@ -34,18 +34,18 @@ namespace Test
             //测试获取ticker 获取depth
             string raw;
             KFCC.ExchangeInterface.IExchanges exchange = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
-            //exchange.Subscribe(tp, CommonLab.SubscribeTypes.RESTAPI);
+            exchange.Subscribe(tp, CommonLab.SubscribeTypes.WSS);
             //CommonLab.Ticker t=exchange.GetTicker(exchange.GetLocalTradingPairString(tp),out raw);
-            
-
+            exchange.TickerEvent += Exchange_TickerEvent;
+            exchange.DepthEvent += Exchange_DepthEvent;
             //测试获取账户信息
             //Console.WriteLine(raw);
             //int orderid=exchange.Buy(exchange.GetLocalTradingPairString(tp), t.Sell * 0.9, 1);
             //Console.WriteLine("Order ID:" + orderid);
-            exchange.CancelOrder("41055418", exchange.GetLocalTradingPairString(tp), out raw);
-            Console.WriteLine(raw);
-            exchange.GetAccount(out raw);
-            Console.WriteLine(raw);
+            //exchange.CancelOrder("41055418", exchange.GetLocalTradingPairString(tp), out raw);
+            //Console.WriteLine(raw);
+            //exchange.GetAccount(out raw);
+            //Console.WriteLine(raw);
             Console.ReadKey();
         }
 

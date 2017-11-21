@@ -57,6 +57,10 @@
       <Project>{7d02ce45-07bd-4b54-8032-800d5a38f6fc}</Project>
       <Name>EBitstamp</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EHuobiExchange\EHuobiExchange.csproj">
+      <Project>{0cf9695b-cf1b-4c8c-a890-37dce2d52294}</Project>
+      <Name>EHuobiExchange</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Exchanges\ExchangeInterface.csproj">
       <Project>{acaeec48-25f8-4675-9fbc-3ef1f17e0e68}</Project>
       <Name>ExchangeInterface</Name>

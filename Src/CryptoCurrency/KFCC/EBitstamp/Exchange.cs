@@ -268,5 +268,10 @@ namespace KFCC.EBitstamp
             request.AddParameter("signature", sigsignature);
             return request;
         }
+
+        public void DisSubcribe(TradePair tp, SubscribeTypes st)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

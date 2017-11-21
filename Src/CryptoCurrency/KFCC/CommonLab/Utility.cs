@@ -16,7 +16,7 @@ namespace CommonLab
                 HttpResult hr = new HttpResult();
                 HttpHelper hh = new HttpHelper();
                 HttpItem hi = new HttpItem();
-
+                hi.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36";
                 string _url = url;
                 hi.URL = _url;
                 if (p != null)

@@ -1,0 +1,112 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace OkCoin
+{
+    static class FuthureErrorcode2Msg
+    {
+        static public string Prase(string code)
+        {
+            if (code == "10000") return "必填参数为空";
+            if (code == "10001") return "参数错误";
+            if (code == "10002") return "验证失败";
+            if (code == "10003") return "该连接已经请求了其他用户的实时交易数据";
+            if (code == "10004") return "该连接没有请求此用户的实时交易数据";
+            if (code == "10005") return "api_key或者sign不合法";
+            if (code == "10008") return "非法参数";
+            if (code == "10009") return "订单不存在";
+            if (code == "10010") return "余额不足";
+            if (code == "10011") return "卖的数量小于BTC/LTC最小买卖额度";
+            if (code == "10012") return "当前网站暂时只支持btc_usd ltc_usd";
+            if (code == "10014") return "下单价格不得≤0或≥1000000";
+            if (code == "10015") return "暂不支持此channel订阅";
+            if (code == "10016") return "币数量不足";
+            if (code == "10017") return "WebSocket鉴权失败";
+            if (code == "10100") return "用户被冻结";
+            if (code == "10049") return "小额委托（<0.15BTC)的未成交委托数量不得大于50个";
+            if (code == "10216") return "非开放API";
+            if (code == "20001") return "用户不存在";
+            if (code == "20002") return "用户被冻结";
+            if (code == "20003") return "用户被爆仓冻结";
+            if (code == "20004") return "合约账户被冻结";
+            if (code == "20005") return "用户合约账户不存在";
+            if (code == "20006") return "必填参数为空";
+            if (code == "20007") return "参数错误";
+            if (code == "20008") return "合约账户余额为空";
+            if (code == "20009") return "虚拟合约状态错误";
+            if (code == "20010") return "合约风险率信息不存在";
+            if (code == "20011") return "开仓前保证金率超过90%";
+            if (code == "20012") return "开仓后保证金率超过90%";
+            if (code == "20013") return "暂无对手价";
+            if (code == "20014") return "系统错误";
+            if (code == "20015") return "订单信息不存在";
+            if (code == "20016") return "平仓数量是否大于同方向可用持仓数量";
+            if (code == "20017") return "非本人操作";
+            if (code == "20018") return "下单价格高于前一分钟的105%或低于95%";
+            if (code == "20019") return "该IP限制不能请求该资源";
+            if (code == "20020") return "密钥不存在";
+            if (code == "20021") return "指数信息不存在";
+            if (code == "20022") return "接口调用错误";
+            if (code == "20023") return "逐仓用户";
+            if (code == "20024") return "sign签名不匹配";
+            if (code == "20025") return "杠杆比率错误";
+            if (code == "20100") return "请求超时";
+            if (code == "20101") return "数据格式无效";
+            if (code == "20102") return "登录无效";
+            if (code == "20103") return "数据事件类型无效";
+            if (code == "20104") return "数据订阅类型无效";
+            if (code == "20107") return "JSON格式错误";
+            if (code == "20115") return "quote参数未匹配到";
+            if (code == "20116") return "参数不匹配";
+            if (code == "1002") return "交易金额大于余额";
+            if (code == "1003") return "交易金额小于最小交易值";
+            if (code == "1004") return "交易金额小于0";
+            if (code == "1007") return "没有交易市场信息";
+            if (code == "1008") return "没有最新行情信息";
+            if (code == "1009") return "没有订单";
+            if (code == "1010") return "撤销订单与原订单用户不一致";
+            if (code == "1011") return "没有查询到该用户";
+            if (code == "1013") return "没有订单类型";
+            if (code == "1014") return "没有登录";
+            if (code == "1015") return "没有获取到行情深度信息";
+            if (code == "1017") return "日期参数错误";
+            if (code == "1018") return "下单失败";
+            if (code == "1019") return "撤销订单失败";
+            if (code == "1024") return "币种不存在";
+            if (code == "1025") return "没有K线类型";
+            if (code == "1026") return "没有基准币数量";
+            if (code == "1027") return "参数不合法可能超出限制";
+            if (code == "1028") return "保留小数位失败";
+            if (code == "1029") return "正在准备中";
+            if (code == "1030") return "有融资融币无法进行交易";
+            if (code == "1031") return "转账余额不足";
+            if (code == "1032") return "该币种不能转账";
+            if (code == "1035") return "密码不合法";
+            if (code == "1036") return "谷歌验证码不合法";
+            if (code == "1037") return "谷歌验证码不正确";
+            if (code == "1038") return "谷歌验证码重复使用";
+            if (code == "1039") return "短信验证码输错限制";
+            if (code == "1040") return "短信验证码不合法";
+            if (code == "1041") return "短信验证码不正确";
+            if (code == "1042") return "谷歌验证码输错限制";
+            if (code == "1043") return "登陆密码不允许与交易密码一致";
+            if (code == "1044") return "原密码错误";
+            if (code == "1045") return "未设置二次验证";
+            if (code == "1046") return "原密码未输入";
+            if (code == "1048") return "用户被冻结";
+            if (code == "1201") return "账号零时删除";
+            if (code == "1202") return "账号不存在";
+            if (code == "1203") return "转账金额大于余额";
+            if (code == "1204") return "不同种币种不能转账";
+            if (code == "1205") return "账号不存在主从关系";
+            if (code == "1206") return "提现用户被冻结";
+            if (code == "1207") return "不支持转账";
+            if (code == "1208") return "没有该转账用户";
+            if (code == "1209") return "当前api不可用";
+            return "unknow";
+        }
+    }
+}

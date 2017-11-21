@@ -12,5 +12,6 @@ namespace KFCC.ExchangeInterface
 
 
         event CommonLab.ExchangeEventWarper.TradeInfoEventHander TradeInfoEvent;
+        void Close();
     }
 }
