@@ -78,5 +78,26 @@ namespace CommonLab
             }
             return hexString;
         }
+        public static string CreateSign_Huobi(string domain,string method, string action, string secretKey, Dictionary<string, object> data)
+        {
+            var hashSource = $"{method}\n{domain.ToLower()}\n{action}\n";
+            if (data != null)
+            {
+                hashSource += ConvertQueryString_Huobi(data, true);
+            }
+            var hmacSha256 = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey));
+            var hash = hmacSha256.ComputeHash(Encoding.UTF8.GetBytes(hashSource)).ToArray();
+            return Convert.ToBase64String(hash);
+        }
+        public static string ConvertQueryString_Huobi(Dictionary<string, object> data, bool urlencode = false)
+        {
+            var stringbuilder = new StringBuilder();
+            foreach (var item in data)
+            {
+                stringbuilder.AppendFormat("{0}={1}&", item.Key, urlencode ? Uri.EscapeDataString(item.Value.ToString()) : item.Value.ToString());
+            }
+            stringbuilder.Remove(stringbuilder.Length - 1, 1);
+            return stringbuilder.ToString();
+        }
     }
 }

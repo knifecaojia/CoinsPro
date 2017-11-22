@@ -50,7 +50,7 @@ namespace KFCC.ExchangeInterface
         string UID { get; set; }
         string UserName { get; set; }
         CommonLab.Proxy proxy { get; set; }
-
+        CommonLab.Account Account { get; set; }
         Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get;  }
         /// <summary>
         /// 该交易所是否原生支持wss

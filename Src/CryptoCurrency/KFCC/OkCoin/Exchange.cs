@@ -32,7 +32,8 @@ namespace KFCC.EOkCoin
         public Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
 
         public Proxy proxy { get { return _proxy; } set { _proxy = value; } }
-
+        private Account _account;
+        public Account Account { get { return _account; } set { _account = value; } }
         //public bool SportWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         //public bool SportThirdPartWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
@@ -280,7 +281,8 @@ namespace KFCC.EOkCoin
         public Account GetAccount(out string rawresponse)
         {
             CheckSet();
-            Account account = new Account();
+            if (_account == null)
+                _account = new Account();
             string url = GetPublicApiURL("", "userinfo.do");
             RestClient rc = new RestClient(url);
             if (_proxy != null)
@@ -310,12 +312,12 @@ namespace KFCC.EOkCoin
                 JToken freezed = obj["info"]["funds"]["freezed"];
                 foreach (JProperty jp in borrow)
                 {
-                    if (account.Balances.ContainsKey(jp.Name))
+                    if (_account.Balances.ContainsKey(jp.Name))
                     {
-                        account.Balances[jp.Name].borrow = Convert.ToDouble(jp.Value.ToString());
-                        account.Balances[jp.Name].available = Convert.ToDouble(free[jp.Name].ToString());
-                        account.Balances[jp.Name].reserved = Convert.ToDouble(freezed[jp.Name].ToString());
-                        account.Balances[jp.Name].balance = account.Balances[jp.Name].available + account.Balances[jp.Name].reserved;
+                        _account.Balances[jp.Name].borrow = Convert.ToDouble(jp.Value.ToString());
+                        _account.Balances[jp.Name].available = Convert.ToDouble(free[jp.Name].ToString());
+                        _account.Balances[jp.Name].reserved = Convert.ToDouble(freezed[jp.Name].ToString());
+                        _account.Balances[jp.Name].balance = _account.Balances[jp.Name].available + _account.Balances[jp.Name].reserved;
                     }
                     else
                     {
@@ -325,7 +327,7 @@ namespace KFCC.EOkCoin
                         b.reserved = Convert.ToDouble(freezed[jp.Name].ToString());
                         b.balance = b.available + b.reserved;
 
-                        account.Balances.Add(jp.Name, b);
+                        _account.Balances.Add(jp.Name, b);
                     }
                 }
             }
@@ -334,7 +336,7 @@ namespace KFCC.EOkCoin
                 
                 throw e;
             }
-            return account;
+            return _account;
         }
 
         public Order GetOrderStatus(string OrderID,string tradingpair, out string rawresponse)

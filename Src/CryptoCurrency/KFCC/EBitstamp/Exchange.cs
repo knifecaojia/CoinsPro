@@ -41,6 +41,8 @@ namespace KFCC.EBitstamp
         public Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
 
         public Proxy proxy { get { return _proxy; }set { _proxy = value; } }
+        private Account _account;
+        public Account Account {get{ return _account; }set { _account = value; } }
 
         //public bool SportWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         //public bool SportThirdPartWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }

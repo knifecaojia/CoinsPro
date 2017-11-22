@@ -18,9 +18,11 @@ namespace KFCC.EHuobiExchange
         private static string _uid;
         private static string _username;
         private Proxy _proxy = null;
+        private const string SignatureMethod = "HmacSHA256";
+        private const int SignatureVersion = 2;
         static private Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> _subscribedtradingpairs = null;
         static private string ApiUrl = @"https://api.huobi.pro";
-
+        static private string Domain = "api.huobi.pro";
         public string Name { get { return "Huobi"; } }
         public string ExchangeUrl { get { return "huobi.pro"; } }
         public string Remark { get { return "Huobi pro exchange remark"; } }
@@ -35,7 +37,8 @@ namespace KFCC.EHuobiExchange
 
         //public bool SportWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         //public bool SportThirdPartWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
+        private Account _account;
+        public Account Account { get { return _account; } set { _account = value; } }
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
         public HuobiExchange(string key, string secret, string uid, string username)
@@ -66,7 +69,7 @@ namespace KFCC.EHuobiExchange
                     string raw;
                     Ticker t = GetTicker(GetLocalTradingPairString(tp), out raw);
                     Depth d = GetDepth(GetLocalTradingPairString(tp), out raw);
-                    //_subscribedtradingpairs.Add(tradingpairs, new PusherHelper(tradingpairs, t, d));
+                    _subscribedtradingpairs.Add(tradingpairs, new WssHelper(tp, t, d));
                     _subscribedtradingpairs[tradingpairs].TradeInfoEvent += HuobiExchange_TradeInfoEvent;
                 }
             }
@@ -115,21 +118,21 @@ namespace KFCC.EHuobiExchange
             JObject obj = JObject.Parse(rawresponse);
             try
             {
-                JObject ticker = JObject.Parse(obj["ticker"].ToString());
+                JObject ticker = JObject.Parse(obj["tick"].ToString());
                 t.High = Convert.ToDouble(ticker["high"].ToString());
                 t.Low = Convert.ToDouble(ticker["low"].ToString());
-                t.Last = Convert.ToDouble(ticker["last"].ToString());
-                t.Sell = Convert.ToDouble(ticker["sell"].ToString());
-                t.Buy = Convert.ToDouble(ticker["buy"].ToString());
+                t.Last = Convert.ToDouble(ticker["close"].ToString());
+                t.Sell = Convert.ToDouble(JArray.Parse(ticker["ask"].ToString())[0]);
+                t.Buy = Convert.ToDouble(JArray.Parse(ticker["bid"].ToString())[0]);
                 t.Volume = Convert.ToDouble(ticker["vol"].ToString());
-                t.Open = 0;// Convert.ToDouble(ticker["open"].ToString());
-                t.ExchangeTimeStamp = Convert.ToDouble(obj["date"].ToString());
+                t.Open = Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
+                t.ExchangeTimeStamp = Convert.ToDouble(obj["ts"].ToString())/1000;
                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
                 UpdateTicker(tradingpair, t);
             }
-            catch
+            catch(Exception e)
             {
-
+                throw e;
             }
             return t;
         }
@@ -142,7 +145,7 @@ namespace KFCC.EHuobiExchange
             d.Asks = new List<MarketOrder>();
             d.Bids = new List<MarketOrder>();
             JObject obj = JObject.Parse(rawresponse);
-            JArray jasks = JArray.Parse(obj["asks"].ToString());
+            JArray jasks = JArray.Parse(obj["tick"]["asks"].ToString());
             for (int i = 0; i < jasks.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
@@ -151,7 +154,7 @@ namespace KFCC.EHuobiExchange
                 d.Asks.Add(m);
             }
 
-            JArray jbids = JArray.Parse(obj["bids"].ToString());
+            JArray jbids = JArray.Parse(obj["tick"]["bids"].ToString());
             for (int i = 0; i < jbids.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
@@ -159,7 +162,7 @@ namespace KFCC.EHuobiExchange
                 m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
                 d.Bids.Add(m);
             }
-            d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
+            d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"])/1000;// Convert.ToDouble(obj["timestamp"].ToString());
             d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
             UpdateDepth(tradingpair, d);
             return d;
@@ -276,65 +279,123 @@ namespace KFCC.EHuobiExchange
             //}
             return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
         }
+        private string GetDateTime() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss");
 
         public Account GetAccount(out string rawresponse)
         {
             CheckSet();
-            Account account = new Account();
-            string url = GetPublicApiURL("", "userinfo.do");
-            RestClient rc = new RestClient(url);
-            if (_proxy != null)
+
+            rawresponse = "";
+            if (_account == null)
             {
-                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
-            }
-            RestRequest rr = new RestRequest(Method.POST);
-            Dictionary<String, String> paras = new Dictionary<String, String>();
-            paras.Add("api_key", _key);
-            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
-            rr.AddParameter("api_key", _key);
-            rr.AddParameter("sign", sign);
-            var response = new RestClient(url).Execute(rr);
+                #region
+                var action = "/v1/account/accounts";
+                var method = "GET";
+                var data = new Dictionary<string, object>()
+            {
+                {"AccessKeyId", _key},
+                {"SignatureMethod", SignatureMethod},
+                {"SignatureVersion", SignatureVersion},
+                {"Timestamp",GetDateTime()},
+            };
+                var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
+                data["Signature"] = sign;
+                var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
+
+                #endregion
 
 
-            rawresponse = response.Content;
-            //解析
-            try
-            {
-                JObject obj = JObject.Parse(rawresponse);
-                if (!Convert.ToBoolean(obj["result"]))
+                RestClient rc = new RestClient(url);
+                if (_proxy != null)
                 {
-                    throw (new Exception("error:" + rawresponse));
+                    rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
                 }
-                JToken borrow = obj["info"]["funds"]["borrow"];
-                JToken free = obj["info"]["funds"]["free"];
-                JToken freezed = obj["info"]["funds"]["freezed"];
-                foreach (JProperty jp in borrow)
+                RestRequest rr = new RestRequest(Method.GET);
+
+                var response = new RestClient(url).Execute(rr);
+                rawresponse = response.Content;
+                try
                 {
-                    if (account.Balances.ContainsKey(jp.Name))
-                    {
-                        account.Balances[jp.Name].borrow = Convert.ToDouble(jp.Value.ToString());
-                        account.Balances[jp.Name].available = Convert.ToDouble(free[jp.Name].ToString());
-                        account.Balances[jp.Name].reserved = Convert.ToDouble(freezed[jp.Name].ToString());
-                        account.Balances[jp.Name].balance = account.Balances[jp.Name].available + account.Balances[jp.Name].reserved;
-                    }
-                    else
-                    {
-                        Balance b = new Balance();
-                        b.borrow = Convert.ToDouble(jp.Value.ToString());
-                        b.available = Convert.ToDouble(free[jp.Name].ToString());
-                        b.reserved = Convert.ToDouble(freezed[jp.Name].ToString());
-                        b.balance = b.available + b.reserved;
+                    _account = new Account();
+                    JObject obj = JObject.Parse(rawresponse);
+                    _account.ID = obj["data"][0]["id"].ToString();
+                }
+                catch
+                {
 
-                        account.Balances.Add(jp.Name, b);
+                }
+
+
+            }
+
+            if(_account != null)
+            {
+                var action = $"/v1/account/accounts/" + _account.ID + "/balance";
+                var method = "GET";
+                var data = new Dictionary<string, object>()
+            {
+                           {"AccessKeyId", _key},
+                {"SignatureMethod", SignatureMethod},
+                {"SignatureVersion", SignatureVersion},
+                {"Timestamp",GetDateTime()},
+
+                {"account-id", _account.ID}
+            };
+                var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
+                data["Signature"] = sign;
+
+                var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
+                RestClient rc = new RestClient(url);
+                if (_proxy != null)
+                {
+                    rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+                }
+                RestRequest rr = new RestRequest(Method.GET);
+
+                var response = new RestClient(url).Execute(rr);
+                rawresponse = response.Content;
+                try
+                {
+                    JObject obj = JObject.Parse(rawresponse);
+                    JArray jlist = JArray.Parse(obj["data"]["list"].ToString());
+                    for (int i = 0; i < jlist.Count; i++)
+                    {
+                       
+                        string Name = jlist[i]["currency"].ToString();
+                        string type = jlist[i]["type"].ToString();
+                        double balance = Convert.ToDouble(jlist[i]["balance"].ToString());
+                        if (_account.Balances.ContainsKey(Name))
+                        {
+
+                            _account.Balances[Name].borrow =0;
+                            if(type== "trade")
+                            _account.Balances[Name].available = balance;
+                            if(type== "frozen")
+                            _account.Balances[Name].reserved = balance;
+                            _account.Balances[Name].balance = _account.Balances[Name].available + _account.Balances[Name].reserved;
+                        }
+                        else
+                        {
+                            Balance b = new Balance();
+                            b.borrow = 0;
+                            if (type == "trade")
+                                b.available = balance;
+                            if (type == "frozen")
+                                b.reserved = balance;
+                            b.balance = b.available + b.reserved;
+
+                         
+
+                            _account.Balances.Add(Name, b);
+                        }
                     }
                 }
-            }
-            catch (Exception e)
-            {
+                catch
+                {
 
-                throw e;
+                }
             }
-            return account;
+            return _account;
         }
 
         public Order GetOrderStatus(string OrderID, string tradingpair, out string rawresponse)
