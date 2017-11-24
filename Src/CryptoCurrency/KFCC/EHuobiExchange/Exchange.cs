@@ -1,11 +1,15 @@
 ﻿using CommonLab;
 using KFCC.ExchangeInterface;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -192,47 +196,143 @@ namespace KFCC.EHuobiExchange
         protected int Trade(OrderType type, string tradingpair, double price, double amount)
         {
             CheckSet();
-            string url = GetPublicApiURL("", "trade.do");
+            var action = $"/v1/order/orders/place";
+            var method = "POST";
+            string typestr = "";
+
+            switch (type)
+            {
+                case OrderType.ORDER_TYPE_BUY:
+                    typestr = "buy-limit";
+                   
+                    break;
+                case OrderType.ORDER_TYPE_SELL:
+                    typestr = "sell-limit";
+                  
+                    break;
+                case OrderType.ORDER_TYPE_MARKETBUY:
+                    typestr = "buy-market";
+                    break;
+                case OrderType.ORDER_TYPE_MARKETSELL:
+                    typestr = "sell-market";
+                    break;
+                default:
+                    break;
+            }
+            var data = new Dictionary<string, object>()
+            {
+                {"AccessKeyId", _key},
+                {"SignatureMethod", SignatureMethod},
+                {"SignatureVersion", SignatureVersion},
+                {"Timestamp", GetDateTime()},
+                //{"account-id", _account.ID },
+                //{ "amount", amount},
+                //{"symbol", tradingpair },
+               // {"type", typestr },
+            };
+            //if (typestr.IndexOf("limit") > 0)
+                //data.Add("price", price);
+            var sign =CommonLab.TokenGen.CreateSign_Huobi(Domain,method, action, _secret, data);
+            data["Signature"] = sign;
+            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
             RestClient rc = new RestClient(url);
             if (_proxy != null)
             {
                 rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
             }
+            var postData = new Dictionary<string, object>()
+            {
+                {"account-id", _account.ID},
+                {"amount", amount},
+                
+                {"symbol", tradingpair},
+                {"type", typestr}
+            };
             RestRequest rr = new RestRequest(Method.POST);
-            rr.AddParameter("api_key", _key);
-            rr.AddParameter("symbol", tradingpair);
-            Dictionary<String, String> paras = new Dictionary<String, String>();
-            paras.Add("api_key", _key);
-            paras.Add("symbol", tradingpair);
+            //rr.AddHeader("ContentType ", "application/json");
+            
+           
+            if (typestr.IndexOf("limit") > 0)
+                postData.Add("price", price.ToString("F2"));
+            rr.RequestFormat = DataFormat.Json;
+            rr.AddJsonBody(JsonConvert.SerializeObject(postData));
+            var response = new RestClient(url).Execute(rr);
+
+
+            string rawresponse = RequestDataSync(url, method, postData, null);
+
+            try
+            {
+                JObject obj = JObject.Parse(rawresponse);
+                
+                return Convert.ToInt32(obj["data"]);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+        }
+        /// <summary>
+        /// 生成新的订单但是并不执行
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="tradingpair"></param>
+        /// <param name="price"></param>
+        /// <param name="amount"></param>
+        /// <returns></returns>
+        public int NewOrder(OrderType type, string tradingpair, double price, double amount)
+        {
+            CheckSet();
+            var action = $"/v1/order/orders";
+            var method = "POST";
+
+            var data = new Dictionary<string, object>()
+            {
+                {"AccessKeyId", _key},
+                {"SignatureMethod", SignatureMethod},
+                {"SignatureVersion", SignatureVersion},
+                {"Timestamp", GetDateTime()},
+            };
+
+            var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
+            data["Signature"] = sign;
+            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+
+            RestRequest rr = new RestRequest(Method.POST);
+            //rr.AddParameter("account-id", _account.ID);
+            //rr.AddParameter("amount", amount);
+            //rr.AddParameter("symbol", tradingpair);
+
+            string typestr = "";
+
             switch (type)
             {
                 case OrderType.ORDER_TYPE_BUY:
-                    paras.Add("type", "buy");
-                    paras.Add("price", price.ToString());
-                    rr.AddParameter("type", "buy");
-                    rr.AddParameter("price", price.ToString());
+                    typestr = "buy-limit";
+                    //rr.AddParameter("price", price);
                     break;
                 case OrderType.ORDER_TYPE_SELL:
-                    paras.Add("type", "sell");
-                    paras.Add("price", price.ToString());
-                    rr.AddParameter("type", "sell");
-                    rr.AddParameter("price", price.ToString());
+                    typestr = "sell-limit";
+                    //rr.AddParameter("price", price);
                     break;
                 case OrderType.ORDER_TYPE_MARKETBUY:
-                    paras.Add("type", "buy_market");
-                    rr.AddParameter("type", "buy_market");
+                    typestr = "buy-market";
                     break;
                 case OrderType.ORDER_TYPE_MARKETSELL:
-                    paras.Add("type", "sell_market");
-                    rr.AddParameter("type", "sell_market");
+                    typestr = "sell-market";
                     break;
-
+                default:
+                    break;
             }
-            paras.Add("amount", amount.ToString());
-            rr.AddParameter("amount", amount.ToString());
-            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
-            rr.AddParameter("sign", sign);
 
+            //rr.AddParameter("type", typestr);
+            
             var response = new RestClient(url).Execute(rr);
 
 
@@ -241,11 +341,8 @@ namespace KFCC.EHuobiExchange
             try
             {
                 JObject obj = JObject.Parse(rawresponse);
-                if (!Convert.ToBoolean(obj["result"]))
-                {
-                    throw (new Exception("error:" + rawresponse));
-                }
-                return Convert.ToInt32(obj["order_id"]);
+
+                return Convert.ToInt32(obj["data"]);
             }
             catch (Exception e)
             {
@@ -398,27 +495,70 @@ namespace KFCC.EHuobiExchange
             return _account;
         }
 
-        public Order GetOrderStatus(string OrderID, string tradingpair, out string rawresponse)
+
+        public string GetOrders(string tradingpair)
         {
+
             CheckSet();
-            Order order = null;
-            string url = GetPublicApiURL("", "order_info.do");
+
+            string rawresponse = "";
+
+            var action = $"/v1/order/orders";
+            var method = "GET";
+            var data = new Dictionary<string, object>()
+            {
+                {"AccessKeyId", _key},
+                {"SignatureMethod", SignatureMethod},
+                {"SignatureVersion", SignatureVersion},
+                {"Timestamp",GetDateTime()},
+                {"states", "submitted"},
+                {"symbol", tradingpair},
+                {"types","buy-limit,sell-limit"},
+            };
+            var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
+            data["Signature"] = sign;
+
+            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
             RestClient rc = new RestClient(url);
             if (_proxy != null)
             {
                 rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
             }
-            RestRequest rr = new RestRequest(Method.POST);
-            rr.AddParameter("api_key", _key);
-            rr.AddParameter("symbol", tradingpair);
-            rr.AddParameter("order_id", OrderID);
+            RestRequest rr = new RestRequest(Method.GET);
 
-            Dictionary<String, String> paras = new Dictionary<String, String>();
-            paras.Add("api_key", _key);
-            paras.Add("symbol", tradingpair);
-            paras.Add("order_id", OrderID);
-            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
-            rr.AddParameter("sign", sign);
+            var response = new RestClient(url).Execute(rr);
+            rawresponse = response.Content;
+            
+            return rawresponse;
+        }
+               
+            
+        
+
+        public Order GetOrderStatus(string OrderID, string tradingpair, out string rawresponse)
+        {
+            CheckSet();
+            Order order = null;
+            var action = $"/v1/order/orders/{OrderID}";
+            var method = "GET";
+            var data = new Dictionary<string, object>()
+            {
+                {"AccessKeyId", _key},
+                {"SignatureMethod", SignatureMethod},
+                {"SignatureVersion", SignatureVersion},
+                {"Timestamp",GetDateTime()},
+                {"order-id", OrderID}
+            };
+            var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
+            data["Signature"] = sign;
+            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
+           
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            RestRequest rr = new RestRequest(Method.GET);
             var response = new RestClient(url).Execute(rr);
 
 
@@ -426,22 +566,22 @@ namespace KFCC.EHuobiExchange
             try
             {
                 JObject obj = JObject.Parse(rawresponse);
-                if (!Convert.ToBoolean(obj["result"]))
+                if (obj["status"].ToString() == "error")
                 {
                     throw (new Exception("error:" + rawresponse));
                 }
-                JArray orders = JArray.Parse(obj["orders"].ToString());
-                if (orders.Count > 0)
-                {
-                    order = new Order();
-                    order.Id = orders[0]["order_id"].ToString();
-                    order.Amount = Convert.ToDouble(orders[0]["amount"].ToString());
-                    order.DealAmount = Convert.ToDouble(orders[0]["deal_amount"].ToString());
-                    order.Price = Convert.ToDouble(orders[0]["price"].ToString());
-                    order.Type = GetOrderTypeFromString(orders[0]["type"].ToString());
-                    order.Status = GetOrderStatus(orders[0]["status"].ToString());
-                    order.TradingPair = orders[0]["symbol"].ToString();
-                }
+                JObject orders = JObject.Parse(obj["data"].ToString());
+
+                order = new Order();
+                order.Id = orders["id"].ToString();
+                order.Amount = Convert.ToDouble(orders["amount"].ToString());
+                order.DealAmount = Convert.ToDouble(orders["field-amount"].ToString());
+                order.Price = Convert.ToDouble(orders["price"].ToString());
+                order.AvgPrice = Convert.ToDouble(orders["field-cash-amount"].ToString()) / Convert.ToDouble(orders["field-amount"].ToString());
+                order.Type = GetOrderTypeFromString(orders["type"].ToString());
+                order.Status = GetOrderStatus(orders["state"].ToString());
+                order.TradingPair = orders["symbol"].ToString();
+
 
             }
             catch (Exception e)
@@ -457,40 +597,45 @@ namespace KFCC.EHuobiExchange
         {
             CheckSet();
 
-            string url = GetPublicApiURL("", "cancel_order.do");
-            RestClient rc = new RestClient(url);
-            if (_proxy != null)
+            var action = $"/v1/order/orders/{OrderID}/submitcancel";
+            var method = "POST";
+            var data = new Dictionary<string, object>()
             {
-                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
-            }
-            RestRequest rr = new RestRequest(Method.POST);
-            rr.AddParameter("api_key", _key);
-            rr.AddParameter("symbol", tradingpair);
-            rr.AddParameter("order_id", OrderID);
+                {"AccessKeyId", _key},
+                {"SignatureMethod", SignatureMethod},
+                {"SignatureVersion", SignatureVersion},
+                {"Timestamp",GetDateTime()},
+                {"order-id", OrderID}
+            };
+            var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
+            data["Signature"] = sign;
+            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
 
-            Dictionary<String, String> paras = new Dictionary<String, String>();
-            paras.Add("api_key", _key);
-            paras.Add("symbol", tradingpair);
-            paras.Add("order_id", OrderID);
-            String sign = "";//MD5Util.buildMysignV1(paras, _secret);
-            rr.AddParameter("sign", sign);
-            var response = new RestClient(url).Execute(rr);
+            rawresponse = RequestDataSync(url, method, null, null);
 
-
-            rawresponse = response.Content;
+            
             try
             {
                 JObject obj = JObject.Parse(rawresponse);
-                if (Convert.ToBoolean(obj["result"]))
+                if (obj["status"].ToString() == "error")
                 {
-                    return true;
+                    throw (new Exception("error:" + rawresponse));
+                }
+                if (obj["status"].ToString() == "ok")
+                {
+                    if (obj["data"].ToString() == OrderID)
+                    {
+                        return true;
+
+                    }
                 }
 
 
             }
             catch (Exception e)
             {
-                //这里应该抛出错误
+                Exception err = new Exception("订单取消解析json失败" + e.Message);
+                throw err;
             }
             return false;
         }
@@ -535,9 +680,9 @@ namespace KFCC.EHuobiExchange
         }
         static public OrderType GetOrderTypeFromString(string str)
         {
-            if (str.ToLower() == "buy")
+            if (str.ToLower() == "buy-limit")
                 return OrderType.ORDER_TYPE_BUY;
-            if (str.ToLower() == "sell")
+            if (str.ToLower() == "sell-limit")
                 return OrderType.ORDER_TYPE_SELL;
             if (str.ToLower() == "buy_market")
                 return OrderType.ORDER_TYPE_MARKETBUY;
@@ -548,13 +693,13 @@ namespace KFCC.EHuobiExchange
         static public OrderStatus GetOrderStatus(string str)
         {
             //status:-1:已撤销  0:未成交  1:部分成交  2:完全成交 4:撤单处理中
-            if (str.ToLower() == "-1")
+            if (str.ToLower() == "canceled")
                 return OrderStatus.ORDER_STATE_CANCELED;
-            if (str.ToLower() == "0")
+            if (str.ToLower() == "submitted")
                 return OrderStatus.ORDER_STATE_PENDING;
-            if (str.ToLower() == "1")
+            if (str.ToLower() == "partial-filled")
                 return OrderStatus.ORDER_STATE_PARTITAL;
-            if (str.ToLower() == "2")
+            if (str.ToLower() == "filled ")
                 return OrderStatus.ORDER_STATE_SUCCESS;
             if (str.ToLower() == "4")
                 return OrderStatus.ORDER_STATE_CANCELING;
@@ -573,6 +718,97 @@ namespace KFCC.EHuobiExchange
         public void DisSubcribe(TradePair tp, SubscribeTypes st)
         {
             throw new NotImplementedException();
+        }
+        private string RequestDataSync(string url, string method, Dictionary<string, object> param, WebHeaderCollection headers)
+        {
+            string resp = string.Empty;
+           
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Headers.Add("Accept-Encoding", "gzip");
+            request.Method = method;
+            if (_proxy != null)
+            {
+                request.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            if (headers != null)
+            {
+                foreach (var key in headers.AllKeys)
+                {
+                    request.Headers.Add(key, headers[key]);
+                }
+            }
+            try
+            {
+                if (method == "POST" && param != null)
+                {
+                    byte[] bs = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(param));
+                    request.ContentType = "application/json";
+                    request.ContentLength = bs.Length;
+                    using (var reqStream = request.GetRequestStream())
+                    {
+                        reqStream.Write(bs, 0, bs.Length);
+                    }
+                }
+                //如果是Get 请求参数附加在URL之后
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    if (resp == null)
+                        throw new Exception("Response is null");
+                    resp = GetResponseBody(response);
+                    //httpCode = (int)response.StatusCode;
+                }
+            }
+            catch (WebException ex)
+            {
+                using (HttpWebResponse response = ex.Response as HttpWebResponse)
+                {
+                    resp = GetResponseBody(response);
+                    //httpCode = (int)response.StatusCode;
+                }
+            }
+            return resp;
+        }
+        private string GetResponseBody(HttpWebResponse response)
+        {
+            var readStream = new Func<Stream, string>((stream) =>
+            {
+                using (var reader = new StreamReader(stream, Encoding.UTF8))
+                {
+                    return reader.ReadToEnd();
+                }
+            });
+
+            using (var responseStream = response.GetResponseStream())
+            {
+                if (response.ContentEncoding.ToLower().Contains("gzip"))
+                {
+                    using (GZipStream stream = new GZipStream(responseStream, CompressionMode.Decompress))
+                    {
+                        return readStream(stream);
+                    }
+                }
+                if (response.ContentEncoding.ToLower().Contains("deflate"))
+                {
+                    using (DeflateStream stream = new DeflateStream(responseStream, CompressionMode.Decompress))
+                    {
+                        return readStream(stream);
+                    }
+                }
+                return readStream(responseStream);
+            }
+        }
+
+       
+
+        private string ConvertQueryString(Dictionary<string, object> data, bool urlencode = false)
+        {
+            var stringbuilder = new StringBuilder();
+            foreach (var item in data)
+            {
+                stringbuilder.AppendFormat("{0}={1}&", item.Key, urlencode ? Uri.EscapeDataString(item.Value.ToString()) : item.Value.ToString());
+            }
+            stringbuilder.Remove(stringbuilder.Length - 1, 1);
+            return stringbuilder.ToString();
         }
     }
 }
