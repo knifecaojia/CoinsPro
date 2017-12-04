@@ -45,7 +45,18 @@ namespace KFCC.EHuobiExchange
         public Account Account { get { return _account; } set { _account = value; } }
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
+        public HuobiExchange()
+        {
+           
+        }
         public HuobiExchange(string key, string secret, string uid, string username)
+        {
+            _key = key;
+            _secret = secret;
+            _uid = uid;
+            _username = username;
+        }
+        public void SetupExchage(string key, string secret, string uid, string username)
         {
             _key = key;
             _secret = secret;
@@ -93,6 +104,7 @@ namespace KFCC.EHuobiExchange
                     string raw;
                     Ticker t = GetTicker(GetLocalTradingPairString(tp), out raw);
                     Depth d = GetDepth(GetLocalTradingPairString(tp), out raw);
+                    _subscribedtradingpairs.Add(tradingpairs, new RESTHelper(tp, t, d));
                     //_subscribedtradingpairs.Add(tradingpairs, new PusherHelper(tradingpairs, t, d));
                     //_subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
                 }

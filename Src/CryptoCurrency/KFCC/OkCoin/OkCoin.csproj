@@ -54,6 +54,7 @@
     <Compile Include="FuthureErrorcode2Msg.cs" />
     <Compile Include="MD5Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RESTHelper.cs" />
     <Compile Include="SpotErrcode2Msg.cs" />
     <Compile Include="WssHelper.cs" />
   </ItemGroup>
@@ -71,4 +72,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /e /r /y $(TargetPath) M:\CoinPor-Git\Src\CryptoCurrency\StrategyGUI\Hedge\Hedge\bin\Debug\Plugins</PostBuildEvent>
+  </PropertyGroup>
 </Project>

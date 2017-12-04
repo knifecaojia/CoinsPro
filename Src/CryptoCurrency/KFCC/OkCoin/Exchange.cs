@@ -46,6 +46,18 @@ namespace KFCC.EOkCoin
             _uid = uid;
             _username = username;
         }
+        public OkCoinExchange()
+        {
+          
+        }
+       
+        public void SetupExchage(string key, string secret, string uid, string username)
+        {
+            _key = key;
+            _secret = secret;
+            _uid = uid;
+            _username = username;
+        }
         public bool Subscribe(CommonLab.TradePair tp, SubscribeTypes st)
         {
             //throw new NotImplementedException();
@@ -87,7 +99,7 @@ namespace KFCC.EOkCoin
                     string raw;
                     Ticker t = GetTicker(GetLocalTradingPairString(tp), out raw);
                     Depth d = GetDepth(GetLocalTradingPairString(tp), out raw);
-                    //_subscribedtradingpairs.Add(tradingpairs, new PusherHelper(tradingpairs, t, d));
+                    _subscribedtradingpairs.Add(tradingpairs, new RESTHelper(tp, t, d));
                     //_subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
                 }
             }
@@ -149,7 +161,7 @@ namespace KFCC.EOkCoin
                 MarketOrder m = new MarketOrder();
                 m.Price = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[0]);
                 m.Amount = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[1]);
-                d.Asks.Add(m);
+                d.AddNewAsk(m);
             }
 
             JArray jbids = JArray.Parse(obj["bids"].ToString());
@@ -158,7 +170,7 @@ namespace KFCC.EOkCoin
                 MarketOrder m = new MarketOrder();
                 m.Price = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[0]);
                 m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
-                d.Bids.Add(m);
+                d.AddNewBid(m);
             }
             d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
             d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
@@ -173,7 +185,7 @@ namespace KFCC.EOkCoin
         {
             if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
-                //((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateDepth(d);
+                ((RESTHelper)SubscribedTradingPairs[tradingpair]).TradeInfo.d = d;
             }
         }
         /// <summary>
@@ -184,7 +196,7 @@ namespace KFCC.EOkCoin
         {
             if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
-                //((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateTicker(t);
+                ((RESTHelper)SubscribedTradingPairs[tradingpair]).TradeInfo.t=t;
             }
         }
         protected int Trade(OrderType type, string tradingpair,double price, double amount)
@@ -241,7 +253,8 @@ namespace KFCC.EOkCoin
                 JObject obj = JObject.Parse(rawresponse);
                 if (!Convert.ToBoolean(obj["result"]))
                 {
-                    throw (new Exception("error:" + rawresponse));
+
+                     throw (new Exception("error:" + SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
                 }
                 return Convert.ToInt32(obj["order_id"]);
             }
@@ -393,7 +406,68 @@ namespace KFCC.EOkCoin
             return order;
 
         }
+        public List<Order> GetOrdersStatus(string tradingpair, out string rawresponse)
+        {
+            CheckSet();
+            Order order = null;
+            string url = GetPublicApiURL("", "order_info.do");
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            RestRequest rr = new RestRequest(Method.POST);
+            rr.AddParameter("api_key", _key);
+            rr.AddParameter("symbol", tradingpair);
+            rr.AddParameter("order_id", -1);
 
+            Dictionary<String, String> paras = new Dictionary<String, String>();
+            paras.Add("api_key", _key);
+            paras.Add("symbol", tradingpair);
+            paras.Add("order_id", "-1");
+            String sign = MD5Util.buildMysignV1(paras, _secret);
+            rr.AddParameter("sign", sign);
+            var response = new RestClient(url).Execute(rr);
+
+
+            rawresponse = response.Content;
+            try
+            {
+                JObject obj = JObject.Parse(rawresponse);
+                if (!Convert.ToBoolean(obj["result"]))
+                {
+                    throw (new Exception("error:" + rawresponse));
+                }
+                JArray orders = JArray.Parse(obj["orders"].ToString());
+                if (orders.Count > 0)
+                {
+                    List<Order> orders_array = new List<Order>();
+                    for (int i = 0; i < orders.Count; i++)
+                    {
+
+
+                        order = new Order();
+                        order.Id = orders[i]["order_id"].ToString();
+                        order.Amount = Convert.ToDouble(orders[i]["amount"].ToString());
+                        order.DealAmount = Convert.ToDouble(orders[i]["deal_amount"].ToString());
+                        order.Price = Convert.ToDouble(orders[i]["price"].ToString());
+                        order.Type = GetOrderTypeFromString(orders[i]["type"].ToString());
+                        order.Status = GetOrderStatus(orders[i]["status"].ToString());
+                        order.TradingPair = orders[i]["symbol"].ToString();
+                        orders_array.Add(order);
+                    }
+                    return orders_array;
+                }
+
+            }
+            catch (Exception e)
+            {
+                Exception err = new Exception("订单获取解析json失败" + e.Message);
+                throw err;
+            }
+            return null;
+
+        }
         public bool CancelOrder(string OrderID,string tradingpair, out string rawresponse)
         {
             CheckSet();
@@ -438,7 +512,30 @@ namespace KFCC.EOkCoin
 
         public bool CancelAllOrders()
         {
-            throw new NotImplementedException();
+            bool flag = false;
+            try
+            {
+                if (SubscribedTradingPairs != null)
+                {
+                    foreach (KeyValuePair<string, SubscribeInterface> item in SubscribedTradingPairs)
+                    {
+                        string raw = "";
+                        List<CommonLab.Order> orders = GetOrdersStatus(item.Key, out raw);
+                        if (orders != null)
+                        {
+                            for (int i = 0; i < orders.Count; i++)
+                            { CancelOrder(orders[i].Id, item.Key, out raw); }
+                            flag = true;
+                        }
+                    }
+                }
+                return flag;
+            }
+            catch
+            {
+                return flag;
+            }
+            
         }
 
         public int Buy(string Symbol, double Price, double Amount)
@@ -515,5 +612,7 @@ namespace KFCC.EOkCoin
         {
             throw new NotImplementedException();
         }
+
+       
     }
 }

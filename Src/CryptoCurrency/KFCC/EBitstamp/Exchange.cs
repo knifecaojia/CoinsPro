@@ -49,7 +49,19 @@ namespace KFCC.EBitstamp
 
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
+        public BitstampExchange()
+        {
+
+        }
+        
         public BitstampExchange(string key, string secret, string uid, string username)
+        {
+            _key = key;
+            _secret = secret;
+            _uid = uid;
+            _username = username;
+        }
+        public void SetupExchage(string key, string secret, string uid, string username)
         {
             _key = key;
             _secret = secret;
@@ -74,7 +86,7 @@ namespace KFCC.EBitstamp
         //        }
         //    }
         //    return _instance; 
-            
+
         //}
 
         public bool Subscribe(CommonLab.TradePair tp, SubscribeTypes st)
@@ -275,5 +287,7 @@ namespace KFCC.EBitstamp
         {
             throw new NotImplementedException();
         }
+
+
     }
 }

@@ -69,6 +69,7 @@ namespace KFCC.ExchangeInterface
         #endregion
 
         #region 方法
+        void SetupExchage(string key, string secret, string uid, string username);
         /// <summary>
         /// 订阅接口
         /// </summary>

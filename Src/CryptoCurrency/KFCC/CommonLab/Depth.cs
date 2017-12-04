@@ -44,6 +44,33 @@ namespace CommonLab
             });
             CutLast();
         }
+        public double CaculateDepth(OrderType type,double depth)
+        {
+           
+            double sum = 0;
+            if (type == OrderType.ORDER_TYPE_BUY)
+            {
+                for (int i = 0; i < Bids.Count; i++)
+                {
+                    sum += Bids[i].Amount;
+                    if (sum > depth)
+                        return Bids[i].Price;
+                }
+                return 0;
+
+            }
+            else if (type == OrderType.ORDER_TYPE_SELL)
+            {
+                for (int i = 0; i < Asks.Count; i++)
+                {
+                    sum += Asks[i].Amount;
+                    if (sum > depth)
+                        return Asks[i].Price;
+                }
+                return 0;
+            }
+            return 0;
+        }
         private void CutLast()
         {
             if (Asks.Count > 100)
@@ -65,11 +92,15 @@ namespace CommonLab
             for (int i = 0; i < count; i++)
             {
                 bids += Bids[i].Amount + "@" + Bids[i].Price;
+                if (i < count - 1)
+                    bids += "|";
             }
             string asks = "asks:";
             for (int i = 0; i < count; i++)
             {
                 asks += Asks[i].Amount + "@" + Asks[i].Price;
+                if (i < count - 1)
+                    asks += "|";
             }
             return bids + "----" + asks;
         }

@@ -27,6 +27,28 @@ namespace CommonLab
             }
             return str;
         }
+        public Account Clone()
+        {
+            Account a = new Account();
+            a.ID = ID;
+            foreach (KeyValuePair<string, Balance> item in Balances)
+            {
+                Balance b = new Balance();
+                b.available = item.Value.available;
+                b.balance = item.Value.balance;
+                b.borrow = item.Value.borrow;
+                b.reserved = item.Value.reserved;
+                a.Balances.Add(item.Key, b);
+            }
+            foreach (KeyValuePair<string, Fee> item in Fees)
+            {
+                Fee f = new Fee();
+                f.MakerFee = item.Value.MakerFee;
+                f.TakerFee = item.Value.TakerFee;
+                a.Fees.Add(item.Key, f);
+            }
+            return a;
+        }
         /// <summary>
         /// 
         /// </summary>
