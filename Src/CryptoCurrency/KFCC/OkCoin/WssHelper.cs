@@ -86,23 +86,38 @@ namespace KFCC.EOkCoin
                         else if (strs[strs.Length - 1] == "depth")
                         {
                             JObject obj = JObject.Parse(robj["data"].ToString());
-                            JArray jasks = JArray.Parse(obj["asks"].ToString());
-                            for (int i = 0; i < jasks.Count; i++)
+                            try
                             {
-                                MarketOrder m = new MarketOrder();
-                                m.Price = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[0]);
-                                m.Amount = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[1]);
-                                _tradinginfo.d.AddNewAsk(m);
+                                if (obj.Property("asks") != null)
+                                {
+                                    JArray jasks = JArray.Parse(obj["asks"].ToString());
+                                    for (int i = 0; i < jasks.Count; i++)
+                                    {
+                                        MarketOrder m = new MarketOrder();
+                                        m.Price = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[0]);
+                                        m.Amount = Convert.ToDouble(JArray.Parse(jasks[i].ToString())[1]);
+                                        _tradinginfo.d.AddNewAsk(m);
+                                    }
+                                }
                             }
-
-                            JArray jbids = JArray.Parse(obj["bids"].ToString());
-                            for (int i = 0; i < jbids.Count; i++)
+                            catch
+                            { }
+                            try
                             {
-                                MarketOrder m = new MarketOrder();
-                                m.Price = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[0]);
-                                m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
-                                _tradinginfo.d.AddNewBid(m);
+                                if (obj.Property("asks") != null)
+                                {
+                                    JArray jbids = JArray.Parse(obj["bids"].ToString());
+                                    for (int i = 0; i < jbids.Count; i++)
+                                    {
+                                        MarketOrder m = new MarketOrder();
+                                        m.Price = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[0]);
+                                        m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
+                                        _tradinginfo.d.AddNewBid(m);
+                                    }
+                                }
                             }
+                            catch
+                            { }
                             _tradinginfo.d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
                             _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
                             TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
