@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             DevComponents.DotNetBar.Charts.ChartXy chartXy1 = new DevComponents.DotNetBar.Charts.ChartXy();
             DevComponents.DotNetBar.Charts.Style.Background background1 = new DevComponents.DotNetBar.Charts.Style.Background();
             DevComponents.DotNetBar.Charts.ChartSeries chartSeries1 = new DevComponents.DotNetBar.Charts.ChartSeries();
@@ -66,10 +67,15 @@
             DevComponents.DotNetBar.Charts.Style.Background background12 = new DevComponents.DotNetBar.Charts.Style.Background();
             DevComponents.DotNetBar.Charts.Style.Background background13 = new DevComponents.DotNetBar.Charts.Style.Background();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.btnStart = new System.Windows.Forms.ToolStripMenuItem();
+            this.inpNumberOfSeries = new System.Windows.Forms.ToolStripTextBox();
+            this.inpTimePeriod = new System.Windows.Forms.ToolStripTextBox();
             this.chartControl1 = new DevComponents.DotNetBar.Charts.ChartControl();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -87,6 +93,34 @@
             this.splitContainer1.SplitterDistance = 363;
             this.splitContainer1.TabIndex = 0;
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.btnStart,
+            this.inpNumberOfSeries,
+            this.inpTimePeriod});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(161, 76);
+            this.contextMenuStrip1.Text = "2";
+            // 
+            // btnStart
+            // 
+            this.btnStart.Name = "btnStart";
+            this.btnStart.Size = new System.Drawing.Size(160, 22);
+            this.btnStart.Text = "Start";
+            // 
+            // inpNumberOfSeries
+            // 
+            this.inpNumberOfSeries.Name = "inpNumberOfSeries";
+            this.inpNumberOfSeries.Size = new System.Drawing.Size(100, 23);
+            this.inpNumberOfSeries.Text = "2";
+            // 
+            // inpTimePeriod
+            // 
+            this.inpTimePeriod.Name = "inpTimePeriod";
+            this.inpTimePeriod.Size = new System.Drawing.Size(100, 23);
+            this.inpTimePeriod.Text = "4";
+            // 
             // chartControl1
             // 
             chartXy1.AxisX.MajorGridLines.GridLinesVisualStyle.LineColor = System.Drawing.Color.Gainsboro;
@@ -96,6 +130,7 @@
             chartXy1.AxisY.MajorGridLines.GridLinesVisualStyle.LineColor = System.Drawing.Color.Gainsboro;
             chartXy1.AxisY.MinorGridLines.GridLinesVisualStyle.LineColor = System.Drawing.Color.WhiteSmoke;
             chartXy1.AxisY.Title.Name = null;
+            chartXy1.AxisY.Title.Text = "";
             chartXy1.ChartCrosshair.CrosshairLabelMode = DevComponents.DotNetBar.Charts.CrosshairLabelMode.NearestSeries;
             background1.Color1 = System.Drawing.Color.White;
             chartXy1.ChartCrosshair.CrosshairVisualStyle.Background = background1;
@@ -110,34 +145,34 @@
             chartSeries1.Name = "Series1";
             seriesPoint1.ValueX = 0D;
             seriesPoint1.ValueY = new object[] {
-        ((object)(29D))};
+        ((object)(42D))};
             seriesPoint2.ValueX = 1D;
             seriesPoint2.ValueY = new object[] {
-        ((object)(34D))};
+        ((object)(20D))};
             seriesPoint3.ValueX = 2D;
             seriesPoint3.ValueY = new object[] {
-        ((object)(10D))};
+        ((object)(37D))};
             seriesPoint4.ValueX = 3D;
             seriesPoint4.ValueY = new object[] {
         ((object)(43D))};
             seriesPoint5.ValueX = 4D;
             seriesPoint5.ValueY = new object[] {
-        ((object)(14D))};
+        ((object)(3D))};
             seriesPoint6.ValueX = 5D;
             seriesPoint6.ValueY = new object[] {
-        ((object)(14D))};
+        ((object)(11D))};
             seriesPoint7.ValueX = 6D;
             seriesPoint7.ValueY = new object[] {
-        ((object)(37D))};
+        ((object)(9D))};
             seriesPoint8.ValueX = 7D;
             seriesPoint8.ValueY = new object[] {
-        ((object)(42D))};
+        ((object)(8D))};
             seriesPoint9.ValueX = 8D;
             seriesPoint9.ValueY = new object[] {
-        ((object)(21D))};
+        ((object)(16D))};
             seriesPoint10.ValueX = 9D;
             seriesPoint10.ValueY = new object[] {
-        ((object)(13D))};
+        ((object)(6D))};
             chartSeries1.SeriesPoints.Add(seriesPoint1);
             chartSeries1.SeriesPoints.Add(seriesPoint2);
             chartSeries1.SeriesPoints.Add(seriesPoint3);
@@ -249,11 +284,10 @@
             this.chartControl1.DefaultVisualStyles.VScrollBarVisualStyles.SelectedMouseOver.ArrowBackground = background12;
             background13.Color1 = System.Drawing.Color.White;
             this.chartControl1.DefaultVisualStyles.VScrollBarVisualStyles.SelectedMouseOver.ThumbBackground = background13;
-            this.chartControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.chartControl1.LicenseKey = "F962CEC7-CD8F-4911-A9E9-CAB39962FC1F";
-            this.chartControl1.Location = new System.Drawing.Point(0, 0);
+            this.chartControl1.Location = new System.Drawing.Point(320, 79);
             this.chartControl1.Name = "chartControl1";
-            this.chartControl1.Size = new System.Drawing.Size(1051, 361);
+            this.chartControl1.Size = new System.Drawing.Size(250, 250);
             this.chartControl1.TabIndex = 0;
             this.chartControl1.Text = "chartControl1";
             // 
@@ -267,6 +301,8 @@
             this.splitContainer1.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.contextMenuStrip1.ResumeLayout(false);
+            this.contextMenuStrip1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -274,6 +310,10 @@
         #endregion
 
         private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem btnStart;
+        private System.Windows.Forms.ToolStripTextBox inpNumberOfSeries;
+        private System.Windows.Forms.ToolStripTextBox inpTimePeriod;
         private DevComponents.DotNetBar.Charts.ChartControl chartControl1;
     }
 }

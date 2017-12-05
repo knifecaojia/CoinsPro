@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommonLab;
 using WebSocketSharp;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace KFCC.EOkCoin
 {
@@ -27,19 +28,27 @@ namespace KFCC.EOkCoin
         {
             get { return _tradinginfo; }
         }
+
+        public Thread CheckTread { get ; set; }
+        public TradePair Tp { get; set; }
+
         public WssHelper(CommonLab.TradePair tp, Ticker t, Depth d)
         {
             _tradingpair = tp.FromSymbol.ToLower()+"_"+tp.ToSymbol.ToLower();
-            _tradinginfo = new TradingInfo(SubscribeTypes.WSS, _tradingpair);
+            _tradinginfo = new TradingInfo(SubscribeTypes.WSS, _tradingpair,tp);
             _tradinginfo.t = t;
             _tradinginfo.d = d;
-
+            Tp = tp;
+            CheckTread = new Thread(CheckState);
+            CheckTread.IsBackground = true;
             ws = new WebSocket(spotwssurl);
             ws.OnOpen += (sender, e) =>
             {
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_"+_tradingpair+"_ticker'}");
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_depth'}");
+                CheckTread.Start();
             };
+            
             ws.OnMessage += (sender, e) => {
                 if (e.IsText)
                 {
@@ -105,7 +114,20 @@ namespace KFCC.EOkCoin
             };
             ws.Connect();
         }
+        public void CheckState()
+        {
+            while (true)
+            {
 
+
+                if (!ws.IsAlive)
+                {
+                    ws.Connect();
+                }
+                Thread.Sleep(10000);
+            }
+        
+        }
         public void Close()
         {
             if (ws != null)

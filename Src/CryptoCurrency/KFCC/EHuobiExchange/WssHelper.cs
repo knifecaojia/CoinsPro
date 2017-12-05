@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommonLab;
 using WebSocketSharp;
 using Newtonsoft.Json.Linq;
+using System.Threading;
 
 namespace KFCC.EHuobiExchange
 {
@@ -28,18 +29,44 @@ namespace KFCC.EHuobiExchange
         {
             get { return _tradinginfo; }
         }
+
+        public Thread CheckTread { get;set; }
+        public TradePair Tp { get; set; }
+
+        public void CheckState()
+        {
+            while (true)
+            {
+
+
+                if (!ws.IsAlive)
+                {
+                    ws.Connect();
+                }
+                Thread.Sleep(10000);
+            }
+
+        }
         public WssHelper(CommonLab.TradePair tp, Ticker t, Depth d)
         {
+            if (tp.FromSymbol.ToLower() == "bch")
+                _tradingpair= "bcc" + tp.ToSymbol.ToLower();
+            else if (tp.ToSymbol.ToLower() == "bch")
+                _tradingpair = tp.FromSymbol.ToLower() + "bcc";
+            else
             _tradingpair = tp.FromSymbol.ToLower() + tp.ToSymbol.ToLower();
-            _tradinginfo = new TradingInfo(SubscribeTypes.WSS, _tradingpair);
+            _tradinginfo = new TradingInfo(SubscribeTypes.WSS, _tradingpair,tp);
             _tradinginfo.t = t;
             _tradinginfo.d = d;
-
+            Tp = tp;
+            CheckTread = new Thread(CheckState);
+            CheckTread.IsBackground = true;
             ws = new WebSocket(spotwssurl);
             ws.OnOpen += (sender, e) =>
             {
                 ws.Send("{\"sub\": \"market." + _tradingpair + ".kline.1min\",  \"id\": \"id" + DateTime.Now.Second + "\"}");
                 ws.Send("{\"sub\": \"market." + _tradingpair + ".depth.step0\",  \"id\": \"id" + DateTime.Now.Second + "\"}");
+                CheckTread.Start();
             };
 
             ws.OnMessage += (sender, e) =>

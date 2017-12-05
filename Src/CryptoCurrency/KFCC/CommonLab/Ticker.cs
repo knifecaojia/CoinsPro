@@ -47,12 +47,14 @@ namespace CommonLab
         public Depth d;
         public CommonLab.SubscribeTypes type;
         public  string tradingpair;
-        public TradingInfo(CommonLab.SubscribeTypes _type,string _tradingpair)
+        public TradePair tp;
+        public TradingInfo(CommonLab.SubscribeTypes _type,string _tradingpair,TradePair _tp)
         {
             t = new Ticker();
             d = new Depth();
             type = _type;
             tradingpair = _tradingpair;
+            tp = _tp;
         }
 
     }

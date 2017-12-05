@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace KFCC.EBitstamp
 {
@@ -21,23 +22,29 @@ namespace KFCC.EBitstamp
 
         public TradingInfo TradeInfo { get { return _tradinginfo; } }
 
-        public PusherHelper(string tradingpair, Ticker t, Depth d, string appkey = "de504dc5763aeef9ff52")
+        public Thread CheckTread { get; set; }
+        public TradePair Tp { get; set; }
+        public PusherHelper(string tradingpair, Ticker t, Depth d, CommonLab.TradePair tp, string appkey = "de504dc5763aeef9ff52")
         {
             _tradingpair = tradingpair;
-            _tradinginfo = new TradingInfo(SubscribeTypes.WSS, tradingpair);
+            _tradinginfo = new TradingInfo(SubscribeTypes.WSS, tradingpair,tp);
             _tradinginfo.t = t;
             _tradinginfo.d = d;
+            Tp = tp;
             _appkey = appkey;
             _pusher = new Pusher(_appkey);
             _pusher.ConnectionStateChanged += _pusher_ConnectionStateChanged;
             _pusher.Error += _pusher_Error;
+ 
             _pusher.Connect();
         }
-
-            public PusherHelper(string tradingpair,string appkey= "de504dc5763aeef9ff52")
+      
+        public PusherHelper(string tradingpair, CommonLab.TradePair tp,string appkey= "de504dc5763aeef9ff52")
         {
             _tradingpair = tradingpair;
-            _tradinginfo = new TradingInfo(SubscribeTypes.WSS,tradingpair);
+
+            _tradinginfo = new TradingInfo(SubscribeTypes.WSS,tradingpair,tp);
+            Tp = tp;
             _appkey = appkey;
             _pusher = new Pusher(_appkey);
             _pusher.ConnectionStateChanged += _pusher_ConnectionStateChanged;

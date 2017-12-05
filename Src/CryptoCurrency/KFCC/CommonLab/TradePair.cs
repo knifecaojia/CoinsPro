@@ -17,5 +17,11 @@ namespace CommonLab
             FromSymbol = f;
             ToSymbol = t;
         }
+        public bool Compare(TradePair x)
+        {
+            if (this.FromSymbol == x.FromSymbol && this.ToSymbol == x.ToSymbol)
+                return true;
+            return false;
+        }
     }
 }

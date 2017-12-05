@@ -111,11 +111,11 @@ namespace KFCC.EOkCoin
         {
             if (TickerEvent != null && tt == TradeEventType.TRADE)
             {
-                TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tradingpair);
+                TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tp);
             }
             if (DepthEvent != null && tt == TradeEventType.ORDERS)
             {
-                DepthEvent(this, ti.d, (CommonLab.EventTypes)ti.type, ti.tradingpair);
+                DepthEvent(this, ti.d, (CommonLab.EventTypes)ti.type, ti.tp);
             }
         }
 

@@ -117,11 +117,11 @@ namespace KFCC.EHuobiExchange
         {
             if (TickerEvent != null && tt == TradeEventType.TRADE)
             {
-                TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tradingpair);
+                TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tp);
             }
             if (DepthEvent != null && tt == TradeEventType.ORDERS)
             {
-                DepthEvent(this, ti.d, (CommonLab.EventTypes)ti.type, ti.tradingpair);
+                DepthEvent(this, ti.d, (CommonLab.EventTypes)ti.type, ti.tp);
             }
         }
 
@@ -386,6 +386,10 @@ namespace KFCC.EHuobiExchange
             //{
             //    return t.FromSymbol.ToLower() + "_" + t.ToSymbol.ToLower();
             //}
+            if (t.FromSymbol.ToLower() == "bch")
+                return "bcc" + t.ToSymbol.ToLower();
+            if (t.ToSymbol.ToLower() == "bch")
+                return t.FromSymbol.ToLower()+ "bcc" ;
             return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
         }
         private string GetDateTime() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss");

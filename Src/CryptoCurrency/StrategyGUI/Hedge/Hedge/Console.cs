@@ -17,7 +17,7 @@ namespace Hedge
 
             InitializeComponent();
             e.TickerEvent += new CommonLab.ExchangeEventWarper.TickerEventHander(Exchange_TickerEvent);
-            e.DepthEvent += new CommonLab.ExchangeEventWarper.DepthEventHander(Exchange_DepthEvent);
+            e.DepthEvent +=new CommonLab.ExchangeEventWarper.DepthEventHander(Exchange_DepthEvent);
         }
 
         private void Console_Resize(object sender, EventArgs e)
@@ -27,7 +27,7 @@ namespace Hedge
             textBox1.Location = new Point(3, 3);
         }
         private delegate void UpdateConsole(Color c, string msg);
-        private  void Exchange_DepthEvent(object sender, CommonLab.Depth d, CommonLab.EventTypes et, string tradingpair)
+        private  void Exchange_DepthEvent(object sender, CommonLab.Depth d, CommonLab.EventTypes et, CommonLab.TradePair tp)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(DateTime.Now.ToString() + ": " + d.ToString(5));
@@ -53,18 +53,23 @@ namespace Hedge
 
                     textBox1.Lines = lines;
                 }
-                catch (Exception e)
+                catch 
                 {
-
+                    
                 }
             }
-            textBox1.AppendText("\n");
-            textBox1.SelectionColor =c;
-            textBox1.AppendText(msg);
-            textBox1.Select(textBox1.TextLength, 0);//设置光标的位置到文本尾  
-            textBox1.ScrollToCaret();//滚动到控件光标处  
+            try
+            {
+                textBox1.AppendText("\n");
+                textBox1.SelectionColor = c;
+                textBox1.AppendText(msg);
+                textBox1.Select(textBox1.TextLength, 0);//设置光标的位置到文本尾  
+                textBox1.ScrollToCaret();//滚动到控件光标处  
+            }
+            catch
+            { }
         }
-        private  void Exchange_TickerEvent(object sender, CommonLab.Ticker t, CommonLab.EventTypes et, string tradingpair)
+        private  void Exchange_TickerEvent(object sender, CommonLab.Ticker t, CommonLab.EventTypes et,  CommonLab.TradePair tp)
         {
            
         

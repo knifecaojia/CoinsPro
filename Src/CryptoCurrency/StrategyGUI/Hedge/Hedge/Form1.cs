@@ -19,17 +19,18 @@ namespace Hedge
         Dictionary<string, TradePair> WatchingList;
         Dictionary<string, IExchanges> Exchanges;
         Dictionary<string, TabPage> TabPages;
+        Dictionary<TradePair, TabPage> TabPagesTradingPair;
         public Form1()
         {
             InitializeComponent();
             WatchingList = new Dictionary<string, TradePair>();
             Exchanges = new Dictionary<string, IExchanges>();
             TabPages = new Dictionary<string, TabPage>();
+            TabPagesTradingPair = new Dictionary<TradePair, TabPage>();
             LoadExchanges();
             InitExchangesTab();
-            TradingPairControl tpc = new TradingPairControl("FUCK");
-            tpc.Dock = DockStyle.Fill;
-            splitContainer1.Panel2.Controls.Add(tpc);
+          
+          
         }
         private void InitExchangesTab()
         {
@@ -132,18 +133,30 @@ namespace Hedge
             //订阅
             foreach (var item in Exchanges)
             {
-                item.Value.Subscribe(new CommonLab.TradePair(fsy, tsy), CommonLab.SubscribeTypes.WSS);
-                Console c = new Console(item.Value);
-                c.Dock = DockStyle.Fill;
-                for (int i = 0; i < TabPages[item.Key].Controls.Count; i++)
+                try
                 {
-                    if (TabPages[item.Key].Controls[i].Name == "sc")
+                    item.Value.Subscribe(new CommonLab.TradePair(fsy, tsy), CommonLab.SubscribeTypes.WSS);
+
+                    Console c = new Console(item.Value);
+                    c.Dock = DockStyle.Fill;
+                    for (int i = 0; i < TabPages[item.Key].Controls.Count; i++)
                     {
-                        ((SplitContainer)TabPages[item.Key].Controls[i]).Panel2.Controls.Add(c);
-                        break;
+                        if (TabPages[item.Key].Controls[i].Name == "sc")
+                        {
+                            ((SplitContainer)TabPages[item.Key].Controls[i]).Panel2.Controls.Add(c);
+                            break;
+                        }
                     }
                 }
+                catch(Exception err)
+                { }
             }
+            TradingPairControl tpc = new TradingPairControl(new CommonLab.TradePair(fsy, tsy), Exchanges);
+            tpc.Dock = DockStyle.Fill;
+            TabPage t = new TabPage(fsy + "/" + tsy);
+            t.Controls.Add(tpc);
+            TabPagesTradingPair.Add(new CommonLab.TradePair(fsy, tsy), t);
+            tabControl2.TabPages.Add(t);
         }
         //查找所有插件的路径
         private List<string> FindPlugin()
