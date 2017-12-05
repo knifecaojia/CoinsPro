@@ -149,7 +149,9 @@ namespace Hedge
                     }
                 }
                 catch(Exception err)
-                { }
+                {
+                    MessageBox.Show(err.Message);
+                }
             }
             TradingPairControl tpc = new TradingPairControl(new CommonLab.TradePair(fsy, tsy), Exchanges);
             tpc.Dock = DockStyle.Fill;
