@@ -121,6 +121,7 @@ namespace KFCC.EOkCoin
 
         public Ticker GetTicker(string tradingpair, out string rawresponse)
         {
+            DateTime st = DateTime.Now;
             //throw new NotImplementedException();
             string url = GetPublicApiURL(tradingpair, "ticker"+ ".do?symbol=" );
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
@@ -138,6 +139,7 @@ namespace KFCC.EOkCoin
                 t.Open = 0;// Convert.ToDouble(ticker["open"].ToString());
                 t.ExchangeTimeStamp = Convert.ToDouble(obj["date"].ToString());
                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                t.Delay = (DateTime.Now - st).TotalMilliseconds;
                 UpdateTicker(tradingpair, t);
             }
             catch
@@ -149,6 +151,7 @@ namespace KFCC.EOkCoin
 
         public Depth GetDepth(string tradingpair, out string rawresponse)
         {
+            DateTime st = DateTime.Now;
             string url = GetPublicApiURL(tradingpair, "depth" + ".do?symbol=");
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
             CommonLab.Depth d = new Depth();
@@ -174,8 +177,39 @@ namespace KFCC.EOkCoin
             }
             d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
             d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            d.Delay = (DateTime.Now - st).TotalMilliseconds;
             UpdateDepth(tradingpair, d);
             return d;
+        }
+
+        public Trade[] GetTrades(string tradepair, out string rawresponse,string since="0")
+        {
+            List<Trade> trades = new List<CommonLab.Trade>();
+            string url = GetPublicApiURL(tradepair, "trades" + ".do?symbol=");
+            if (since != "0")
+            {
+                url += "&since=" + since;
+            }
+            rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
+            
+            JArray obj = JArray.Parse(rawresponse);
+            for (int i = 0; i < obj.Count; i++)
+            {
+                JObject trade = JObject.Parse(obj[i].ToString());
+                Trade t = new CommonLab.Trade();
+                t.TradeID = trade["tid"].ToString();
+                t.Amount = Convert.ToDouble(trade["amount"].ToString());
+                t.Price = Convert.ToDouble(trade["price"].ToString());
+                t.Type = CommonLab.Trade.GetType(trade["type"].ToString());
+                t.ExchangeTimeStamp = Convert.ToDouble(trade["date_ms"].ToString())/1000; //时间戳 交易所返回的
+                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now); //本地时间戳
+                t.BuyOrderID = "";//成交的交易号
+                t.SellOrderID = "";//成交的交易号
+                trades.Add(t);
+            }
+            if (trades.Count > 0)
+                return trades.ToArray();
+            return null;
         }
         /// <summary>
         /// 更新深度数据
@@ -395,13 +429,15 @@ namespace KFCC.EOkCoin
                     order.Type = GetOrderTypeFromString(orders[0]["type"].ToString());
                     order.Status = GetOrderStatus(orders[0]["status"].ToString());
                     order.TradingPair = orders[0]["symbol"].ToString();
+                    order.CreatDate = CommonLab.TimerHelper.ConvertStringToDateTime(Convert.ToDouble(orders[0]["create_date"].ToString()) / 1000);
                 }
               
             }
             catch (Exception e)
             {
                 Exception err = new Exception("订单获取解析json失败" + e.Message);
-                throw err;
+
+               // throw err;
             }
             return order;
 
@@ -454,6 +490,7 @@ namespace KFCC.EOkCoin
                         order.Type = GetOrderTypeFromString(orders[i]["type"].ToString());
                         order.Status = GetOrderStatus(orders[i]["status"].ToString());
                         order.TradingPair = orders[i]["symbol"].ToString();
+                        order.CreatDate = CommonLab.TimerHelper.ConvertStringToDateTime(Convert.ToDouble(orders[i]["create_date"].ToString()) / 1000);
                         orders_array.Add(order);
                     }
                     return orders_array;
@@ -613,6 +650,6 @@ namespace KFCC.EOkCoin
             throw new NotImplementedException();
         }
 
-       
+
     }
 }

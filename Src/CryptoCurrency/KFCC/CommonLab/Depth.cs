@@ -21,6 +21,7 @@ namespace CommonLab
 
         public double ExchangeTimeStamp;//时间戳 交易所返回的
         public double LocalServerTimeStamp;//本地时间戳
+        public double Delay;//延迟毫秒数
         public Depth()
         {
             Asks = new List<MarketOrder>();

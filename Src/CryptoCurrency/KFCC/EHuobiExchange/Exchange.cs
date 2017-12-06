@@ -127,6 +127,7 @@ namespace KFCC.EHuobiExchange
 
         public Ticker GetTicker(string tradingpair, out string rawresponse)
         {
+            DateTime st = DateTime.Now;
             //throw new NotImplementedException();
             string url = ApiUrl+ "/market/detail/merged?symbol="+tradingpair;
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
@@ -144,6 +145,7 @@ namespace KFCC.EHuobiExchange
                 t.Open = Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
                 t.ExchangeTimeStamp = Convert.ToDouble(obj["ts"].ToString())/1000;
                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                t.Delay = (DateTime.Now - st).TotalMilliseconds;
                 UpdateTicker(tradingpair, t);
             }
             catch(Exception e)
@@ -155,6 +157,7 @@ namespace KFCC.EHuobiExchange
 
         public Depth GetDepth(string tradingpair, out string rawresponse)
         {
+            DateTime st = DateTime.Now;
             string url = ApiUrl+ "/market/depth?symbol="+tradingpair+"&type=step0";
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
             CommonLab.Depth d = new Depth();
@@ -180,14 +183,20 @@ namespace KFCC.EHuobiExchange
             }
             d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"])/1000;// Convert.ToDouble(obj["timestamp"].ToString());
             d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            d.Delay = (DateTime.Now - st).TotalMilliseconds;
             UpdateDepth(tradingpair, d);
             return d;
         }
-        /// <summary>
-        /// 更新深度数据
-        /// </summary>
-        /// <param name="d"></param>
-        protected void UpdateDepth(string tradingpair, Depth d)
+        public Trade[] GetTrades(string tradepair, out string rawresponse, string since = "0")
+        {
+            rawresponse = "";
+            return null;
+        }
+            /// <summary>
+            /// 更新深度数据
+            /// </summary>
+            /// <param name="d"></param>
+            protected void UpdateDepth(string tradingpair, Depth d)
         {
             if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {

@@ -19,7 +19,7 @@ namespace CommonLab
         public double Open;//开盘价
         public double ExchangeTimeStamp;//时间戳 交易所返回的
         public double LocalServerTimeStamp;//本地时间戳
-
+        public double Delay;
         public void UpdateTickerBuyTrade(Trade t)
         {
             Last = t.Price;
@@ -68,6 +68,24 @@ namespace CommonLab
         public double LocalServerTimeStamp;//本地时间戳
         public string BuyOrderID;//成交的交易号
         public string SellOrderID;//成交的交易号
+       
+        static public TradeType GetType(string t)
+        {
+            if (t == "buy")
+                return TradeType.Buy;
+            else
+                return TradeType.Sell;
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("-------------------------------------\r\n");
+            sb.Append("成交时间:" + TimerHelper.ConvertStringToDateTime(ExchangeTimeStamp).ToLocalTime().ToString()+"\r\n");
+            sb.Append("交易ID:"+TradeID+"类别:"+ Type.ToString()+"\r\n");
+            sb.Append("价格:" + Price.ToString() + "   数量:" + Amount.ToString() + "\r\n");
+            return sb.ToString();
+
+        }
     }
     public enum TradeType
     {

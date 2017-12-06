@@ -34,11 +34,18 @@ namespace Test
             //测试获取ticker 获取depth
             #region 交易所Okex现货测试
 
-            //KFCC.ExchangeInterface.IExchanges exchange = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
+            KFCC.ExchangeInterface.IExchanges exchange = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
             //exchange.Subscribe(tp, CommonLab.SubscribeTypes.WSS);
             ////CommonLab.Ticker t=exchange.GetTicker(exchange.GetLocalTradingPairString(tp),out raw);
             //exchange.TickerEvent += Exchange_TickerEvent;
             //exchange.DepthEvent += Exchange_DepthEvent;
+            CommonLab.Trade[] trades=exchange.GetTrades(exchange.GetLocalTradingPairString(tp), out raw, "54892004");
+            foreach (CommonLab.Trade t in trades)
+            {
+                Console.WriteLine(t.ToString());
+            }
+            Console.WriteLine(trades.Length.ToString());
+            //Console.WriteLine(raw);
             #endregion
             //测试获取账户信息
             //Console.WriteLine(raw);
@@ -50,10 +57,10 @@ namespace Test
             //Console.WriteLine(raw);
             #region 交易所huobi测试
 
-            KFCC.EHuobiExchange.HuobiExchange exchange = new KFCC.EHuobiExchange.HuobiExchange("cbf0909f-7842f68b-8c0db43c-04172", "7e022c00-19e4e4a8-2b3ed1d9-312e0", "0", "caojia");
-            exchange.Subscribe(tp, CommonLab.SubscribeTypes.WSS);
-            exchange.TickerEvent += Exchange_TickerEvent;
-            exchange.DepthEvent += Exchange_DepthEvent;
+            //KFCC.EHuobiExchange.HuobiExchange exchange = new KFCC.EHuobiExchange.HuobiExchange("cbf0909f-7842f68b-8c0db43c-04172", "7e022c00-19e4e4a8-2b3ed1d9-312e0", "0", "caojia");
+            //exchange.Subscribe(tp, CommonLab.SubscribeTypes.WSS);
+            //exchange.TickerEvent += Exchange_TickerEvent;
+            //exchange.DepthEvent += Exchange_DepthEvent;
             //exchange.GetAccount(out raw);
             //Console.WriteLine(exchange.Account.ToString(true));
             //CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);

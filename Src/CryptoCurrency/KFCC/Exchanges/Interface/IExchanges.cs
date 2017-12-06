@@ -91,10 +91,19 @@ namespace KFCC.ExchangeInterface
         /// <returns></returns>
         CommonLab.Depth GetDepth(string tradepair, out string rawresponse);
         /// <summary>
+        /// 返回市场交易记录
+        /// </summary>
+        /// <param name="tradepair"></param>
+        /// <param name="rawresponse"></param>
+        /// <param name="since">从什么id开始的</param>
+        /// <returns></returns>
+        CommonLab.Trade[] GetTrades(string tradepair, out string rawresponse,string since="0");
+        /// <summary>
         /// 通过交易对获取公开市场信息api的url 主要用于GET方式取得数据资源
         /// </summary>
         /// <param name="tradingpair"></param>
         /// <returns></returns>
+
         string GetPublicApiURL(string tradepair, string method);
 
         /// <summary>

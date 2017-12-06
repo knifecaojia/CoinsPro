@@ -18,7 +18,7 @@ namespace CommonLab
         public OrderStatus Status;//	:订单状态, 参考常量里的订单状态
         public OrderType Type;//	:订单类型, 参考常量里的订单类型
         public string TradingPair;//交易对儿，Symbol
-
+        public DateTime CreatDate;//交易生成时间
        
        
     }
