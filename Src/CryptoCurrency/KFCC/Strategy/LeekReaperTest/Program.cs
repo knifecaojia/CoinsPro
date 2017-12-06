@@ -31,6 +31,7 @@ namespace LeekReaperTest
         static Thread BalanceThread;
         static Thread CancelOrderThread;
         static Account startaccount = null;
+        static bool IsBalance = false;
         static void Main(string[] args)
         {
             log = new Log(DateTime.Now.ToString("yyyyMMddHHmmss")+".txt");
@@ -88,12 +89,13 @@ namespace LeekReaperTest
         static void BalanceAccount()
         {
             string raw;
-
+            DateTime ds = DateTime.Now;
             while (true)
             {
                 try
 
                 {
+                   
                     account = exchange.GetAccount(out raw);
                     if (startaccount == null)
                         startaccount = account.Clone();
@@ -106,45 +108,65 @@ namespace LeekReaperTest
                     double p = FromSymbolFree / (ToSymbolFree / prices[prices.Count - 1] + FromSymbolFree);
                     if (p < 0.4)
                     {
+                        IsBalance = true;
                         log.log("Balance：" + FromSymbol + " / (" + FromSymbol + " + " + ToSymbol + ") Pencent is " + p.ToString() + " < 0.4 Start BUY.");
                         Console.WriteLine(FromSymbol + "/(" + FromSymbol + "+" + ToSymbol + ") Pencent is" + p.ToString() + "<0.4 Start BUY.");
                         double p1, p2, p3;
-                        p1 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.7);
-                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.5);
-                        p3 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.3);
+                        p1 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.6995);
+                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.4995);
+                        p3 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.2995);
                         if (p1 >= OrderBook.Asks[0].Price)
                             p1 = OrderBook.Bids[0].Price;
                         if (p2 >= OrderBook.Asks[0].Price)
                             p2 = OrderBook.Bids[0].Price;
                         if (p3 >= OrderBook.Asks[0].Price)
                             p3 = OrderBook.Bids[0].Price;
-                        int oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p1, 0.01);
-                        log.log("Trading:Balance BUY price:" + p1 + " orderbook sell at:"+OrderBook.Asks[0].Price+" amount:" + 0.01 + " orderid:" + oid);
-                        oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p2, 0.01);
-                        log.log("Trading:Balance BUY price:" + p2 + " orderbook sell at:" + OrderBook.Asks[0].Price + " amount:" + 0.01 + " orderid:" + oid);
-                        oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p3, 0.01);
-                        log.log("Trading:Balance BUY price:" + p3 + " orderbook sell at:" + OrderBook.Asks[0].Price + " amount:" + 0.01 + " orderid:" + oid);
-                    }
+                        try
+                        {
+                            int oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p1, 0.5);
+                            log.log("Trading:Balance BUY price:" + p1 + " orderbook sell at:" + OrderBook.Asks[0].Price + " amount:" + 0.01 + " orderid:" + oid);
+                            oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p2, 0.5);
+                            log.log("Trading:Balance BUY price:" + p2 + " orderbook sell at:" + OrderBook.Asks[0].Price + " amount:" + 0.01 + " orderid:" + oid);
+                            oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p3, 0.5);
+                            log.log("Trading:Balance BUY price:" + p3 + " orderbook sell at:" + OrderBook.Asks[0].Price + " amount:" + 0.01 + " orderid:" + oid);
+                        }
+                        catch
+                        { }
+                        }
+
+
                     if (p > 0.6)
                     {
+                        IsBalance = true;
                         log.log("Balance：" + FromSymbol + "/(" + FromSymbol + "+" + ToSymbol + ") Pencent is" + p.ToString() + ">0.6 Start SELL.");
                         Console.WriteLine(FromSymbol + "/(" + FromSymbol + "+" + ToSymbol + ") Pencent is" + p.ToString() + ">0.6 Start SELL.");
                         double p1, p2, p3;
-                        p3 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.7);
-                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.5);
-                        p1 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.3);
+                        p3 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.6995);
+                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.4995);
+                        p1 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.2995);
                         if (p1 <= OrderBook.Bids[0].Price)
                             p1 = OrderBook.Asks[0].Price;
                         if (p2 >= OrderBook.Bids[0].Price)
                             p2 = OrderBook.Asks[0].Price;
                         if (p3 >= OrderBook.Bids[0].Price)
                             p3 = OrderBook.Asks[0].Price;
-                        int oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p1, 0.01);
-                        log.log("Trading:Balance SELL price:" + p1 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
-                        oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p2, 0.01);
-                        log.log("Trading:Balance SELL price:" + p2 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
-                        oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p3, 0.01);
-                        log.log("Trading:Balance SELL price:" + p3 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
+                        try
+                        {
+                            int oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p1, 0.5);
+                            log.log("Trading:Balance SELL price:" + p1 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
+                            oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p2, 0.5);
+                            log.log("Trading:Balance SELL price:" + p2 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
+                            oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p3, 0.5);
+                            log.log("Trading:Balance SELL price:" + p3 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
+                        }
+                        catch
+                        { }
+                    }
+                    
+
+                    if (p >= 0.4 && p <= 0.6)
+                    {
+                        IsBalance = false;
                     }
                     double snet = startaccount.Balances[FromSymbol.ToLower()].balance + startaccount.Balances[ToSymbol.ToLower()].balance / OrderBook.Asks[0].Price;
                     double nnet= account.Balances[FromSymbol.ToLower()].balance + account.Balances[ToSymbol.ToLower()].balance / OrderBook.Asks[0].Price;
@@ -152,7 +174,15 @@ namespace LeekReaperTest
                     cp = cp * 100;
                     log.log("Start " + FromSymbol + ": " + startaccount.Balances[FromSymbol.ToLower()].balance + " | " + ToSymbol + ": " + startaccount.Balances[ToSymbol.ToLower()].balance + "Net:" + snet + "Now " + FromSymbol + ": " + account.Balances[FromSymbol.ToLower()].balance + " | " + ToSymbol + ": " + account.Balances[ToSymbol.ToLower()].balance + " Net:" + nnet + " " + cp + "%");
                     Console.WriteLine("Start " + FromSymbol + ": " + startaccount.Balances[FromSymbol.ToLower()].balance + " | " + ToSymbol + ": " + startaccount.Balances[ToSymbol.ToLower()].balance + "Net:"+snet+  "Now " + FromSymbol + ": " + account.Balances[FromSymbol.ToLower()].balance + " | " + ToSymbol + ": " + account.Balances[ToSymbol.ToLower()].balance+" Net:"+nnet+" "+cp+"%");
-                    Thread.Sleep(BalanceTimeMinsec);
+                    //Thread.Sleep(BalanceTimeMinsec);
+                    while (true)
+                    {
+                        if ((DateTime.Now - ds).TotalSeconds < 10)
+                            continue;
+                        else
+                        { ds = DateTime.Now;break; }
+                        
+                    }
                     exchange.CancelAllOrders();
                 }
                 catch (Exception e)
@@ -165,17 +195,22 @@ namespace LeekReaperTest
         static void CancelOldOrders()
         {
             string raw;
-            List<Order> Orders = ((KFCC.EOkCoin.OkCoinExchange)exchange).GetOrdersStatus(exchange.GetLocalTradingPairString(tradepair), out raw);
-            if (Orders == null || Orders.Count == 0)
-                return;
-            foreach (Order o in Orders)
+            try
             {
-                if ((DateTime.Now - o.CreatDate.ToLocalTime()).TotalSeconds > 20)
+                List<Order> Orders = ((KFCC.EOkCoin.OkCoinExchange)exchange).GetOrdersStatus(exchange.GetLocalTradingPairString(tradepair), out raw);
+                if (Orders == null || Orders.Count == 0)
+                    return;
+                foreach (Order o in Orders)
                 {
-                    exchange.CancelOrder(o.Id, exchange.GetLocalTradingPairString(tradepair), out raw);
+                    if ((DateTime.Now - o.CreatDate.ToLocalTime()).TotalSeconds > 20)
+                    {
+                        exchange.CancelOrder(o.Id, exchange.GetLocalTradingPairString(tradepair), out raw);
+                    }
                 }
+                Thread.Sleep(60000);
             }
-            Thread.Sleep(60000);
+            catch
+            { }
         }
         static int numTick = 0;
         static double BurstThresholdPct = 0.00005;
@@ -245,7 +280,11 @@ namespace LeekReaperTest
                     Thread.Sleep(300);
                     continue; 
                 }
-
+                if(IsBalance)
+                {
+                    Thread.Sleep(300);
+                    continue;
+                }
                 double[] da = prices.ToArray();
                 double[] da1 = new double[14];
                 Array.Copy(da, 0, da1, 0, 14);
@@ -266,10 +305,16 @@ namespace LeekReaperTest
                     tradePrice = askPrice;
                 while (tradeamount >= MinTradeAmount)
                 {
+                    if (IsBalance)
+                    {
+                        Thread.Sleep(300);
+                        continue;
+                    }
                     string raw;
                     int orderid=0;
                     try
                     {
+
                         if (bull&&tradeamount<account.Balances[FromSymbol.ToLower()].available)
                         {
                             orderid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), bidPrice, tradeamount);
@@ -283,7 +328,8 @@ namespace LeekReaperTest
                     }
                     catch(Exception e)
                     {
-                        log.log("error:" + e.Message);
+                        Console.WriteLine("error:" + e.Message);
+                        //log.log("error:" + e.Message);
                     }
 
                     Thread.Sleep(200);
