@@ -18,18 +18,43 @@ namespace HFTS_OKEX_Maker_Test
         static CommonLab.Account sa = null;
         static double ba = 1;//卖单深度
         static double aa = 1;//买单深度
-       
+        static CommonLab.TradeCacheManage tradeCacheManage;
+        static bool Bull = false;
+        static bool Bear = false;
+        static DateTime StartTime = DateTime.Now;
+        static int CacheMinuts=5;//平滑窗口分钟数
+        static Thread tradeThread;
         static void Main(string[] args)
         {
             #region 交易所Okex现货测试
-
+            tradeCacheManage = new CommonLab.TradeCacheManage(CacheMinuts);
             exchange = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
             exchange.Subscribe(tp, CommonLab.SubscribeTypes.RESTAPI);
+            exchange.Subscribe(new CommonLab.TradePair("btc","usdt"),CommonLab.SubscribeTypes.WSS);
+            exchange.TradeEvent += Exchange_TradeEvent;
+            exchange.TickerEvent += Exchange_TickerEvent;
+            tradeThread = new Thread(Trade);
+            tradeThread.IsBackground = true;
+            tradeThread.Start();
+            Console.ReadKey();
+            //exchange.TickerEvent += Exchange_TickerEvent;
+            //exchange.DepthEvent += Exchange_DepthEvent;
+            #endregion
+        }
+        static void Trade()
+        {
+
             while (true)
             {
+                if ((DateTime.Now - StartTime).TotalMinutes < CacheMinuts)
+                {
+                    Thread.Sleep(1000);
+                    continue;
+                }
+
                 try
                 {
-                    if (DateTime.Now.Hour == 14)
+                    if (DateTime.Now.Hour == 8)
                     {
                         Console.WriteLine("时间到了，看看效果吧");
                         Console.ReadKey();
@@ -38,7 +63,7 @@ namespace HFTS_OKEX_Maker_Test
 
                     string raw = "";
                     CommonLab.Depth d = exchange.GetDepth(exchange.GetLocalTradingPairString(tp), out raw);
-                    //Console.WriteLine(d.ToString(10));
+                    Console.WriteLine(d.ToString(10));
                     double bprice = d.CaculateDepth(CommonLab.OrderType.ORDER_TYPE_BUY, ba);
                     double sprice = d.CaculateDepth(CommonLab.OrderType.ORDER_TYPE_SELL, aa);
                     double diff = sprice - bprice;
@@ -56,7 +81,9 @@ namespace HFTS_OKEX_Maker_Test
                     }
 
                     if (exchange.CancelAllOrders())
+                    {
                         continue;
+                    }
 
 
 
@@ -69,7 +96,7 @@ namespace HFTS_OKEX_Maker_Test
                     canbuyamout = Math.Min(canbuyamout, ba);
                     cansellamount = Math.Min(cansellamount, aa);
 
-                    Console.WriteLine("下单买：{0} 下单卖{1} ，差价：{2} 账户可卖：{3} 账户可买：{4}", bprice, sprice, diff.ToString("F8"), cansellamount, canbuyamout);
+                    Console.WriteLine("buy:{0} sell:{1} ，diff:{2} account c-sell：{3} c-buy：{4}", bprice, sprice, diff.ToString("F8"), cansellamount, canbuyamout);
                     double sltc, nltc, cp;
                     sltc = sa.Balances[tp.FromSymbol].balance + sa.Balances[tp.ToSymbol].balance / d.Asks[0].Price;
                     nltc = account.Balances[tp.FromSymbol].balance + account.Balances[tp.ToSymbol].balance / d.Asks[0].Price;
@@ -79,39 +106,53 @@ namespace HFTS_OKEX_Maker_Test
                     sbtc = sa.Balances[tp.ToSymbol].balance + sa.Balances[tp.FromSymbol].balance * d.Bids[0].Price;
                     nbtc = account.Balances[tp.ToSymbol].balance + account.Balances[tp.FromSymbol].balance * d.Bids[0].Price;
                     bcp = 100 * nbtc / sbtc;
-                    Console.WriteLine("初始LTC:{0} 当前LTC:{1} 变化:{2}%  初始BTC:{3} 当前BTC:{4}变化:{2}% ", sltc, nltc, cp.ToString("f4"), sbtc, nbtc, bcp.ToString("f4"));
+                    Console.WriteLine("sLTC:{0} nLTC:{1} diff:{2}%  sBTC:{3} nBTC:{4} diff:{2}% ", sltc, nltc, cp.ToString("f4"), sbtc, nbtc, bcp.ToString("f4"));
+                    int sorder = 0, border = 0;
 
-                    if (Math.Min(canbuyamout, cansellamount) > 0.01)
-                    {
-                        exchange.Sell(tp.FromSymbol + "_" + tp.ToSymbol, sprice, cansellamount);
-                        exchange.Buy(tp.FromSymbol + "_" + tp.ToSymbol, bprice, canbuyamout);
-                        Thread.Sleep(3500);
-                    }
-                    else if (canbuyamout <= 0.01)
-                    {
-                        exchange.Sell(tp.FromSymbol + "_" + tp.ToSymbol, d.Asks[0].Price, cansellamount);
-                        Thread.Sleep(10000);
-                    }
-                    else if (cansellamount <= 0.01)
-                    {
-                        exchange.Buy(tp.FromSymbol + "_" + tp.ToSymbol, d.Bids[0].Price, canbuyamout);
-                        Thread.Sleep(10000);
-                    }
+                    if (Bull && cansellamount > 0.01)
+                        sorder = exchange.Sell(tp.FromSymbol + "_" + tp.ToSymbol, sprice, cansellamount);
+                    if (Bear && canbuyamout > 0.01)
+                        border = exchange.Buy(tp.FromSymbol + "_" + tp.ToSymbol, bprice, canbuyamout);
+                    Thread.Sleep(1500);
+
+
+
+
 
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                     Thread.Sleep(3000);
                 }
 
-             
-             
-              
+
+
+
             }
-            //exchange.TickerEvent += Exchange_TickerEvent;
-            //exchange.DepthEvent += Exchange_DepthEvent;
-            #endregion
+        }
+        private static void Exchange_TickerEvent(object sender, CommonLab.Ticker t, CommonLab.EventTypes et, CommonLab.TradePair tp)
+        {
+            Console.BackgroundColor = ConsoleColor.DarkBlue;
+            if (t.Last > tradeCacheManage.Avg())
+            {
+                Console.WriteLine("5mins Avg:{0},Last price:{1} BULL", tradeCacheManage.Avg(), t.Last);
+                Bull = true;
+                Bear = false;
+            }
+            else
+            {
+                Console.WriteLine("5mins Avg:{0},Last price:{1} BEAR", tradeCacheManage.Avg(), t.Last);
+                Bull = false;
+                Bear = true;
+            }
+            Console.BackgroundColor = ConsoleColor.Black;
+        }
+
+        private static void Exchange_TradeEvent(object sender, CommonLab.Trade t, CommonLab.EventTypes et, CommonLab.TradePair tp)
+        {
+            tradeCacheManage.Add(t);
+            //Console.WriteLine("tradeCacheManage- Count:{0},AvgPrice{1}",tradeCacheManage.Trades.Count,tradeCacheManage.Avg());
         }
     }
 }

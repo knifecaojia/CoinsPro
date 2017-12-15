@@ -135,6 +135,7 @@ namespace KFCC.EHuobiExchange
                         if (ch.IndexOf("depth") > 0) //深度数据
                         {
                             JArray jasks = JArray.Parse(obj["tick"]["asks"].ToString());
+                            _tradinginfo.d.Asks = new List<MarketOrder>();
                             for (int i = 0; i < jasks.Count; i++)
                             {
                                 MarketOrder m = new MarketOrder();
@@ -144,6 +145,7 @@ namespace KFCC.EHuobiExchange
                             }
 
                             JArray jbids = JArray.Parse(obj["tick"]["bids"].ToString());
+                            _tradinginfo.d.Bids = new List<MarketOrder>();
                             for (int i = 0; i < jbids.Count; i++)
                             {
                                 MarketOrder m = new MarketOrder();

@@ -217,9 +217,14 @@ namespace Hedge
             if (!this.Tp.Compare(tp))
                 return;
             double msecs = (DateTime.Now.TimeOfDay.TotalMilliseconds - _StartMilliseconds)/1000;
-            _TimeSeries[((IExchanges)sender).Name].SeriesPoints.Add(new SeriesPoint(msecs, d.Asks[0].Price*100));
-            if (_ChartXy != null && msecs > 6000)
-                _ChartXy.AxisX.MinValue = msecs - 6000;
+            try
+            {
+                _TimeSeries[((IExchanges)sender).Name].SeriesPoints.Add(new SeriesPoint(msecs, d.Asks[0].Price * 100));
+                if (_ChartXy != null && msecs > 6000)
+                    _ChartXy.AxisX.MinValue = msecs - 6000;
+            }
+            catch
+            { }
         }
 
         private void Value_TickerEvent(object sender, CommonLab.Ticker t, CommonLab.EventTypes et, CommonLab.TradePair tp)

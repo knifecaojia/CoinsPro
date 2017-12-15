@@ -49,6 +49,7 @@ namespace KFCC.EBitstamp
 
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
+        public event ExchangeEventWarper.TradeEventHander TradeEvent;
         public BitstampExchange()
         {
 
@@ -297,6 +298,9 @@ namespace KFCC.EBitstamp
             throw new NotImplementedException();
         }
 
-
+        public List<Order> GetHisOrders(string tradingpair)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -39,6 +39,8 @@ namespace KFCC.EOkCoin
 
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
+        public event ExchangeEventWarper.TradeEventHander TradeEvent;
+
         public OkCoinExchange(string key, string secret, string uid, string username)
         {
             _key = key;
@@ -109,13 +111,18 @@ namespace KFCC.EOkCoin
 
         private void OkCoinExchange_TradeInfoEvent(TradingInfo ti, TradeEventType tt)
         {
-            if (TickerEvent != null && tt == TradeEventType.TRADE)
+            if (TickerEvent != null && tt == TradeEventType.TICKER)
             {
                 TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tp);
             }
             if (DepthEvent != null && tt == TradeEventType.ORDERS)
             {
                 DepthEvent(this, ti.d, (CommonLab.EventTypes)ti.type, ti.tp);
+            }
+            if (TradeEvent != null && tt == TradeEventType.TRADE)
+            {
+                TradeEvent(this, ti.trade, (CommonLab.EventTypes)ti.type, ti.tp);
+                
             }
         }
 
@@ -316,7 +323,7 @@ namespace KFCC.EOkCoin
             {
                 if (t.FromSymbol.ToLower() == "btc" && t.ToSymbol.ToLower() == "usd")
                     return "";
-                return "_" + t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
+                return t.FromSymbol.ToLower()+"_" + t.ToSymbol.ToLower();
             }
             else if (st == SubscribeTypes.RESTAPI)
             {
@@ -442,6 +449,134 @@ namespace KFCC.EOkCoin
             return order;
 
         }
+        public List<Order> GetHisOrders(string tradingpair)
+        {
+            CheckSet();
+            string rawresponse;
+            Order order = null;
+            List<Order> orders_array = new List<Order>();
+            string url = GetPublicApiURL("", "order_history.do");
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            int page = 1;
+            RestRequest rr = new RestRequest(Method.POST);
+            rr.AddParameter("api_key", _key);
+            rr.AddParameter("symbol", tradingpair);
+            rr.AddParameter("status", 1);
+            rr.AddParameter("current_page", page);
+            rr.AddParameter("page_length", 200);
+
+            Dictionary<String, String> paras = new Dictionary<String, String>();
+            paras.Add("api_key", _key);
+            paras.Add("symbol", tradingpair);
+            paras.Add("status", "1");
+            paras.Add("current_page", page.ToString());
+     
+            paras.Add("page_length", "200");
+            String sign = MD5Util.buildMysignV1(paras, _secret);
+            rr.AddParameter("sign", sign);
+            var response = new RestClient(url).Execute(rr);
+
+            int total;
+            int totalpage = 0;
+            rawresponse = response.Content;
+            try
+            {
+                JObject obj = JObject.Parse(rawresponse);
+                if (obj.Property("error_code") != null)
+                    throw (new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
+                if (!Convert.ToBoolean(obj["result"]))
+                {
+                    throw (new Exception("error:" + rawresponse));
+                }
+                JArray orders = JArray.Parse(obj["orders"].ToString());
+                total=Convert.ToInt32(obj["total"].ToString());
+                totalpage = total / 200+1;
+                if (orders.Count > 0)
+                {
+                    
+                    for (int i = 0; i < orders.Count; i++)
+                    {
+
+
+                        order = new Order();
+                        order.Id = orders[i]["order_id"].ToString();
+                        order.Amount = Convert.ToDouble(orders[i]["amount"].ToString());
+                        order.DealAmount = Convert.ToDouble(orders[i]["deal_amount"].ToString());
+                        order.Price = Convert.ToDouble(orders[i]["price"].ToString());
+                        order.Type = GetOrderTypeFromString(orders[i]["type"].ToString());
+                        order.Status = GetOrderStatus(orders[i]["status"].ToString());
+                        order.TradingPair = orders[i]["symbol"].ToString();
+                        order.CreatDate = CommonLab.TimerHelper.ConvertStringToDateTime(Convert.ToDouble(orders[i]["create_date"].ToString()) / 1000);
+                        orders_array.Add(order);
+                    }
+                   
+                }
+                for (page = 2; page <= totalpage; page++)
+                {
+                    rr.Parameters.Clear();
+                    paras.Clear();
+                    rr.AddParameter("api_key", _key);
+                    rr.AddParameter("symbol", tradingpair);
+                    rr.AddParameter("status", 1);
+                    rr.AddParameter("current_page", page);
+                    rr.AddParameter("page_length", 200);
+
+                   
+                    paras.Add("api_key", _key);
+                    paras.Add("symbol", tradingpair);
+                    paras.Add("status", "1");
+                    paras.Add("current_page", page.ToString());
+
+                    paras.Add("page_length", "200");
+                    sign = MD5Util.buildMysignV1(paras, _secret);
+                    rr.AddParameter("sign", sign);
+                    response = new RestClient(url).Execute(rr);
+
+                   
+                    rawresponse = response.Content;
+                    obj = JObject.Parse(rawresponse);
+                    if (obj.Property("error_code") != null)
+                        throw (new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
+                    if (!Convert.ToBoolean(obj["result"]))
+                    {
+                        throw (new Exception("error:" + rawresponse));
+                    }
+                    orders = JArray.Parse(obj["orders"].ToString());
+                    if (orders.Count > 0)
+                    {
+                       
+                        for (int i = 0; i < orders.Count; i++)
+                        {
+
+
+                            order = new Order();
+                            order.Id = orders[i]["order_id"].ToString();
+                            order.Amount = Convert.ToDouble(orders[i]["amount"].ToString());
+                            order.DealAmount = Convert.ToDouble(orders[i]["deal_amount"].ToString());
+                            order.Price = Convert.ToDouble(orders[i]["price"].ToString());
+                            order.Type = GetOrderTypeFromString(orders[i]["type"].ToString());
+                            order.Status = GetOrderStatus(orders[i]["status"].ToString());
+                            order.TradingPair = orders[i]["symbol"].ToString();
+                            order.CreatDate = CommonLab.TimerHelper.ConvertStringToDateTime(Convert.ToDouble(orders[i]["create_date"].ToString()) / 1000);
+                            orders_array.Add(order);
+                        }
+
+                    }
+                }
+                return orders_array;
+
+            }
+            catch (Exception e)
+            {
+                Exception err = new Exception("订单获取解析json失败" + e.Message);
+                throw err;
+            }
+      
+        }
         public List<Order> GetOrdersStatus(string tradingpair, out string rawresponse)
         {
             CheckSet();
@@ -470,6 +605,8 @@ namespace KFCC.EOkCoin
             try
             {
                 JObject obj = JObject.Parse(rawresponse);
+                if(obj.Property("error_code")!=null)
+                    throw (new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
                 if (!Convert.ToBoolean(obj["result"]))
                 {
                     throw (new Exception("error:" + rawresponse));

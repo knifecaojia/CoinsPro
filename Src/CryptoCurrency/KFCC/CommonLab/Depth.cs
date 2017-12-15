@@ -85,7 +85,7 @@ namespace CommonLab
         }
         public string ToString(int count=3)
         {
-            string bids = "bids:";
+            string bids = "delay:"+Delay+"ms bids:";
             if (count > (Math.Min(Asks.Count, Bids.Count)))
             {
                 count = Math.Min(Asks.Count, Bids.Count);

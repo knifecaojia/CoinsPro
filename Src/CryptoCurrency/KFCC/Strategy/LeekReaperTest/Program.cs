@@ -32,10 +32,12 @@ namespace LeekReaperTest
         static Thread CancelOrderThread;
         static Account startaccount = null;
         static bool IsBalance = false;
+        static List<Trade> TradeBook;
         static void Main(string[] args)
         {
             log = new Log(DateTime.Now.ToString("yyyyMMddHHmmss")+".txt");
             prices = new List<double>(15);
+            TradeBook = new List<Trade>();
             for (int i = 0; i < 15; i++)
             {
                 prices.Add(0);
@@ -45,11 +47,39 @@ namespace LeekReaperTest
             ToSymbol = "BTC";
             tradepair = new TradePair(FromSymbol, ToSymbol);
             exchange = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
-            exchange.Subscribe(tradepair, CommonLab.SubscribeTypes.RESTAPI);
+            exchange.Subscribe(tradepair, CommonLab.SubscribeTypes.WSS);
+            exchange.TradeEvent += Exchange_TradeEvent;
+            exchange.DepthEvent += Exchange_DepthEvent;
             
             MainLoop();
             Console.ReadKey();
         }
+
+        private static void Exchange_DepthEvent(object sender, Depth d, EventTypes et, TradePair tp)
+        {
+            OrderBook = d;
+            bidPrice = OrderBook.Bids[0].Price * 0.618 + OrderBook.Asks[0].Price * 0.382;//需要调整价格
+            askPrice = OrderBook.Bids[0].Price * 0.382 + OrderBook.Asks[0].Price * 0.618;
+
+            //prices = prices[1.. - 1] + [(
+            //    (orderBook.bids[0].limitPrice + orderBook.asks[0].limitPrice) / 2 * 0.7 +
+            //    (orderBook.bids[1].limitPrice + orderBook.asks[1].limitPrice) / 2 * 0.2 +
+            //    (orderBook.bids[2].limitPrice + orderBook.asks[2].limitPrice) / 2 * 0.1)]
+            prices.RemoveAt(0);
+            prices.Add(((OrderBook.Bids[0].Price + OrderBook.Asks[0].Price) / 2 * 0.7) + ((OrderBook.Bids[1].Price + OrderBook.Asks[1].Price) / 2 * 0.2) + ((OrderBook.Bids[2].Price + OrderBook.Asks[2].Price) / 2 * 0.1));
+            
+        }
+
+        private static void Exchange_TradeEvent(object sender, Trade t, EventTypes et, TradePair tp)
+        {
+
+            if (TradeBook.Count == 15)
+                TradeBook.RemoveAt(0);
+            TradeBook.Add(t);
+            Vol = 0.7 * Vol + 0.3 * t.Amount;
+            LastTradeID = Convert.ToInt32(t.TradeID);
+        }
+
         static void UpdateTrades()
         {
             string raw = "";
@@ -106,15 +136,15 @@ namespace LeekReaperTest
                     FromSymbolFree = account.Balances[FromSymbol.ToLower()].balance;
                     ToSymbolFree = account.Balances[ToSymbol.ToLower()].balance;
                     double p = FromSymbolFree / (ToSymbolFree / prices[prices.Count - 1] + FromSymbolFree);
-                    if (p < 0.4)
+                    if (p < 0.2)
                     {
                         IsBalance = true;
                         log.log("Balance：" + FromSymbol + " / (" + FromSymbol + " + " + ToSymbol + ") Pencent is " + p.ToString() + " < 0.4 Start BUY.");
                         Console.WriteLine(FromSymbol + "/(" + FromSymbol + "+" + ToSymbol + ") Pencent is" + p.ToString() + "<0.4 Start BUY.");
                         double p1, p2, p3;
-                        p1 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.6995);
-                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.4995);
-                        p3 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.2995);
+                        p1 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.7);
+                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.5);
+                        p3 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.3);
                         if (p1 >= OrderBook.Asks[0].Price)
                             p1 = OrderBook.Bids[0].Price;
                         if (p2 >= OrderBook.Asks[0].Price)
@@ -135,15 +165,15 @@ namespace LeekReaperTest
                         }
 
 
-                    if (p > 0.6)
+                    if (p > 0.8)
                     {
                         IsBalance = true;
                         log.log("Balance：" + FromSymbol + "/(" + FromSymbol + "+" + ToSymbol + ") Pencent is" + p.ToString() + ">0.6 Start SELL.");
                         Console.WriteLine(FromSymbol + "/(" + FromSymbol + "+" + ToSymbol + ") Pencent is" + p.ToString() + ">0.6 Start SELL.");
                         double p1, p2, p3;
-                        p3 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.6995);
-                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.4995);
-                        p1 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.2995);
+                        p3 = (OrderBook.Asks[0].Price * 0.3 + OrderBook.Bids[0].Price * 0.7);
+                        p2 = (OrderBook.Asks[0].Price * 0.5 + OrderBook.Bids[0].Price * 0.5);
+                        p1 = (OrderBook.Asks[0].Price * 0.7 + OrderBook.Bids[0].Price * 0.3);
                         if (p1 <= OrderBook.Bids[0].Price)
                             p1 = OrderBook.Asks[0].Price;
                         if (p2 >= OrderBook.Bids[0].Price)
@@ -164,7 +194,7 @@ namespace LeekReaperTest
                     }
                     
 
-                    if (p >= 0.4 && p <= 0.6)
+                    if (p >= 0.2 && p <= 0.8)
                     {
                         IsBalance = false;
                     }
@@ -188,6 +218,7 @@ namespace LeekReaperTest
                 catch (Exception e)
                 {
                     log.log("error:" + e.Message);
+                    Console.WriteLine("Balance account error:" + e.Message);
                 }
             }
         
@@ -227,8 +258,8 @@ namespace LeekReaperTest
             BalanceThread.Start();
             for (numTick = 0; ; numTick++)
             {
-                UpdateTrades();
-                UpdateOrderBook();
+                //UpdateTrades();
+                //UpdateOrderBook();
                
                 bool bull = false, bear = false;
                 double tradeamount = 0;
@@ -319,11 +350,13 @@ namespace LeekReaperTest
                         {
                             orderid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), bidPrice, tradeamount);
                             log.log("Trading:BUY price:" + bidPrice + " amount:" + tradeamount + " orderid:" + orderid);
+                            Console.WriteLine("Trading:BUY price:" + bidPrice + " amount:" + tradeamount + " orderid:" + orderid);
                         }
                         else if(tradeamount < account.Balances[ToSymbol.ToLower()].available/ askPrice)
                         {
                             orderid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), askPrice, tradeamount);
                             log.log("Trading:SELL price:" + askPrice + " amount:" + tradeamount + " orderid:" + orderid);
+                            Console.WriteLine("Trading:SELL price:" + askPrice + " amount:" + tradeamount + " orderid:" + orderid);
                         }
                     }
                     catch(Exception e)
@@ -356,7 +389,8 @@ namespace LeekReaperTest
                         tradeamount *= 0.9;
                         if (o.Status == OrderStatus.ORDER_STATE_CANCELED)
                         {
-                            UpdateOrderBook();
+                            // UpdateOrderBook();
+                            Thread.Sleep(100);
                             while (bull && bidPrice - tradePrice > +0.1)
                             {
                                 tradeamount *= 0.99;

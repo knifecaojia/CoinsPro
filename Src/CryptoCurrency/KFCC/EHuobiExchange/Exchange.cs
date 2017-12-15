@@ -45,6 +45,7 @@ namespace KFCC.EHuobiExchange
         public Account Account { get { return _account; } set { _account = value; } }
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
+        public event ExchangeEventWarper.TradeEventHander TradeEvent;
         public HuobiExchange()
         {
            
@@ -834,6 +835,11 @@ namespace KFCC.EHuobiExchange
             }
             stringbuilder.Remove(stringbuilder.Length - 1, 1);
             return stringbuilder.ToString();
+        }
+
+        public List<Order> GetHisOrders(string tradingpair)
+        {
+            throw new NotImplementedException();
         }
     }
 }

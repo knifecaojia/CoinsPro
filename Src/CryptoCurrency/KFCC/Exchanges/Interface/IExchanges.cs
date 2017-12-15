@@ -66,6 +66,7 @@ namespace KFCC.ExchangeInterface
         #region 事件
         event CommonLab.ExchangeEventWarper.TickerEventHander TickerEvent;
         event CommonLab.ExchangeEventWarper.DepthEventHander DepthEvent;
+        event CommonLab.ExchangeEventWarper.TradeEventHander TradeEvent;
         #endregion
 
         #region 方法
@@ -122,6 +123,7 @@ namespace KFCC.ExchangeInterface
         CommonLab.Account GetAccount(out string rawresponse);
 
         CommonLab.Order GetOrderStatus(string OrderID,string tradingpair, out string rawresponse);
+        List<CommonLab.Order> GetHisOrders(string tradingpair);
 
         bool CancelOrder(string OrderID, string tradingpair, out string rawresponse);
 

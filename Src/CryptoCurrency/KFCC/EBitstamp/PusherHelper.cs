@@ -119,6 +119,7 @@ namespace KFCC.EBitstamp
             
 
             dynamic jasks = data.asks;
+            _tradinginfo.d.Asks = new List<MarketOrder>();
             for (int i = 0; i < jasks.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
@@ -128,6 +129,7 @@ namespace KFCC.EBitstamp
             }
 
             dynamic jbids =data.bids;
+            _tradinginfo.d.Bids = new List<MarketOrder>();
             for (int i = 0; i < jbids.Count; i++)
             {
                 MarketOrder m = new MarketOrder();

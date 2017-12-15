@@ -45,6 +45,7 @@ namespace CommonLab
     {
         public Ticker t;
         public Depth d;
+        public Trade trade;
         public CommonLab.SubscribeTypes type;
         public  string tradingpair;
         public TradePair tp;
@@ -52,6 +53,7 @@ namespace CommonLab
         {
             t = new Ticker();
             d = new Depth();
+            trade = new Trade();
             type = _type;
             tradingpair = _tradingpair;
             tp = _tp;
@@ -68,13 +70,26 @@ namespace CommonLab
         public double LocalServerTimeStamp;//本地时间戳
         public string BuyOrderID;//成交的交易号
         public string SellOrderID;//成交的交易号
-       
+        
         static public TradeType GetType(string t)
         {
-            if (t == "buy")
+            if (t == "buy"||t=="bid")
                 return TradeType.Buy;
             else
                 return TradeType.Sell;
+        }
+        public Trade Clone()
+        {
+            Trade t = new Trade();
+            t.TradeID = TradeID;
+            t.Amount = Amount;
+            t.Price = Price;
+            t.Type = Type;
+            t.ExchangeTimeStamp = ExchangeTimeStamp;//时间戳 交易所返回的
+            t.LocalServerTimeStamp = LocalServerTimeStamp;//本地时间戳
+            t.BuyOrderID = BuyOrderID;//成交的交易号
+            t.SellOrderID = SellOrderID;//成交的交易号
+            return t;
         }
         public override string ToString()
         {
@@ -85,6 +100,44 @@ namespace CommonLab
             sb.Append("价格:" + Price.ToString() + "   数量:" + Amount.ToString() + "\r\n");
             return sb.ToString();
 
+        }
+    }
+    public class TradeCacheManage
+    {
+        private int CacheMins;
+        public int LastTradeID;
+        public List<Trade> Trades;
+        public TradeCacheManage(int min)
+        {
+            Trades = new List<Trade>();
+            CacheMins = min;
+
+        }
+        public void Add(Trade t)
+        {
+            Trades.Add(t.Clone());
+            LastTradeID =Convert.ToInt32(t.TradeID);
+            if (Trades.Count > 0)
+            {
+                for (int i = 0; i < Trades.Count; i++)
+                {
+                    if ((DateTime.Now - CommonLab.TimerHelper.ConvertStringToDateTime(Trades[i].ExchangeTimeStamp).ToLocalTime()).TotalMinutes > CacheMins)
+                    {
+                        Trades.RemoveAt(i);
+                        i--;
+                    }
+                    else
+                        break;
+                
+                
+                }
+            }
+        }
+        public double Avg()
+        {
+            if(Trades.Count>0)
+            return Trades.Average(item => item.Price);
+            return 0;
         }
     }
     public enum TradeType

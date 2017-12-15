@@ -18,6 +18,10 @@ using System.Drawing;
 using System.Net;
 using System.IO;
 using HtmlAgilityPack;
+using MSScriptControl;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+using System.IO.Compression;
 
 namespace MinerDOG
 {
@@ -25,6 +29,8 @@ namespace MinerDOG
     {
         string sss = "";
         string kurl = @"https://pool.viabtc.com/user/api/5090f3564b29b7df3fc74405e7d47575/";
+        CookieCollection cc = null;
+        string cookies = "";
         protected void Page_Load(object sender, EventArgs e)
         {
 
@@ -37,51 +43,52 @@ namespace MinerDOG
 
                     for (int i = 0; i < Miners.Rows.Count; i++)
                     {
-                        if (Convert.ToInt32(Miners.Rows[i]["IsR"]) == 0)
-                        {
-                            try
-                            {
-                                if (!TestNetConnected(Miners.Rows[i]["IPaddress"].ToString(), 1, 3))
-                                {
-                                    Miners.Rows[i]["StatusType"] = "Timeout";
-                                    // Console.WriteLine("Mi:{0},STA:{1} ELP:{1},G/5s:{2},G/AVG:{3},Ctep1:{4},Ctep2:{5},Ctep3:{6}，FAN1:{7},FAN2:{8}", minerarr[i].IPaddress, "-", "-", "-", "-", "-", "-", "-", minerarr[i].StatusType);
-                                    continue;
-                                }
-                                else
-                                    Miners.Rows[i]["StatusType"] = "Success";
-                                Miners.Rows[i]["TimeStamp"] = DateTime.Now.ToString();
-                                List<string> l = cgminer_api_stats_list(Miners.Rows[i]["IPaddress"].ToString());
-                                Miners.Rows[i]["ctep1"] = l[10];
-                                Miners.Rows[i]["ctep2"] = l[11];
-                                Miners.Rows[i]["ctep3"] = l[12];
-                                Miners.Rows[i]["fspd1"] = l[13];
-                                Miners.Rows[i]["fspd2"] = l[14];
-                                Miners.Rows[i]["freq"] = l[4];
-                                Miners.Rows[i]["Elapsed"] = l[5];
-                                Miners.Rows[i]["Gper5s"] = l[6];
-                                Miners.Rows[i]["Gavg"] = l[7];
-                                Miners.Rows[i]["HW"] = l[8];
-                                Miners.Rows[i]["HWP"] = l[9];
-                                Miners.Rows[i]["Mtype"] = l[2];
-                            }
-                            catch
-                            { }
-                        }
-                        else
-                        {
-                            Miners.Rows[i]["Gper5s"] = Miners.Rows[i]["Gper5s"].ToString().Replace("\"", "");
-                            Miners.Rows[i]["Gavg"] = Miners.Rows[i]["Gavg"].ToString().Replace("\"", "");
-                        }
+                        //        if (Convert.ToInt32(Miners.Rows[i]["IsR"]) == 0)
+                        //        {
+                        //            try
+                        //            {
+                        //                if (!TestNetConnected(Miners.Rows[i]["IPaddress"].ToString(), 1, 3))
+                        //                {
+                        //                    Miners.Rows[i]["StatusType"] = "Timeout";
+                        //                    // Console.WriteLine("Mi:{0},STA:{1} ELP:{1},G/5s:{2},G/AVG:{3},Ctep1:{4},Ctep2:{5},Ctep3:{6}，FAN1:{7},FAN2:{8}", minerarr[i].IPaddress, "-", "-", "-", "-", "-", "-", "-", minerarr[i].StatusType);
+                        //                    continue;
+                        //                }
+                        //                else
+                        //                    Miners.Rows[i]["StatusType"] = "Success";
+                        //                Miners.Rows[i]["TimeStamp"] = DateTime.Now.ToString();
+                        //                List<string> l = cgminer_api_stats_list(Miners.Rows[i]["IPaddress"].ToString());
+                        //                Miners.Rows[i]["ctep1"] = l[10];
+                        //                Miners.Rows[i]["ctep2"] = l[11];
+                        //                Miners.Rows[i]["ctep3"] = l[12];
+                        //                Miners.Rows[i]["fspd1"] = l[13];
+                        //                Miners.Rows[i]["fspd2"] = l[14];
+                        //                Miners.Rows[i]["freq"] = l[4];
+                        //                Miners.Rows[i]["Elapsed"] = l[5];
+                        //                Miners.Rows[i]["Gper5s"] = l[6];
+                        //                Miners.Rows[i]["Gavg"] = l[7];
+                        //                Miners.Rows[i]["HW"] = l[8];
+                        //                Miners.Rows[i]["HWP"] = l[9];
+                        //                Miners.Rows[i]["Mtype"] = l[2];
+                        //            }
+                        //            catch
+                        //            { }
+                        //        }
+                        //        else
+                        //        {
+                        Miners.Rows[i]["Gper5s"] = Miners.Rows[i]["Gper5s"].ToString().Replace("\"", "");
+                        Miners.Rows[i]["Gavg"] = Miners.Rows[i]["Gavg"].ToString().Replace("\"", "");
                     }
                 }
+
+
                 catch (Exception err)
                 {
                     Response.Write(err.Message);
                 }
-                SqlCommand sqlcmd = new SqlCommand("select * from miner", SqlHelper.GetConnection());
-                SqlDataAdapter sda = new SqlDataAdapter(sqlcmd);
-                SqlCommandBuilder sqlcmdB = new SqlCommandBuilder(sda);
-                sda.Update(Miners);
+                //SqlCommand sqlcmd = new SqlCommand("select * from miner", SqlHelper.GetConnection());
+                //SqlDataAdapter sda = new SqlDataAdapter(sqlcmd);
+                //SqlCommandBuilder sqlcmdB = new SqlCommandBuilder(sda);
+                //sda.Update(Miners);
 
                 GridView1.DataSource = Miners.DefaultView;
                 GridView1.DataBind();
@@ -225,47 +232,57 @@ namespace MinerDOG
                 else
                 {
                     Label4.Text = "全网算力:" + url + " 当前难度:" + url1 + " 预计" + url4 + "后难度变化" + url3;
+                    //Thread.Sleep(1000);
+                    //string rawstr = HttpGet("https://pool.viabtc.com", "");
                     string rawstr = HttpGet(kurl, "");
-                    JObject btc = JObject.Parse(JObject.Parse(rawstr)["btc"].ToString());
-                    double account_balance = Convert.ToDouble(btc["account_balance"]);
-                    double hashrate_last_10min = Convert.ToDouble(btc["hashrate_last_10min"]); //281299054850211,
-                    double hashrate_last_1day = Convert.ToDouble(btc["hashrate_last_1day"]); //": 159429186027,
-                    double hashrate_last_1hour = Convert.ToDouble(btc["hashrate_last_1hour"]); //": 60209256737013,
-                    double payment_total = Convert.ToDouble(btc["payment_total"]);//": 0.0,
-                    double pool_hashrate_last_10min = Convert.ToDouble(btc["pool_hashrate_last_10min"]);//": 871419295355403008,
-                    double pool_hashrate_last_1hour = Convert.ToDouble(btc["pool_hashrate_last_1hour"]); //": 870609823312939136,
-                    double profit_24hour = Convert.ToDouble(btc["profit_24hour"]); //": 0.0,
-                    double profit_total = Convert.ToDouble(btc["profit_total"]);//": 0.0,
-                    int worker_active = Convert.ToInt32(btc["worker_active"]); //": 20,
-                    int worker_unactive = Convert.ToInt32(btc["worker_unactive"]); //": 0
-                    double ltc_hashrate = Convert.ToDouble(JObject.Parse(JObject.Parse(rawstr)["ltc"].ToString())["hashrate_last_10min"]);
-               
-                    string l = DateTime.Now.ToString() + "\r\n矿场情况 帐户余额:" + account_balance.ToString("f6") + "  已支付:" + payment_total.ToString("f6") + "  24小时收益:" + profit_24hour.ToString("f6") + "  总收益:" + profit_total.ToString("f6") + "  10分钟算力:" + ConvertHashrate(hashrate_last_10min, pft) + "  1小时算力:" + ConvertHashrate(hashrate_last_1hour, pft) + "  1天算力:" + ConvertHashrate(hashrate_last_1day, pft,true, !string.IsNullOrEmpty(Request["all"]));
-                    l+="  LTC hashrate last 10 mins:"+ ConvertHashrate(ltc_hashrate,0).ToString()+" LTC:"+ JObject.Parse(JObject.Parse(rawstr)["ltc"].ToString())["account_balance"];
-                    Label3.Text = l;
+                    //string rawstr = webclientget(kurl);
+                    if (rawstr.Length > 0)
+                    {
+                        JObject btc = JObject.Parse(JObject.Parse(rawstr)["btc"].ToString());
+                        double account_balance = Convert.ToDouble(btc["account_balance"]);
+                        double hashrate_last_10min = Convert.ToDouble(btc["hashrate_last_10min"]); //281299054850211,
+                        double hashrate_last_1day = Convert.ToDouble(btc["hashrate_last_1day"]); //": 159429186027,
+                        double hashrate_last_1hour = Convert.ToDouble(btc["hashrate_last_1hour"]); //": 60209256737013,
+                        double payment_total = Convert.ToDouble(btc["payment_total"]);//": 0.0,
+                        double pool_hashrate_last_10min = Convert.ToDouble(btc["pool_hashrate_last_10min"]);//": 871419295355403008,
+                        double pool_hashrate_last_1hour = Convert.ToDouble(btc["pool_hashrate_last_1hour"]); //": 870609823312939136,
+                        double profit_24hour = Convert.ToDouble(btc["profit_24hour"]); //": 0.0,
+                        double profit_total = Convert.ToDouble(btc["profit_total"]);//": 0.0,
+                        int worker_active = Convert.ToInt32(btc["worker_active"]); //": 20,
+                        int worker_unactive = Convert.ToInt32(btc["worker_unactive"]); //": 0
+                        double ltc_hashrate = Convert.ToDouble(JObject.Parse(JObject.Parse(rawstr)["ltc"].ToString())["hashrate_last_10min"]);
+
+                        string l = DateTime.Now.ToString() + "\r\n矿场情况 帐户余额:" + account_balance.ToString("f6") + "  已支付:" + payment_total.ToString("f6") + "  24小时收益:" + profit_24hour.ToString("f6") + "  总收益:" + profit_total.ToString("f6") + "  10分钟算力:" + ConvertHashrate(hashrate_last_10min, pft) + "  1小时算力:" + ConvertHashrate(hashrate_last_1hour, pft) + "  1天算力:" + ConvertHashrate(hashrate_last_1day, pft, true, !string.IsNullOrEmpty(Request["all"]));
+                        l += "  LTC hashrate last 10 mins:" + ConvertHashrate(ltc_hashrate, 0).ToString() + " LTC:" + JObject.Parse(JObject.Parse(rawstr)["ltc"].ToString())["account_balance"];
+                        Label3.Text = l;
+                    }
                 }
-              
+
                 try
                 {
-                    string rawstr = HttpGet(@"https://pool.viabtc.com/user/api/81c60290759666773afac26ee159bf87/", "");
-                    JObject btc=JObject.Parse(JObject.Parse(rawstr)["btc"].ToString());
-                    double account_balance = Convert.ToDouble(btc["account_balance"]);
-                    double hashrate_last_10min = Convert.ToDouble(btc["hashrate_last_10min"]); //281299054850211,
-                    double hashrate_last_1day = Convert.ToDouble(btc["hashrate_last_1day"]); //": 159429186027,
-                    double hashrate_last_1hour = Convert.ToDouble(btc["hashrate_last_1hour"]); //": 60209256737013,
-                    double payment_total = Convert.ToDouble(btc["payment_total"]);//": 0.0,
-                    double pool_hashrate_last_10min = Convert.ToDouble(btc["pool_hashrate_last_10min"]);//": 871419295355403008,
-                    double pool_hashrate_last_1hour = Convert.ToDouble(btc["pool_hashrate_last_1hour"]); //": 870609823312939136,
-                    double profit_24hour = Convert.ToDouble(btc["profit_24hour"]); //": 0.0,
-                    double profit_total = Convert.ToDouble(btc["profit_total"]);//": 0.0,
-                    int worker_active = Convert.ToInt32(btc["worker_active"]); //": 20,
-                    int worker_unactive = Convert.ToInt32(btc["worker_unactive"]); //": 0
-                    string l = "矿场情况 帐户余额:" + account_balance.ToString("f6") + "  已支付:" + payment_total.ToString("f6") + "  24小时收益:" + profit_24hour.ToString("f6") + "  总收益:" + profit_total.ToString("f6") + "  10分钟算力:" + ConvertHashrate(hashrate_last_10min, pft) + "  1小时算力:" + ConvertHashrate(hashrate_last_1hour, pft) + "  1天算力:" + ConvertHashrate(hashrate_last_1day, pft,true,!string.IsNullOrEmpty(Request["all"]));
-                    Label2.Text = l;
+                   
+                        string rawstr = HttpGet(@"https://pool.viabtc.com/user/api/81c60290759666773afac26ee159bf87/", "");
+                    //string rawstr = webclientget(@"https://pool.viabtc.com/user/api/81c60290759666773afac26ee159bf87/");
+                    JObject btc = JObject.Parse(JObject.Parse(rawstr)["btc"].ToString());
+                        double account_balance = Convert.ToDouble(btc["account_balance"]);
+                        double hashrate_last_10min = Convert.ToDouble(btc["hashrate_last_10min"]); //281299054850211,
+                        double hashrate_last_1day = Convert.ToDouble(btc["hashrate_last_1day"]); //": 159429186027,
+                        double hashrate_last_1hour = Convert.ToDouble(btc["hashrate_last_1hour"]); //": 60209256737013,
+                        double payment_total = Convert.ToDouble(btc["payment_total"]);//": 0.0,
+                        double pool_hashrate_last_10min = Convert.ToDouble(btc["pool_hashrate_last_10min"]);//": 871419295355403008,
+                        double pool_hashrate_last_1hour = Convert.ToDouble(btc["pool_hashrate_last_1hour"]); //": 870609823312939136,
+                        double profit_24hour = Convert.ToDouble(btc["profit_24hour"]); //": 0.0,
+                        double profit_total = Convert.ToDouble(btc["profit_total"]);//": 0.0,
+                        int worker_active = Convert.ToInt32(btc["worker_active"]); //": 20,
+                        int worker_unactive = Convert.ToInt32(btc["worker_unactive"]); //": 0
+                        string l = "矿场情况 帐户余额:" + account_balance.ToString("f6") + "  已支付:" + payment_total.ToString("f6") + "  24小时收益:" + profit_24hour.ToString("f6") + "  总收益:" + profit_total.ToString("f6") + "  10分钟算力:" + ConvertHashrate(hashrate_last_10min, pft) + "  1小时算力:" + ConvertHashrate(hashrate_last_1hour, pft) + "  1天算力:" + ConvertHashrate(hashrate_last_1day, pft, true, !string.IsNullOrEmpty(Request["all"]));
+                        Label2.Text = l;
+                    
+                
                 }
-                catch
+                catch(Exception err)
                 {
-
+                    
                 }
             }
             
@@ -823,21 +840,92 @@ namespace MinerDOG
             GridView2.DataSource = Miners_remote.DefaultView;
             GridView2.DataBind();
         }
-
+       
         public string HttpGet(string Url, string postDataStr)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url + (postDataStr == "" ? "" : "?") + postDataStr);
-            request.Method = "GET";
-            request.ContentType = "text/html;charset=UTF-8";
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url + (postDataStr == "" ? "" : "?") + postDataStr);
+                request.Method = "GET";
+                HttpItem hi = new HttpItem();
+                hi.URL = Url;
+                hi.Method = "GET";
+                HttpHelper hp = new HttpHelper();
+                HttpResult result = hp.GetHtml(hi);
+                string aaaa = result.Html;
+                if (aaaa.IndexOf("<script>") < 0)
+                    return aaaa;
+                string bbb = result.Cookie.ToString();
+                string sHtmlJs = aaaa;
+                StringBuilder sb = new StringBuilder(sHtmlJs);
+                sb = sb.Replace("eval", "return ");
+                sb = sb.Replace("<script>", "function getResult(){");
+                sb = sb.Replace("</script>", "\r\n};");
 
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream myResponseStream = response.GetResponseStream();
-            StreamReader myStreamReader = new StreamReader(myResponseStream, Encoding.GetEncoding("utf-8"));
-            string retString = myStreamReader.ReadToEnd();
-            myStreamReader.Close();
-            myResponseStream.Close();
+                string sResult = ExecJS(sb.ToString(), "getResult");
+                string ex = sResult.Substring(sResult.IndexOf("Expires="));
+                ex = ex.Substring(0, ex.IndexOf("')"));
+                sResult = sResult.Substring(0, sResult.IndexOf("dc+=cd;") + 7);
+                
+                //sResult = sResult.Replace("dc+=cd;", "dc+=cd;return dc;");
+                sResult = sResult + "return dc;\r\n};";
+                sResult = sResult.Replace(@"document.createElement('div');h.innerHTML='<a href=\'/\'>x</a>';h=h.firstChild.href;var r=h.match(/https?:\/\//)[0];h=h.substr(r.length).toLowerCase();", "\"x\";");
+                sResult = sResult.Replace("return return", "return eval");
+                sResult = sResult.Replace("while(window._phantom||window.__phantomas){};", "");
+                string fc = ExecJS(sResult, "l");
+                HttpItem hia = new HttpItem();
+                hia.URL = Url;
+                hia.Cookie = bbb + ";"+fc+";"+ ex;
+                string bbbb=hp.GetHtml(hia).Html;
+                return bbbb;
 
-            return retString;
+            }
+            catch (WebException er)
+            {
+                HttpStatusCode hc = ((HttpWebResponse)er.Response).StatusCode;
+                if (hc.ToString() == "521")
+                {
+                  
+
+                    Stream emyResponseStream = ((HttpWebResponse)er.Response).GetResponseStream();
+                    StreamReader emyStreamReader = new StreamReader(emyResponseStream, Encoding.GetEncoding("utf-8"));
+                    
+              
+                }
+
+                return "";
+            }
         }
+        ///需要添加引用COM：Microsoft Script Control 1.0
+        /// <summary>
+        /// 执行JS代码并返回结果
+        /// </summary>
+        /// <param name="sScript">JS代码</param>
+        /// <param name="sName">JS函数名</param>
+        /// <returns>结果</returns>
+        private static string ExecJS(string sScript, string sName)
+        {
+            //string sInitUrl = "http://ipangu.baidu.com/ipangu-hint/hint/hintCustAdd_init.action";
+            ScriptControlClass js = new ScriptControlClass();//使用ScriptControlClass
+            object result = null;
+            try
+            {
+                js.Language = "javascript";
+                js.Reset();
+                js.Eval(sScript);//指向js脚本
+                object[] obj = new object[] { };
+                result = js.Run(sName, ref obj);//传入参数执行
+            }
+            catch (Exception ex)
+            {
+                result = ex.Message;
+            }
+            return result.ToString();
+        }
+
     }
+    /// <summary>
+    /// Http连接操作帮助类
+    /// </summary>
+
 }

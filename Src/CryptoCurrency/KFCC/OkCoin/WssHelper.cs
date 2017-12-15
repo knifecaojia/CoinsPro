@@ -46,6 +46,7 @@ namespace KFCC.EOkCoin
             {
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_"+_tradingpair+"_ticker'}");
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_depth'}");
+                ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_deals'}");
                 CheckTread.Start();
             };
             
@@ -74,13 +75,13 @@ namespace KFCC.EOkCoin
                                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
                                 //UpdateTicker(tradingpair, t);
 
-                                _tradinginfo.t=t;
+                                _tradinginfo.t = t;
 
-                                TradeInfoEvent(_tradinginfo, TradeEventType.TRADE);
+                                TradeInfoEvent(_tradinginfo, TradeEventType.TICKER);
                             }
-                            catch(Exception err)
+                            catch (Exception err)
                             {
-                                Console.WriteLine(err.Message+e.Data);
+                                Console.WriteLine(err.Message + e.Data);
                             }
                         }
                         else if (strs[strs.Length - 1] == "depth")
@@ -90,7 +91,9 @@ namespace KFCC.EOkCoin
                             {
                                 if (obj.Property("asks") != null)
                                 {
+                                    _tradinginfo.d.Asks = new List<MarketOrder>();
                                     JArray jasks = JArray.Parse(obj["asks"].ToString());
+
                                     for (int i = 0; i < jasks.Count; i++)
                                     {
                                         MarketOrder m = new MarketOrder();
@@ -104,9 +107,10 @@ namespace KFCC.EOkCoin
                             { }
                             try
                             {
-                                if (obj.Property("asks") != null)
+                                if (obj.Property("bids") != null)
                                 {
                                     JArray jbids = JArray.Parse(obj["bids"].ToString());
+                                    _tradinginfo.d.Bids = new List<MarketOrder>();
                                     for (int i = 0; i < jbids.Count; i++)
                                     {
                                         MarketOrder m = new MarketOrder();
@@ -121,6 +125,28 @@ namespace KFCC.EOkCoin
                             _tradinginfo.d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
                             _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
                             TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
+                        }
+                        else if (strs[strs.Length - 1] == "deals")
+                        {
+                            try
+                            {
+                                JArray trade = JArray.Parse((JArray.Parse(robj["data"].ToString()))[0].ToString());
+                                _tradinginfo.trade.TradeID = trade[0].ToString();
+                                _tradinginfo.trade.Price = Convert.ToDouble(trade[1].ToString());
+                                _tradinginfo.trade.Amount = Convert.ToDouble(trade[2].ToString());
+                                _tradinginfo.trade.ExchangeTimeStamp = CommonLab.TimerHelper.GetTimeStamp(Convert.ToDateTime(trade[3].ToString()));
+                                _tradinginfo.trade.Type =Trade.GetType(trade[4].ToString());
+                                _tradinginfo.trade.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                                //UpdateTicker(tradingpair, t);
+
+                               
+
+                                TradeInfoEvent(_tradinginfo, TradeEventType.TRADE);
+                            }
+                            catch (Exception err)
+                            {
+                                Console.WriteLine(err.Message + e.Data);
+                            }
                         }
                     }
 
