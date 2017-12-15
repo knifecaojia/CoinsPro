@@ -73,6 +73,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /e /r /y $(TargetPath) M:\CoinPor-Git\Src\CryptoCurrency\StrategyGUI\Hedge\Hedge\bin\Debug\Plugins</PostBuildEvent>
+    <PostBuildEvent>xcopy /e /r /y $(TargetPath) D:\GitRoot\CoinsPro\Src\CryptoCurrency\StrategyGUI\Hedge\Hedge\bin\Debug\Plugins</PostBuildEvent>
   </PropertyGroup>
 </Project>
