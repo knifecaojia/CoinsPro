@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{228A0D54-38E4-4CB1-B5C8-7E3A9118AC58}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>RawOCHL</RootNamespace>
+    <AssemblyName>RawOCHL</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonLab\CommonLab.csproj">
+      <Project>{09f95fc2-52a7-45f4-9624-25912dc293fa}</Project>
+      <Name>CommonLab</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EBitstamp\EBitstamp.csproj">
+      <Project>{7d02ce45-07bd-4b54-8032-800d5a38f6fc}</Project>
+      <Name>EBitstamp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\EHuobiExchange\EHuobiExchange.csproj">
+      <Project>{0cf9695b-cf1b-4c8c-a890-37dce2d52294}</Project>
+      <Name>EHuobiExchange</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Exchanges\ExchangeInterface.csproj">
+      <Project>{acaeec48-25f8-4675-9fbc-3ef1f17e0e68}</Project>
+      <Name>ExchangeInterface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\OkCoin\OkCoin.csproj">
+      <Project>{ddb3740c-e219-4d1e-be80-f3e518d41515}</Project>
+      <Name>OkCoin</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

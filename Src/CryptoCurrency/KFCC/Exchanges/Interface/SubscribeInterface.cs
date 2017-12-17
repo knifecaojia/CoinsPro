@@ -11,6 +11,7 @@ namespace KFCC.ExchangeInterface
     {
         CommonLab.TradingInfo TradeInfo { get; }
         CommonLab.TradePair Tp { get; set; }
+        DateTime LastCommTimeStamp { get; set; }
         Thread CheckTread { get; set; }
         event CommonLab.ExchangeEventWarper.TradeInfoEventHander TradeInfoEvent;
         void Close();

@@ -24,7 +24,8 @@ namespace Hedge
                 textBox2.Text = "CF44F1C9F3BB23B148523B797B862D4C";
                 textBox3.Text = "";
                 textBox4.Text = "";
-
+                textBox5.Text = "-0.1";
+                textBox6.Text = "0.1";
             }
             else if (exchange.Name == "Bitstamp")
             {
@@ -32,6 +33,8 @@ namespace Hedge
                 textBox2.Text = "hIW0CYUK1NvbZR73N5rPDO0yly4GgK3l";
                 textBox3.Text = "rqno1092";
                 textBox4.Text = "caojia";
+                textBox5.Text = "0.25";
+                textBox6.Text = "0.25";
             }
             else if (exchange.Name == "Huobi")
             {
@@ -39,6 +42,8 @@ namespace Hedge
                 textBox2.Text = "7e022c00-19e4e4a8-2b3ed1d9-312e0";
                 textBox3.Text = "0";
                 textBox4.Text = "caojia";
+                textBox5.Text = "0.2";
+                textBox6.Text = "0.2";
             }
             Set();
         }
@@ -50,6 +55,7 @@ namespace Hedge
         private void Set()
         {
             exchange.SetupExchage(textBox1.Text, textBox2.Text, textBox3.Text, textBox4.Text);
+            exchange.SetupFee(textBox5.Text, textBox6.Text);
         }
     }
 }

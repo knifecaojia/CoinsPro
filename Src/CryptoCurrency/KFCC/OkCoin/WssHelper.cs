@@ -31,6 +31,7 @@ namespace KFCC.EOkCoin
 
         public Thread CheckTread { get ; set; }
         public TradePair Tp { get; set; }
+        public DateTime LastCommTimeStamp { get ; set; }
 
         public WssHelper(CommonLab.TradePair tp, Ticker t, Depth d)
         {
@@ -45,19 +46,23 @@ namespace KFCC.EOkCoin
             ws.OnOpen += (sender, e) =>
             {
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_"+_tradingpair+"_ticker'}");
-                ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_depth'}");
+                ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_depth_20'}");
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_deals'}");
-                CheckTread.Start();
+
+                if (!CheckTread.IsAlive) CheckTread.Start();
             };
             
             ws.OnMessage += (sender, e) => {
                 if (e.IsText)
                 {
+                    LastCommTimeStamp = DateTime.Now;
                     JArray jaraw = JArray.Parse(e.Data);
                     if (jaraw.Count > 0)
                     {
                         JObject robj = JObject.Parse(jaraw[0].ToString());
                         string[] strs = robj["channel"].ToString().Split('_');
+                        if (strs.Length < 2)
+                            return;
                         if (strs[strs.Length - 1] == "ticker")
                         {
                             //JObject obj = JObject.Parse(robj["data"].ToString());
@@ -84,7 +89,7 @@ namespace KFCC.EOkCoin
                                 Console.WriteLine(err.Message + e.Data);
                             }
                         }
-                        else if (strs[strs.Length - 1] == "depth")
+                        else if (strs[strs.Length - 2] == "depth")
                         {
                             JObject obj = JObject.Parse(robj["data"].ToString());
                             try
@@ -122,8 +127,9 @@ namespace KFCC.EOkCoin
                             }
                             catch
                             { }
-                            _tradinginfo.d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
+                            _tradinginfo.d.ExchangeTimeStamp =  Convert.ToDouble(obj["timestamp"].ToString());
                             _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                            _tradinginfo.t.UpdateTickerBuyDepth(_tradinginfo.d);
                             TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
                         }
                         else if (strs[strs.Length - 1] == "deals")
@@ -164,6 +170,11 @@ namespace KFCC.EOkCoin
                 if (!ws.IsAlive)
                 {
                     ws.Connect();
+                }
+                if ((DateTime.Now - LastCommTimeStamp).TotalSeconds > 10)
+                {
+                    ws.Connect();
+                    LastCommTimeStamp = DateTime.Now;
                 }
                 Thread.Sleep(10000);
             }

@@ -29,21 +29,59 @@ namespace CommonLab
         }
         public void AddNewBid(MarketOrder m)
         {
-            Bids.Add(m);
-            Bids.Sort(delegate (MarketOrder x, MarketOrder y)
+            if (m.Amount == 0)
             {
-                return y.Price.CompareTo(x.Price);
-            });
-            CutLast();
+                if(Bids.FindIndex(s => s.Price == m.Price)>=0)
+                Bids.RemoveAt(Bids.FindIndex(s => s.Price == m.Price));
+                return;
+            }
+            else
+            {
+                int index = -1;
+                index = Bids.FindIndex(s => s.Price == m.Price);
+                if (index > -1)
+                {
+                    Bids[index].Amount = m.Amount;
+                }
+                else
+                {
+                    Bids.Add(m);
+                    Bids.Sort(delegate (MarketOrder x, MarketOrder y)
+                    {
+                        return y.Price.CompareTo(x.Price);
+                    });
+                    CutLast();
+                }
+            }
+           
         }
         public void AddNewAsk(MarketOrder m)
         {
-            Asks.Add(m);
-            Asks.Sort(delegate (MarketOrder x, MarketOrder y)
+            if (m.Amount == 0)
             {
-                return x.Price.CompareTo(y.Price);
-            });
-            CutLast();
+                if(Asks.FindIndex(s => s.Price == m.Price)>=0)
+                Asks.RemoveAt(Asks.FindIndex(s => s.Price == m.Price));
+                return;
+            }
+            else
+            {
+                int index = -1;
+                index = Asks.FindIndex(s => s.Price == m.Price);
+                if (index > -1)
+                {
+                    Asks[index].Amount = m.Amount;
+                }
+                else
+                {
+                    Asks.Add(m);
+                    Asks.Sort(delegate (MarketOrder x, MarketOrder y)
+                    {
+                        return x.Price.CompareTo(y.Price);
+                    });
+                    CutLast();
+                }
+            }
+           
         }
         public double CaculateDepth(OrderType type,double depth)
         {

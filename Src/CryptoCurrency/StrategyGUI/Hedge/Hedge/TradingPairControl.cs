@@ -219,9 +219,9 @@ namespace Hedge
             double msecs = (DateTime.Now.TimeOfDay.TotalMilliseconds - _StartMilliseconds)/1000;
             try
             {
-                _TimeSeries[((IExchanges)sender).Name].SeriesPoints.Add(new SeriesPoint(msecs, d.Asks[0].Price * 100));
-                if (_ChartXy != null && msecs > 6000)
-                    _ChartXy.AxisX.MinValue = msecs - 6000;
+                _TimeSeries[((IExchanges)sender).Name].SeriesPoints.Add(new SeriesPoint(msecs, d.Asks[0].Price));
+                if (_ChartXy != null && msecs > 1000)
+                    _ChartXy.AxisX.MinValue = msecs - 1000;
             }
             catch
             { }

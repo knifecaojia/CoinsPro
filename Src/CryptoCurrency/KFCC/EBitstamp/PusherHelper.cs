@@ -24,6 +24,8 @@ namespace KFCC.EBitstamp
 
         public Thread CheckTread { get; set; }
         public TradePair Tp { get; set; }
+        public DateTime LastCommTimeStamp { get ; set ; }
+
         public PusherHelper(string tradingpair, Ticker t, Depth d, CommonLab.TradePair tp, string appkey = "de504dc5763aeef9ff52")
         {
             _tradingpair = tradingpair;
@@ -61,7 +63,14 @@ namespace KFCC.EBitstamp
         }
         private void _pusher_Error(object sender, PusherException error)
         {
-            throw new NotImplementedException();
+            try
+            {
+                _pusher.Disconnect();
+                Thread.Sleep(1000);
+                _pusher.Connect();
+            }
+            catch
+            { }
         }
 
         private void _pusher_ConnectionStateChanged(object sender, ConnectionState state)
@@ -69,11 +78,12 @@ namespace KFCC.EBitstamp
             //throw new NotImplementedException();
             if (state == ConnectionState.Connected)
             {
-                _live_trades_channel = _pusher.Subscribe("live_trades" + _tradingpair);
+                _live_trades_channel = _pusher.Subscribe("live_trades_" + _tradingpair);
                 _live_trades_channel.Subscribed += live_trades_channel_Subscribed;
-                _live_diff_order_book_channel = _pusher.Subscribe("diff_order_book" + _tradingpair);
+                _live_diff_order_book_channel = _pusher.Subscribe("order_book_" + _tradingpair);
                 _live_diff_order_book_channel.Subscribed += live_diff_order_book_channel_Subscribed;
             }
+            
         }
 
         private void live_diff_order_book_channel_Subscribed(object sender)
@@ -109,7 +119,7 @@ namespace KFCC.EBitstamp
 
 
             _tradinginfo.t.UpdateTickerBuyTrade(t);
-           
+            LastCommTimeStamp = DateTime.Now;
             TradeInfoEvent(_tradinginfo,TradeEventType.TRADE);
         }
         private void LiveOrderBook(dynamic data)
@@ -137,9 +147,11 @@ namespace KFCC.EBitstamp
                 m.Amount = Convert.ToDouble(jbids[i][1]);
                 _tradinginfo.d.AddNewBid(m);
             }
+            
             _tradinginfo.d.ExchangeTimeStamp = Convert.ToDouble(data.timestamp);
             _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
-         
+            LastCommTimeStamp = DateTime.Now;
+            _tradinginfo.t.UpdateTickerBuyDepth(_tradinginfo.d);
             TradeInfoEvent(_tradinginfo,TradeEventType.ORDERS);
             //return d;
         }

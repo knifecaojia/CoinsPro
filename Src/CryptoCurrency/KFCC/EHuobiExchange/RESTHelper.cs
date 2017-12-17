@@ -19,6 +19,7 @@ namespace KFCC.EHuobiExchange
 
         public Thread CheckTread { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public TradePair Tp { get; set; }
+        public DateTime LastCommTimeStamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public event ExchangeEventWarper.TradeInfoEventHander TradeInfoEvent;
 

@@ -23,5 +23,9 @@ namespace CommonLab
                 return true;
             return false;
         }
+        public override string ToString()
+        {
+            return FromSymbol + "-" + ToSymbol;
+        }
     }
 }

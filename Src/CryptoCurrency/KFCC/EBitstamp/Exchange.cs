@@ -44,12 +44,16 @@ namespace KFCC.EBitstamp
         private Account _account;
         public Account Account {get{ return _account; }set { _account = value; } }
 
+        public Fee eFee { get; set; }
+
         //public bool SportWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         //public bool SportThirdPartWSS { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
         public event ExchangeEventWarper.TradeEventHander TradeEvent;
+        public event ExchangeEventWarper.SubscribedEventHander SubscribedEvent;
+
         public BitstampExchange()
         {
 
@@ -68,6 +72,12 @@ namespace KFCC.EBitstamp
             _secret = secret;
             _uid = uid;
             _username = username;
+        }
+        public void SetupFee(string maker, string taker)
+        {
+            eFee = new Fee();
+            eFee.MakerFee = Convert.ToDouble(maker) / 100;
+            eFee.TakerFee = Convert.ToDouble(taker) / 100;
         }
         //public static BitstampExchange Create(string key,string secret,string uid,string username)
         //{
@@ -115,7 +125,8 @@ namespace KFCC.EBitstamp
                     _subscribedtradingpairs[tradingpairs].TradeInfoEvent += BitstampExchange_TradeInfoEvent;
                 }
             }
-    
+            if (SubscribedEvent != null)
+                SubscribedEvent(this, st, tp);
             return true;
         }
 
@@ -223,7 +234,7 @@ namespace KFCC.EBitstamp
             {
                 if (t.FromSymbol.ToLower() == "btc" && t.ToSymbol.ToLower() == "usd")
                     return "";
-                return "_" + t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
+                return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
             }
             else if (st == SubscribeTypes.RESTAPI)
             {

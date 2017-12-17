@@ -49,6 +49,7 @@ namespace KFCC.ExchangeInterface
         string Key { get; set; }
         string UID { get; set; }
         string UserName { get; set; }
+        CommonLab.Fee eFee { get; set; }//交易市场的交易手续费 一般
         CommonLab.Proxy proxy { get; set; }
         CommonLab.Account Account { get; set; }
         Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get;  }
@@ -67,10 +68,12 @@ namespace KFCC.ExchangeInterface
         event CommonLab.ExchangeEventWarper.TickerEventHander TickerEvent;
         event CommonLab.ExchangeEventWarper.DepthEventHander DepthEvent;
         event CommonLab.ExchangeEventWarper.TradeEventHander TradeEvent;
+        event CommonLab.ExchangeEventWarper.SubscribedEventHander SubscribedEvent;
         #endregion
 
         #region 方法
         void SetupExchage(string key, string secret, string uid, string username);
+        void SetupFee(string maker, string taker);
         /// <summary>
         /// 订阅接口
         /// </summary>

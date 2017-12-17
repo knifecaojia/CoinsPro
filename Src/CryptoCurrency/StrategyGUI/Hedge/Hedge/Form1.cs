@@ -49,7 +49,7 @@ namespace Hedge
                 sc.FixedPanel = FixedPanel.Panel1;
                 sc.BorderStyle = BorderStyle.FixedSingle;
                 sc.Orientation = Orientation.Horizontal;
-                sc.SplitterDistance = 160;
+                sc.SplitterDistance = 200;
                 sc.Layout += Sc_Layout;
                 sc.Dock = DockStyle.Fill;
                 sc.Name = "sc";
@@ -60,7 +60,7 @@ namespace Hedge
 
         private void Sc_Layout(object sender, LayoutEventArgs e)
         {
-            ((SplitContainer)sender).SplitterDistance = 160;
+            ((SplitContainer)sender).SplitterDistance = 200;
         }
 
         private void Sc_SplitterMoving(object sender, SplitterCancelEventArgs e)
@@ -136,17 +136,34 @@ namespace Hedge
                 try
                 {
                     item.Value.Subscribe(new CommonLab.TradePair(fsy, tsy), CommonLab.SubscribeTypes.WSS);
-
-                    Console c = new Console(item.Value);
-                    c.Dock = DockStyle.Fill;
-                    for (int i = 0; i < TabPages[item.Key].Controls.Count; i++)
+                    if (listView1.Items.Count == 1)
                     {
-                        if (TabPages[item.Key].Controls[i].Name == "sc")
+                        Console c = new Console(item.Value);
+                        c.Dock = DockStyle.Fill;
+                        for (int i = 0; i < TabPages[item.Key].Controls.Count; i++)
                         {
-                            ((SplitContainer)TabPages[item.Key].Controls[i]).Panel2.Controls.Add(c);
-                            break;
+                            if (TabPages[item.Key].Controls[i].Name == "sc")
+                            {
+                                Panel pt = new Panel();
+                                pt.Dock = DockStyle.Fill;
+                                OrderBook ob = new OrderBook(item.Value);
+                                ob.Name = "obdgv";
+                                ob.Dock = DockStyle.Fill;
+                                pt.Controls.Add(ob);
+                                Panel pb = new Panel();
+                                pb.Height = 200;
+                                pb.Controls.Add(c);
+                                pb.Dock = DockStyle.Bottom;
+                                pt.Width = ((SplitContainer)TabPages[item.Key].Controls[i]).Panel2.Width;
+                                pb.Width = ((SplitContainer)TabPages[item.Key].Controls[i]).Panel2.Width;
+                                ((SplitContainer)TabPages[item.Key].Controls[i]).Panel2.Controls.Add(pb);
+                                ((SplitContainer)TabPages[item.Key].Controls[i]).Panel2.Controls.Add(pt);
+                                break;
+                            }
                         }
                     }
+                    else
+                    { }
                 }
                 catch(Exception err)
                 {

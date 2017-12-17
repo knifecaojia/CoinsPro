@@ -32,6 +32,7 @@ namespace KFCC.EHuobiExchange
 
         public Thread CheckTread { get;set; }
         public TradePair Tp { get; set; }
+        public DateTime LastCommTimeStamp { get; set; }
 
         public void CheckState()
         {
@@ -42,6 +43,11 @@ namespace KFCC.EHuobiExchange
                 if (!ws.IsAlive)
                 {
                     ws.Connect();
+                }
+                if ((DateTime.Now - LastCommTimeStamp).TotalSeconds > 10)
+                {
+                    ws.Connect();
+                    LastCommTimeStamp = DateTime.Now;
                 }
                 Thread.Sleep(10000);
             }
@@ -66,12 +72,13 @@ namespace KFCC.EHuobiExchange
             {
                 ws.Send("{\"sub\": \"market." + _tradingpair + ".kline.1min\",  \"id\": \"id" + DateTime.Now.Second + "\"}");
                 ws.Send("{\"sub\": \"market." + _tradingpair + ".depth.step0\",  \"id\": \"id" + DateTime.Now.Second + "\"}");
+               if(!CheckTread.IsAlive)
                 CheckTread.Start();
             };
 
             ws.OnMessage += (sender, e) =>
             {
-
+                LastCommTimeStamp = DateTime.Now;
                 if (e.IsBinary)
                 {
                     JObject obj = null;
@@ -160,6 +167,7 @@ namespace KFCC.EHuobiExchange
                             {
                                 TradeInfoEvent(_tradinginfo, TradeEventType.TICKER);
                             }
+                            _tradinginfo.t.UpdateTickerBuyDepth(_tradinginfo.d);
                             TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
                         }
                         if (ch.IndexOf("trade") > 0) //交易数据

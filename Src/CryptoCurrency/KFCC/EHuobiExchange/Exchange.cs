@@ -34,7 +34,7 @@ namespace KFCC.EHuobiExchange
         public string Key { get { return _key; } set { _key = value; } }
         public string UID { get { return _uid; } set { _uid = value; } }
         public string UserName { get { return _username; } set { _username = value; } }
-
+        public Fee eFee { get; set; }
         public Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
 
         public Proxy proxy { get { return _proxy; } set { _proxy = value; } }
@@ -46,6 +46,8 @@ namespace KFCC.EHuobiExchange
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
         public event ExchangeEventWarper.TradeEventHander TradeEvent;
+        public event ExchangeEventWarper.SubscribedEventHander SubscribedEvent;
+
         public HuobiExchange()
         {
            
@@ -63,6 +65,12 @@ namespace KFCC.EHuobiExchange
             _secret = secret;
             _uid = uid;
             _username = username;
+        }
+        public void SetupFee(string maker, string taker)
+        {
+            eFee = new Fee();
+            eFee.MakerFee = Convert.ToDouble(maker) / 100;
+            eFee.TakerFee = Convert.ToDouble(taker) / 100;
         }
         public bool Subscribe(CommonLab.TradePair tp, SubscribeTypes st)
         {
@@ -110,7 +118,8 @@ namespace KFCC.EHuobiExchange
                     //_subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
                 }
             }
-
+            if (SubscribedEvent != null)
+                SubscribedEvent(this, st, tp);
             return true;
         }
 

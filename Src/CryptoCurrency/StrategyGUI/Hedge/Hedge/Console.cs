@@ -17,9 +17,9 @@ namespace Hedge
 
             InitializeComponent();
             e.TickerEvent += new CommonLab.ExchangeEventWarper.TickerEventHander(Exchange_TickerEvent);
-            e.DepthEvent +=new CommonLab.ExchangeEventWarper.DepthEventHander(Exchange_DepthEvent);
+            //e.DepthEvent +=new CommonLab.ExchangeEventWarper.DepthEventHander(Exchange_DepthEvent);
         }
-
+        //public void Update()
         private void Console_Resize(object sender, EventArgs e)
         {
             textBox1.Width = this.Width - 6;
@@ -29,17 +29,22 @@ namespace Hedge
         private delegate void UpdateConsole(Color c, string msg);
         private  void Exchange_DepthEvent(object sender, CommonLab.Depth d, CommonLab.EventTypes et, CommonLab.TradePair tp)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(DateTime.Now.ToString() + ": " + d.ToString(5));
-            if (textBox1.InvokeRequired)
+            try
             {
-                UpdateConsole uc = new UpdateConsole(UpdateConsoleMthod);
-                textBox1.Invoke(uc, new object[] { (object)Color.Blue, (object)sb.ToString() });
+                StringBuilder sb = new StringBuilder();
+                sb.Append(DateTime.Now.ToString() + ": " + d.ToString(5));
+                if (textBox1.InvokeRequired)
+                {
+                    UpdateConsole uc = new UpdateConsole(UpdateConsoleMthod);
+                    textBox1.Invoke(uc, new object[] { (object)Color.Blue, (object)sb.ToString() });
+                }
+                else
+                {
+                    UpdateConsoleMthod(Color.Blue, sb.ToString());
+                }
             }
-            else
-            {
-                UpdateConsoleMthod(Color.Blue, sb.ToString());
-            }
+            catch
+            { }
         }
         private void UpdateConsoleMthod(Color c, string msg)
         {
@@ -74,7 +79,7 @@ namespace Hedge
            
         
             StringBuilder sb = new StringBuilder();
-            sb.Append(DateTime.Now.ToString() + ": " + t.ToString());
+            sb.Append(DateTime.Now.ToString() +tp.FromSymbol+"/"+tp.ToSymbol+ ": " + t.ToString());
             if (textBox1.InvokeRequired)
             {
                 UpdateConsole uc = new UpdateConsole(UpdateConsoleMthod);

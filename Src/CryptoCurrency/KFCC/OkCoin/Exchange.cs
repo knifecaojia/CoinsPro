@@ -30,7 +30,7 @@ namespace KFCC.EOkCoin
         public string UserName { get { return _username; } set { _username = value; } }
 
         public Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> SubscribedTradingPairs { get { return _subscribedtradingpairs; } }
-
+        public Fee eFee { get; set; }
         public Proxy proxy { get { return _proxy; } set { _proxy = value; } }
         private Account _account;
         public Account Account { get { return _account; } set { _account = value; } }
@@ -40,6 +40,7 @@ namespace KFCC.EOkCoin
         public event ExchangeEventWarper.TickerEventHander TickerEvent;
         public event ExchangeEventWarper.DepthEventHander DepthEvent;
         public event ExchangeEventWarper.TradeEventHander TradeEvent;
+        public event ExchangeEventWarper.SubscribedEventHander SubscribedEvent;
 
         public OkCoinExchange(string key, string secret, string uid, string username)
         {
@@ -59,6 +60,12 @@ namespace KFCC.EOkCoin
             _secret = secret;
             _uid = uid;
             _username = username;
+        }
+        public void SetupFee(string maker, string taker)
+        {
+            eFee = new Fee();
+            eFee.MakerFee = Convert.ToDouble(maker) / 100;
+            eFee.TakerFee = Convert.ToDouble(taker) / 100;
         }
         public bool Subscribe(CommonLab.TradePair tp, SubscribeTypes st)
         {
@@ -105,7 +112,8 @@ namespace KFCC.EOkCoin
                     //_subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
                 }
             }
-
+            if (SubscribedEvent != null)
+                SubscribedEvent(this, st, tp);
             return true;
         }
 

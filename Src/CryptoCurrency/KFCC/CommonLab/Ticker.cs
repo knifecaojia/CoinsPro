@@ -35,6 +35,11 @@ namespace CommonLab
         {
             Sell = d.Asks[0].Price;
             Buy = d.Bids[0].Price;
+            if (High < Sell)
+                High = Sell;
+            if (Low > Buy)
+                Low = Buy;
+            ExchangeTimeStamp = d.ExchangeTimeStamp;
         }
         public override string  ToString()
         {
@@ -58,6 +63,7 @@ namespace CommonLab
             tradingpair = _tradingpair;
             tp = _tp;
         }
+
 
     }
     public class Trade
