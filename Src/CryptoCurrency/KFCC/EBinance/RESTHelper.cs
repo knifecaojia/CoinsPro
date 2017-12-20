@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonLab;
 
-namespace KFCC.EHuobiExchange
+namespace KFCC.EBinance
 {
     class RESTHelper : KFCC.ExchangeInterface.SubscribeInterface
     {
@@ -31,15 +31,14 @@ namespace KFCC.EHuobiExchange
             _tradinginfo.t = t;
             _tradinginfo.d = d;
             Tp = tp;
-         
         }
         public void UpdateDepth(Depth d)
         {
             _tradinginfo.d = d;
-            if (d.Bids.Count > 0)
-                _tradinginfo.t.Buy = d.Bids[0].Price;
-            if (d.Asks.Count > 0)
-                _tradinginfo.t.Sell = d.Asks[0].Price;
+            if(d.Bids.Count>0)
+            _tradinginfo.t.Buy=d.Bids[0].Price;
+            if(d.Asks.Count>0)
+            _tradinginfo.t.Sell = d.Asks[0].Price;
         }
         public void Close()
         {

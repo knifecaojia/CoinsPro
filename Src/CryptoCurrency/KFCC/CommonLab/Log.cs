@@ -125,7 +125,19 @@ namespace CommonLab
                
             }
         }
+        public void RawLog(string info)
+        {
+            try
+            {
 
+                WriteLine(info);
+               
+            }
+            finally
+            {
+
+            }
+        }
         public void CreateDirectory(string infoPath)
         {
             DirectoryInfo directoryInfo = Directory.GetParent(infoPath);

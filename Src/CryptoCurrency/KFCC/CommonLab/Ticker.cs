@@ -45,6 +45,26 @@ namespace CommonLab
         {
             return "H:"+High+ " L:" + Low + " S:" + Sell + " B:" + Buy + " La:" + Last + " V:" + Volume + " O:"+ Open;
         }
+        public string ToOCHLString()
+        {
+            return Open + "," + Last + "," + High + "," + Low + "," + Buy + "," + Sell + "," + Volume + "," + ExchangeTimeStamp;
+        }
+        public Ticker Clone()
+        {
+            Ticker t = new Ticker();
+            //Info	:交易所返回的原始结构
+            t.High = High;//	:最高价
+            t.Low = Low;//	:最低价
+            t.Sell = Sell;//	:卖一价
+            t.Buy = Buy;//	:买一价
+            t.Last = Last;//	:最后成交价
+            t.Volume = Volume;//	:最近成交量
+            t.Open = Open;//开盘价
+            t.ExchangeTimeStamp = ExchangeTimeStamp;//时间戳 交易所返回的
+            t.LocalServerTimeStamp = LocalServerTimeStamp;//本地时间戳
+            t.Delay = Delay;
+            return t;
+        }
     }
     public class TradingInfo
     {

@@ -12,7 +12,12 @@ namespace CommonLab
 {
     public static class Utility
     {
-        public static DataTable ToDataTable<T>(IEnumerable<T> collection)
+        public static double ToFixed(double d, int s)
+        {
+            double sp = Math.Pow(10, s);
+            return Math.Truncate(d) + Math.Floor((d - Math.Truncate(d)) * sp) / sp;
+        }
+    public static DataTable ToDataTable<T>(IEnumerable<T> collection)
         {
             var props = typeof(T).GetProperties();
             var dt = new DataTable();
@@ -113,6 +118,14 @@ namespace CommonLab
             var hash = hmacSha256.ComputeHash(Encoding.UTF8.GetBytes(hashSource)).ToArray();
             return Convert.ToBase64String(hash);
         }
+        public static string CreateSign_Binance(Dictionary<string, string> data, string secretKey)
+        {
+            string str = ConvertQueryString_Binance(data,true);
+            var hmacSha256 = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey));
+            var hash = hmacSha256.ComputeHash(Encoding.UTF8.GetBytes(str));
+            return BitConverter.ToString(hash).Replace("-", "");
+
+        }
         public static string ConvertQueryString_Huobi(Dictionary<string, object> data, bool urlencode = false)
         {
             var stringbuilder = new StringBuilder();
@@ -123,6 +136,15 @@ namespace CommonLab
             stringbuilder.Remove(stringbuilder.Length - 1, 1);
             return stringbuilder.ToString();
         }
-        
+        public static string ConvertQueryString_Binance(Dictionary<string, string> data, bool urlencode = false)
+        {
+            var stringbuilder = new StringBuilder();
+            foreach (var item in data)
+            {
+                stringbuilder.AppendFormat("{0}={1}&", item.Key, urlencode ? Uri.EscapeDataString(item.Value.ToString()) : item.Value.ToString());
+            }
+            stringbuilder.Remove(stringbuilder.Length - 1, 1);
+            return stringbuilder.ToString();
+        }
     }
 }

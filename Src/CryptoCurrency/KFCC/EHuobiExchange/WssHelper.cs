@@ -182,6 +182,14 @@ namespace KFCC.EHuobiExchange
 
                 }
             };
+            ws.OnError += (sender, e) =>
+            {
+                Thread.Sleep(10000);
+                CommonLab.Log log = new Log("/log/huobi_wss_err.log");
+                log.WriteLine(e.Message);
+                log.WriteLine(e.Exception.StackTrace);
+                ws.Connect();
+            };
             ws.Connect();
         }
 

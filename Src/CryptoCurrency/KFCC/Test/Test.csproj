@@ -57,6 +57,10 @@
       <Project>{09f95fc2-52a7-45f4-9624-25912dc293fa}</Project>
       <Name>CommonLab</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EBinance\EBinance.csproj">
+      <Project>{7c02d7be-eef2-4636-bf36-dc8a75838598}</Project>
+      <Name>EBinance</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EBitstamp\EBitstamp.csproj">
       <Project>{7d02ce45-07bd-4b54-8032-800d5a38f6fc}</Project>
       <Name>EBitstamp</Name>
