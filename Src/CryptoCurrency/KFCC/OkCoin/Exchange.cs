@@ -153,7 +153,7 @@ namespace KFCC.EOkCoin
                 t.Volume = Convert.ToDouble(ticker["vol"].ToString());
                 t.Open = 0;// Convert.ToDouble(ticker["open"].ToString());
                 t.ExchangeTimeStamp = Convert.ToDouble(obj["date"].ToString());
-                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                 t.Delay = (DateTime.Now - st).TotalMilliseconds;
                 UpdateTicker(tradingpair, t);
             }
@@ -191,7 +191,7 @@ namespace KFCC.EOkCoin
                 d.AddNewBid(m);
             }
             d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
-            d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
             d.Delay = (DateTime.Now - st).TotalMilliseconds;
             UpdateDepth(tradingpair, d);
             return d;
@@ -217,7 +217,7 @@ namespace KFCC.EOkCoin
                 t.Price = Convert.ToDouble(trade["price"].ToString());
                 t.Type = CommonLab.Trade.GetType(trade["type"].ToString());
                 t.ExchangeTimeStamp = Convert.ToDouble(trade["date_ms"].ToString())/1000; //时间戳 交易所返回的
-                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now); //本地时间戳
+                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now); //本地时间戳
                 t.BuyOrderID = "";//成交的交易号
                 t.SellOrderID = "";//成交的交易号
                 trades.Add(t);

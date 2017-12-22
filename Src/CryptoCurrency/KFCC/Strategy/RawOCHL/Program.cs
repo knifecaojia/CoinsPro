@@ -18,6 +18,7 @@ namespace RawOCHL
         static KFCC.ExchangeInterface.IExchanges exchangebitstamp = new BitstampExchange("SkDFzpEwvEHyXl45Bvc0nlHXPeP3e1Wa", "hIW0CYUK1NvbZR73N5rPDO0yly4GgK3l", "rqno1092", "caojia");
         static KFCC.ExchangeInterface.IExchanges exchangeokex = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
         static KFCC.EHuobiExchange.HuobiExchange exchangehuobi = new KFCC.EHuobiExchange.HuobiExchange("cbf0909f-7842f68b-8c0db43c-04172", "7e022c00-19e4e4a8-2b3ed1d9-312e0", "0", "caojia");
+        static KFCC.EBinance.EBinanceExchange exchangebianace= new KFCC.EBinance.EBinanceExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
         static CommonLab.TradePair ltc_btc = new CommonLab.TradePair("ltc", "btc");
         static string input = "";
         //static CommonLab.TradePair bch_btc = new CommonLab.TradePair("bch", "btc");
@@ -25,7 +26,28 @@ namespace RawOCHL
         //static CommonLab.TradePair btc_usd = new CommonLab.TradePair("btc", "usd");
         static void Main(string[] args)
         {
-            Console.WriteLine(DateTime.Now.ToString() + " Start to collecting data! 1-ok 2-bitstamp 3-huobi");
+            Console.WriteLine(DateTime.Now.ToString() + " select tradingpair 1-ltc/btc 2-bch/btc 3-btc/usdt 4-eth/btc 5-qtum/btc");
+            string tp = Console.ReadLine();
+            switch (tp)
+            {
+                case "1":
+                    ltc_btc = new CommonLab.TradePair("ltc", "btc");
+                    break;
+                case "2":
+                    ltc_btc = new CommonLab.TradePair("bch", "btc");
+                    break;
+                case "3":
+                    ltc_btc = new CommonLab.TradePair("btc", "usdt");
+                    break;
+                case "4":
+                    ltc_btc = new CommonLab.TradePair("eth", "btc");
+                    break;
+                case "5":
+                    ltc_btc = new CommonLab.TradePair("qtum", "btc");
+                    break;
+
+            }
+            Console.WriteLine(DateTime.Now.ToString() + " Start to collecting data! 1-ok 2-bitstamp 3-huobi 4-bianace");
             input = Console.ReadLine();
             if (input == "1")
             {
@@ -33,6 +55,7 @@ namespace RawOCHL
                 //exchangeokex.Subscribe(bch_btc, CommonLab.SubscribeTypes.WSS);
                 //exchangeokex.Subscribe(btc_usdt, CommonLab.SubscribeTypes.WSS);
                 exchangeokex.TickerEvent += Exchange_TickerEvent;
+                Console.Title = exchangeokex.Name + ltc_btc.ToString();
             }
             else if (input == "2")
             {
@@ -41,16 +64,25 @@ namespace RawOCHL
                 //exchangebitstamp.Subscribe(bch_btc, CommonLab.SubscribeTypes.WSS);
                 //exchangebitstamp.Subscribe(btc_usd, CommonLab.SubscribeTypes.WSS);
                 exchangebitstamp.TickerEvent += Exchange_TickerEvent;
+                Console.Title = exchangebitstamp.Name + ltc_btc.ToString();
             }
-            else
+            else if(input=="3")
             {
                 exchangehuobi.Subscribe(ltc_btc, CommonLab.SubscribeTypes.WSS);
                 //exchangehuobi.Subscribe(bch_btc, CommonLab.SubscribeTypes.WSS);
                 //exchangehuobi.Subscribe(btc_usdt, CommonLab.SubscribeTypes.WSS);
                 exchangehuobi.TickerEvent += Exchange_TickerEvent;
+                Console.Title = exchangehuobi.Name + ltc_btc.ToString();
             }
-
-
+            else if (input == "4")
+            {
+                exchangebianace.Subscribe(ltc_btc, CommonLab.SubscribeTypes.WSS);
+                //exchangehuobi.Subscribe(bch_btc, CommonLab.SubscribeTypes.WSS);
+                //exchangehuobi.Subscribe(btc_usdt, CommonLab.SubscribeTypes.WSS);
+                exchangebianace.TickerEvent += Exchange_TickerEvent;
+                Console.Title = exchangebianace.Name + ltc_btc.ToString();
+            }
+           
             //KFCC.ExchangeInterface.IExchanges exchangebitstamp = new BitstampExchange("SkDFzpEwvEHyXl45Bvc0nlHXPeP3e1Wa", "hIW0CYUK1NvbZR73N5rPDO0yly4GgK3l", "rqno1092", "caojia");
             //KFCC.ExchangeInterface.IExchanges exchangeokex = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
             //KFCC.EHuobiExchange.HuobiExchange exchangehuobi = new KFCC.EHuobiExchange.HuobiExchange("cbf0909f-7842f68b-8c0db43c-04172", "7e022c00-19e4e4a8-2b3ed1d9-312e0", "0", "caojia");
@@ -60,9 +92,9 @@ namespace RawOCHL
 
 
 
-            
-          
-           
+
+
+
             Cache.Add(exchangebitstamp.Name, new exchangecahe());
             Cache.Add(exchangehuobi.Name, new exchangecahe());
             Cache.Add(exchangeokex.Name, new exchangecahe());
@@ -109,13 +141,17 @@ namespace RawOCHL
 
                     t.Start(exchangebitstamp);
                 }
-                else
+                else if(input == "3")
                 {
 
                     t.Start(exchangehuobi);
                 }
-               
-              
+                else if (input == "4")
+                {
+
+                    t.Start(exchangebianace);
+                }
+
                 Thread.Sleep(1000);
             }
         }

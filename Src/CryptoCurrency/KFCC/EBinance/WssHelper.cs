@@ -79,8 +79,8 @@ namespace KFCC.EBinance
                         t.Buy = Convert.ToDouble(ticker["b"].ToString());
                         t.Volume = Convert.ToDouble(ticker["q"].ToString());
                         t.Open = 0;// Convert.ToDouble(ticker["open"].ToString());
-                        t.ExchangeTimeStamp = Convert.ToDouble(ticker["E"].ToString())/1000;
-                        t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                        t.ExchangeTimeStamp = Convert.ToDouble(ticker["E"].ToString());
+                        t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                         //UpdateTicker(tradingpair, t);
 
                         _tradinginfo.t = t;
@@ -111,12 +111,12 @@ namespace KFCC.EBinance
                         _tradinginfo.trade.TradeID = trade["t"].ToString();
                         _tradinginfo.trade.Price = Convert.ToDouble(trade["p"].ToString());
                         _tradinginfo.trade.Amount = Convert.ToDouble(trade["q"].ToString());
-                        _tradinginfo.trade.ExchangeTimeStamp = Convert.ToDouble(trade["E"].ToString()) / 1000;
+                        _tradinginfo.trade.ExchangeTimeStamp = Convert.ToDouble(trade["E"].ToString()) ;
                         if (trade["m"].ToString() == "m")
                             _tradinginfo.trade.Type = TradeType.Buy;
                         else
                             _tradinginfo.trade.Type = TradeType.Sell;
-                        _tradinginfo.trade.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                        _tradinginfo.trade.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                            TradeInfoEvent(_tradinginfo, TradeEventType.TRADE);
                     }
                     catch (Exception err)
@@ -158,7 +158,7 @@ namespace KFCC.EBinance
                             _tradinginfo.d.AddNewBid(m);
                         }
                         _tradinginfo.d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
-                        _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                        _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                         TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
                     }
                     catch (Exception err)

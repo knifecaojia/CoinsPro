@@ -128,7 +128,8 @@ namespace KFCC.EHuobiExchange
                                 t.Volume = Convert.ToDouble(ticker["vol"].ToString());
                                 t.Open = Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
                                 t.ExchangeTimeStamp = Convert.ToDouble(obj["ts"].ToString()) / 1000;
-                                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                                t.Delay = t.LocalServerTimeStamp - t.ExchangeTimeStamp;
                                 //UpdateTicker(tradingpair, t);
                                 _tradinginfo.t = t;
 
@@ -160,9 +161,9 @@ namespace KFCC.EHuobiExchange
                                 m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
                                 _tradinginfo.d.AddNewBid(m);
                             }
-                            _tradinginfo.d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"]) / 1000;// Convert.ToDouble(obj["timestamp"].ToString());
-                            _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
-
+                            _tradinginfo.d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"]) ;// Convert.ToDouble(obj["timestamp"].ToString());
+                            _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                            _tradinginfo.d.Delay = _tradinginfo.d.LocalServerTimeStamp - _tradinginfo.d.ExchangeTimeStamp;
                             if ((_tradinginfo.t.Buy != _tradinginfo.d.Bids[0].Price) || (_tradinginfo.t.Sell != _tradinginfo.d.Asks[0].Price))
                             {
                                 TradeInfoEvent(_tradinginfo, TradeEventType.TICKER);

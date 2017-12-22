@@ -49,7 +49,7 @@ namespace KFCC.EOkCoin
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_depth_20'}");
                 ws.Send("{'event':'addChannel','channel':'ok_sub_spot_" + _tradingpair + "_deals'}");
 
-                if (!CheckTread.IsAlive) CheckTread.Start();
+                //if (!CheckTread.IsAlive) CheckTread.Start();
             };
             
             ws.OnMessage += (sender, e) => {
@@ -77,7 +77,9 @@ namespace KFCC.EOkCoin
                                 t.Volume = Convert.ToDouble(ticker["vol"].ToString());
                                 t.Open = 0;// Convert.ToDouble(ticker["open"].ToString());
                                 t.ExchangeTimeStamp = Convert.ToDouble(ticker["timestamp"].ToString());
-                                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                                
+                                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                                t.Delay = t.LocalServerTimeStamp - t.ExchangeTimeStamp;
                                 //UpdateTicker(tradingpair, t);
 
                                 _tradinginfo.t = t;
@@ -128,7 +130,9 @@ namespace KFCC.EOkCoin
                             catch
                             { }
                             _tradinginfo.d.ExchangeTimeStamp =  Convert.ToDouble(obj["timestamp"].ToString());
-                            _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                            _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                            _tradinginfo.d.Delay = _tradinginfo.d.LocalServerTimeStamp - _tradinginfo.d.ExchangeTimeStamp;
+
                             _tradinginfo.t.UpdateTickerBuyDepth(_tradinginfo.d);
                             TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
                         }
@@ -140,9 +144,9 @@ namespace KFCC.EOkCoin
                                 _tradinginfo.trade.TradeID = trade[0].ToString();
                                 _tradinginfo.trade.Price = Convert.ToDouble(trade[1].ToString());
                                 _tradinginfo.trade.Amount = Convert.ToDouble(trade[2].ToString());
-                                _tradinginfo.trade.ExchangeTimeStamp = CommonLab.TimerHelper.GetTimeStamp(Convert.ToDateTime(trade[3].ToString()));
+                                _tradinginfo.trade.ExchangeTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(Convert.ToDateTime(trade[3].ToString()));
                                 _tradinginfo.trade.Type =Trade.GetType(trade[4].ToString());
-                                _tradinginfo.trade.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                                _tradinginfo.trade.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                                 //UpdateTicker(tradingpair, t);
 
                                
@@ -161,10 +165,12 @@ namespace KFCC.EOkCoin
             };
             ws.OnError += (sender, e) =>
             {
-                Thread.Sleep(10000);
+                
+                Thread.Sleep(1000);
                 CommonLab.Log log = new Log("/log/okcoin_wss_err.log");
                 log.WriteLine(e.Message);
                 log.WriteLine(e.Exception.StackTrace);
+                ws.Close();
                 ws.Connect();
             };
             ws.Connect();
@@ -184,7 +190,7 @@ namespace KFCC.EOkCoin
                     ws.Connect();
                     LastCommTimeStamp = DateTime.Now;
                 }
-                Thread.Sleep(10000);
+                Thread.Sleep(1000);
             }
         
         }

@@ -157,8 +157,8 @@ namespace KFCC.EBitstamp
             t.Buy = Convert.ToDouble(obj["bid"].ToString());
             t.Volume = Convert.ToDouble(obj["volume"].ToString());
             t.Open = Convert.ToDouble(obj["open"].ToString());
-            t.ExchangeTimeStamp= Convert.ToDouble(obj["timestamp"].ToString());
-            t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            t.ExchangeTimeStamp= Convert.ToDouble(obj["timestamp"].ToString())*1000;
+            t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
             t.Delay = (DateTime.Now - st).TotalMilliseconds;
             UpdateTicker(tradingpair, t);
             return t;
@@ -190,8 +190,8 @@ namespace KFCC.EBitstamp
                 m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
                 d.Bids.Add(m);
             }
-            d.ExchangeTimeStamp = Convert.ToDouble(obj["timestamp"].ToString());
-            d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            d.ExchangeTimeStamp = Convert.ToDouble(obj["timestamp"].ToString())*1000;
+            d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
             d.Delay = (DateTime.Now - st).TotalMilliseconds;
             UpdateDepth(tradingpair, d);
             return d;

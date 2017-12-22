@@ -153,8 +153,8 @@ namespace KFCC.EHuobiExchange
                 t.Buy = Convert.ToDouble(JArray.Parse(ticker["bid"].ToString())[0]);
                 t.Volume = Convert.ToDouble(ticker["vol"].ToString());
                 t.Open = Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
-                t.ExchangeTimeStamp = Convert.ToDouble(obj["ts"].ToString())/1000;
-                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+                t.ExchangeTimeStamp = Convert.ToDouble(obj["ts"].ToString());
+                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                 t.Delay = (DateTime.Now - st).TotalMilliseconds;
                 UpdateTicker(tradingpair, t);
             }
@@ -191,8 +191,8 @@ namespace KFCC.EHuobiExchange
                 m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
                 d.Bids.Add(m);
             }
-            d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"])/1000;// Convert.ToDouble(obj["timestamp"].ToString());
-            d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"]);// Convert.ToDouble(obj["timestamp"].ToString());
+            d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
             d.Delay = (DateTime.Now - st).TotalMilliseconds;
             UpdateDepth(tradingpair, d);
             return d;

@@ -29,7 +29,7 @@ namespace CommonLab
             if (Low > t.Price)
                 Low = t.Price;
             ExchangeTimeStamp = t.ExchangeTimeStamp;
-            LocalServerTimeStamp = TimerHelper.GetTimeStamp(DateTime.Now);
+            LocalServerTimeStamp = TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
         }
         public void UpdateTickerBuyDepth(Depth d)
         {

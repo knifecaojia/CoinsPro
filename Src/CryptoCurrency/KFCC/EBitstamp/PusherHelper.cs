@@ -114,8 +114,8 @@ namespace KFCC.EBitstamp
             t.Type = (CommonLab.TradeType)data.type;
             t.SellOrderID = data.sell_order_id;
             t.BuyOrderID = data.buy_order_id;
-            t.ExchangeTimeStamp = data.timestamp;
-            t.LocalServerTimeStamp= CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            t.ExchangeTimeStamp = data.timestamp*1000;
+            t.LocalServerTimeStamp= CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
 
 
             _tradinginfo.t.UpdateTickerBuyTrade(t);
@@ -148,8 +148,8 @@ namespace KFCC.EBitstamp
                 _tradinginfo.d.AddNewBid(m);
             }
             
-            _tradinginfo.d.ExchangeTimeStamp = Convert.ToDouble(data.timestamp);
-            _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStamp(DateTime.Now);
+            _tradinginfo.d.ExchangeTimeStamp = Convert.ToDouble(data.timestamp)*1000;
+            _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
             LastCommTimeStamp = DateTime.Now;
             _tradinginfo.t.UpdateTickerBuyDepth(_tradinginfo.d);
             TradeInfoEvent(_tradinginfo,TradeEventType.ORDERS);

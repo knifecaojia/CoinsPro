@@ -8,10 +8,10 @@ namespace CommonLab
 {
     public static class TimerHelper
     {
-        static public long GetTimeStamp(DateTime dt)
+        static public double GetTimeStamp(DateTime dt)
         {
             System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0, 0));
-            long t = (long)(dt - startTime).TotalSeconds;   //除10000调整为13位      
+            double t = (dt - startTime).TotalSeconds;   //除10000调整为13位      
             return t;
         }
         static public long GetTimeStampMilliSeconds(DateTime dt)
