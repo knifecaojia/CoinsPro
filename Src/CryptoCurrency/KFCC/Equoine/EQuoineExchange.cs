@@ -9,9 +9,9 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Net;
 
-namespace KFCC.EBinance
+namespace KFCC.EQuoine
 {
-    public class EBinanceExchange : KFCC.ExchangeInterface.IExchanges
+    public class EQuoineExchange : KFCC.ExchangeInterface.IExchanges
     {
         private static string _secret;
         private static string _key;
@@ -19,11 +19,12 @@ namespace KFCC.EBinance
         private static string _username;
         private Proxy _proxy = null;
         static private Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> _subscribedtradingpairs = null;
-        static private string ApiUrl = @"https://api.binance.com/";
+        static private string ApiUrl = "https://api.quoine.com";
+   
 
-        public string Name { get { return "Binance"; } }
-        public string ExchangeUrl { get { return "www.binance.com"; } }
-        public string Remark { get { return "Binance exchange remark"; } }
+        public string Name { get { return "Quoine"; } }
+        public string ExchangeUrl { get { return "www.Quoine.com"; } }
+        public string Remark { get { return "Quoine exchange remark"; } }
         public string Secret { get { return _secret; } set { _secret = value; } }
         public string Key { get { return _key; } set { _key = value; } }
         public string UID { get { return _uid; } set { _uid = value; } }
@@ -42,14 +43,17 @@ namespace KFCC.EBinance
         public event ExchangeEventWarper.TradeEventHander TradeEvent;
         public event ExchangeEventWarper.SubscribedEventHander SubscribedEvent;
 
-        public EBinanceExchange(string key, string secret, string uid, string username)
+        private RestRequest restrequest;
+
+        public EQuoineExchange(string key, string secret, string uid, string username)
         {
             _key = key;
             _secret = secret;
             _uid = uid;
             _username = username;
+            GetProducts();
         }
-        public EBinanceExchange()
+        public EQuoineExchange()
         {
 
         }
@@ -67,6 +71,36 @@ namespace KFCC.EBinance
             eFee.MakerFee = Convert.ToDouble(maker) / 100;
             eFee.TakerFee = Convert.ToDouble(taker) / 100;
         }
+        private Dictionary<string, int> ExchangeProducts = new Dictionary<string, int>();
+       
+        private void GetProducts()
+        {
+            string url = ApiUrl + "/products";
+            restrequest = new RestRequest(Method.GET);
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            restrequest.AddHeader("X-Quoine-API-Version","2");
+            var rr = rc.Execute(restrequest);
+            string raw = rr.Content;
+            JArray products = JArray.Parse(raw);
+            if (products.Count > 0)
+                for (int i = 0; i < products.Count; i++)
+                {
+                    if (ExchangeProducts.ContainsKey(products[i]["currency_pair_code"].ToString()))
+                    {
+                        ExchangeProducts[products[i]["currency_pair_code"].ToString()] = Convert.ToInt32(products[i]["id"].ToString());
+                    }
+                    else
+                    {
+                        ExchangeProducts.Add(products[i]["currency_pair_code"].ToString(), Convert.ToInt32(products[i]["id"].ToString()));
+                    }
+                }
+
+        }
+        
         public bool Subscribe(CommonLab.TradePair tp, SubscribeTypes st)
         {
             //throw new NotImplementedException();
@@ -74,6 +108,7 @@ namespace KFCC.EBinance
             string tradingpairs = GetLocalTradingPairString(tp, st);
             if (st == SubscribeTypes.WSS)
             {
+                //throw new Exception("This exchange does not support wss subscribing");
                 if (_subscribedtradingpairs == null)
                 {
                     _subscribedtradingpairs = new Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface>();
@@ -88,8 +123,9 @@ namespace KFCC.EBinance
                     string raw;
                     Ticker t = GetTicker(GetLocalTradingPairString(tp), out raw);
                     Depth d = GetDepth(GetLocalTradingPairString(tp), out raw);
-                    _subscribedtradingpairs.Add(tradingpairs, new WssHelper(tp, t, d));
-                    _subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
+                    _subscribedtradingpairs.Add(tradingpairs, new RESTHelper(tp, t, d));
+                    //这里根据循环给出假事件
+                    //_subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
                 }
             }
             else if (st == SubscribeTypes.RESTAPI)
@@ -117,7 +153,7 @@ namespace KFCC.EBinance
             return true;
         }
 
-        private void OkCoinExchange_TradeInfoEvent(TradingInfo ti, TradeEventType tt)
+        private void QuoineExchange_TradeInfoEvent(TradingInfo ti, TradeEventType tt)
         {
             if (TickerEvent != null && tt == TradeEventType.TICKER)
             {
@@ -137,33 +173,36 @@ namespace KFCC.EBinance
         public Ticker GetTicker(string tradingpair, out string rawresponse)
         {
             DateTime st = DateTime.Now;
-            //throw new NotImplementedException();
-            string url = GetPublicApiURL("symbol="+tradingpair+ "&interval=1m&limit=1", "api/v1/klines");
-            rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
-            CommonLab.Ticker t = new Ticker();
-            JArray ticker = JArray.Parse(JArray.Parse(rawresponse)[0].ToString());
+           
+            string url = ApiUrl + "/products/" + ExchangeProducts[tradingpair];
+            restrequest = new RestRequest(Method.GET);
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            restrequest.AddHeader("X-Quoine-API-Version", "2");
+            var rr = rc.Execute(restrequest);
+            rawresponse = rr.Content;
+            JObject ticker = JObject.Parse(rawresponse);
+            Ticker t = new Ticker();
             try
             {
                 
-                t.High = Convert.ToDouble(ticker[2].ToString());
-                t.Low = Convert.ToDouble(ticker[3].ToString());
-                t.Last = Convert.ToDouble(ticker[4].ToString());
-                //t.Sell = Convert.ToDouble(ticker["sell"].ToString());
-                //t.Buy = Convert.ToDouble(ticker["buy"].ToString());
-                t.Volume = Convert.ToDouble(ticker[5].ToString());
-                t.Open = Convert.ToDouble(ticker[1].ToString());// Convert.ToDouble(ticker["open"].ToString());
-                t.ExchangeTimeStamp = Convert.ToDouble(ticker[6]);
+                t.High = Convert.ToDouble(ticker["high_market_ask"].ToString());
+                t.Low = Convert.ToDouble(ticker["low_market_bid"].ToString());
+                t.Last = Convert.ToDouble(ticker["last_traded_price"].ToString());
+                t.Sell = Convert.ToDouble(ticker["market_ask"].ToString());
+                t.Buy = Convert.ToDouble(ticker["market_bid"].ToString());
+                t.Volume = Convert.ToDouble(ticker["volume_24h"].ToString());
+                t.Open = Convert.ToDouble(ticker["last_price_24h"].ToString());// Convert.ToDouble(ticker["open"].ToString());
+                //t.ExchangeTimeStamp = Convert.ToDouble(ticker[6]);
                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                 t.Delay = (DateTime.Now - st).TotalMilliseconds;
-                string r;
-                Depth d = GetDepth(tradingpair, out r);
-                if (d.Bids.Count > 0)
-                    t.Buy = d.Bids[0].Price;
-                if (d.Asks.Count > 0)
-                    t.Sell = d.Asks[0].Price;
+               
                 UpdateTicker(tradingpair, t);
             }
-            catch
+            catch(Exception e)
             {
 
             }
@@ -173,13 +212,23 @@ namespace KFCC.EBinance
         public Depth GetDepth(string tradingpair, out string rawresponse)
         {
             DateTime st = DateTime.Now;
-            string url = GetPublicApiURL("symbol=" + tradingpair + "&limit=50", "api/v1/depth");
-            rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
+
+            string url = ApiUrl + "/products/" + ExchangeProducts[tradingpair]+ "/price_levels";
+            restrequest = new RestRequest(Method.GET);
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+            restrequest.AddHeader("X-Quoine-API-Version", "2");
+            var rr = rc.Execute(restrequest);
+            rawresponse = rr.Content;
+            JObject ticker = JObject.Parse(rawresponse);
             CommonLab.Depth d = new Depth();
             d.Asks = new List<MarketOrder>();
             d.Bids = new List<MarketOrder>();
             JObject obj = JObject.Parse(rawresponse);
-            JArray jasks = JArray.Parse(obj["asks"].ToString());
+            JArray jasks = JArray.Parse(obj["sell_price_levels"].ToString());
             for (int i = 0; i < jasks.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
@@ -188,7 +237,7 @@ namespace KFCC.EBinance
                 d.AddNewAsk(m);
             }
 
-            JArray jbids = JArray.Parse(obj["bids"].ToString());
+            JArray jbids = JArray.Parse(obj["buy_price_levels"].ToString());
             for (int i = 0; i < jbids.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
@@ -242,6 +291,8 @@ namespace KFCC.EBinance
         /// <param name="d"></param>
         protected void UpdateDepth(string tradingpair, Depth d)
         {
+            if (SubscribedTradingPairs == null)
+                return;
             if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 ((RESTHelper)SubscribedTradingPairs[tradingpair]).UpdateDepth(d);
@@ -360,10 +411,10 @@ namespace KFCC.EBinance
 
         public string GetLocalTradingPairString(TradePair t, SubscribeTypes st = CommonLab.SubscribeTypes.RESTAPI)
         {
-            if (t.FromSymbol.ToLower() == "bch")
-                return "BCC" + t.ToSymbol.ToUpper();
-            if (t.ToSymbol.ToLower() == "bch")
-                return t.FromSymbol.ToUpper() + "BCC";
+            if (t.FromSymbol.ToLower() == "bcc")
+                return "BCH" + t.ToSymbol.ToUpper();
+            if (t.ToSymbol.ToLower() == "bcc")
+                return t.FromSymbol.ToUpper() + "BCH";
             return t.FromSymbol.ToUpper() + t.ToSymbol.ToUpper();
         }
 
@@ -525,8 +576,8 @@ namespace KFCC.EBinance
             try
             {
                 JObject obj = JObject.Parse(rawresponse);
-                if (obj.Property("error_code") != null)
-                    throw (new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
+                //if (obj.Property("error_code") != null)
+                //    throw (new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
                 if (!Convert.ToBoolean(obj["result"]))
                 {
                     throw (new Exception("error:" + rawresponse));
@@ -578,8 +629,8 @@ namespace KFCC.EBinance
 
                     rawresponse = response.Content;
                     obj = JObject.Parse(rawresponse);
-                    if (obj.Property("error_code") != null)
-                        throw (new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
+                    //if (obj.Property("error_code") != null)
+                    //    throw (new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
                     if (!Convert.ToBoolean(obj["result"]))
                     {
                         throw (new Exception("error:" + rawresponse));
@@ -814,8 +865,9 @@ namespace KFCC.EBinance
             {
                 return new Exception("\"error_code\" not found in raw json string!");
             }
-            else
-                return new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString()));
+            //else
+            //    return new Exception(SpotErrcode2Msg.Prase(obj["error_code"].ToString()));
+            return new Exception("\"error_code\" not found in raw json string!");
         }
 
         public void DisSubcribe(TradePair tp, SubscribeTypes st)

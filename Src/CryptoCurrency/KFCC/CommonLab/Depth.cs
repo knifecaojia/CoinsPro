@@ -123,25 +123,34 @@ namespace CommonLab
         }
         public string ToString(int count=3)
         {
-            string bids = "delay:"+Delay+"ms bids:";
+            string bids = "delay:"+Delay+"ms \r\nbids:                                ask:\r\n";
             if (count > (Math.Min(Asks.Count, Bids.Count)))
             {
                 count = Math.Min(Asks.Count, Bids.Count);
             }
             for (int i = 0; i < count; i++)
             {
-                bids += Bids[i].Amount + "@" + Bids[i].Price;
-                if (i < count - 1)
-                    bids += "|";
+                string ba = Bids[i].Amount.ToString("F8");
+                string bp = "@"+Bids[i].Price.ToString("F8");
+                for (int s = 0; s < 18 - ba.Length; s++)
+                {
+                    ba += " ";
+                }
+                ba += bp;
+                ba += "        ";
+
+                string aa = Asks[i].Amount.ToString("F8");
+                string ap = "@" + Asks[i].Price.ToString("F8");
+                for (int s = 0; s < 18 - aa.Length; s++)
+                {
+                    aa += " ";
+                }
+                aa += ap;
+                aa += "\r\n";
+                bids += ba + aa;
             }
-            string asks = "asks:";
-            for (int i = 0; i < count; i++)
-            {
-                asks += Asks[i].Amount + "@" + Asks[i].Price;
-                if (i < count - 1)
-                    asks += "|";
-            }
-            return bids + "----" + asks;
+
+            return bids;
         }
     }
 }
