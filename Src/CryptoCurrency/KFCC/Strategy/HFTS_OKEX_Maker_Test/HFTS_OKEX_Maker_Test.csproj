@@ -53,13 +53,13 @@
       <Project>{09f95fc2-52a7-45f4-9624-25912dc293fa}</Project>
       <Name>CommonLab</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Exchanges\ExchangeInterface.csproj">
-      <Project>{acaeec48-25f8-4675-9fbc-3ef1f17e0e68}</Project>
-      <Name>ExchangeInterface</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\OkCoin\OkCoin.csproj">
+    <ProjectReference Include="..\..\Exchanges\OkCoin\OkCoin.csproj">
       <Project>{ddb3740c-e219-4d1e-be80-f3e518d41515}</Project>
       <Name>OkCoin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Interface\Exchangeinterface\ExchangeInterface.csproj">
+      <Project>{acaeec48-25f8-4675-9fbc-3ef1f17e0e68}</Project>
+      <Name>ExchangeInterface</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

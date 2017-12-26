@@ -57,29 +57,29 @@
       <Project>{09f95fc2-52a7-45f4-9624-25912dc293fa}</Project>
       <Name>CommonLab</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EBinance\EBinance.csproj">
+    <ProjectReference Include="..\Exchanges\EBinance\EBinance.csproj">
       <Project>{7c02d7be-eef2-4636-bf36-dc8a75838598}</Project>
       <Name>EBinance</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EBitstamp\EBitstamp.csproj">
+    <ProjectReference Include="..\Exchanges\EBitstamp\EBitstamp.csproj">
       <Project>{7d02ce45-07bd-4b54-8032-800d5a38f6fc}</Project>
       <Name>EBitstamp</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EHuobiExchange\EHuobiExchange.csproj">
+    <ProjectReference Include="..\Exchanges\EHuobiExchange\EHuobiExchange.csproj">
       <Project>{0cf9695b-cf1b-4c8c-a890-37dce2d52294}</Project>
       <Name>EHuobiExchange</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Equoine\Equoine.csproj">
+    <ProjectReference Include="..\Exchanges\Equoine\Equoine.csproj">
       <Project>{cbbd3204-3c5e-4cca-8bc5-1bbddf8fab04}</Project>
       <Name>Equoine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Exchanges\ExchangeInterface.csproj">
-      <Project>{acaeec48-25f8-4675-9fbc-3ef1f17e0e68}</Project>
-      <Name>ExchangeInterface</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\OkCoin\OkCoin.csproj">
+    <ProjectReference Include="..\Exchanges\OkCoin\OkCoin.csproj">
       <Project>{ddb3740c-e219-4d1e-be80-f3e518d41515}</Project>
       <Name>OkCoin</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Interface\Exchangeinterface\ExchangeInterface.csproj">
+      <Project>{acaeec48-25f8-4675-9fbc-3ef1f17e0e68}</Project>
+      <Name>ExchangeInterface</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

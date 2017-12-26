@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommonLab;
-using KFCC.ExchangeInterface;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -14,7 +13,7 @@ using System.Net;
 
 namespace KFCC.EBitstamp
 {
-    public class BitstampExchange : IExchanges
+    public class BitstampExchange : KFCC.ExchangeInterface.IExchanges
     {
         private static string _secret;
         private static string _key;
