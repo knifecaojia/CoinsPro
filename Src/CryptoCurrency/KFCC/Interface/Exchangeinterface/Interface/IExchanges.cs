@@ -130,11 +130,12 @@ namespace KFCC.ExchangeInterface
 
         bool CancelOrder(string OrderID, string tradingpair, out string rawresponse);
 
-        bool CancelAllOrders();
+        bool CancelAllOrders(string tradingpair="");
+       
 
-        int Buy(string Symbol, double Price, double Amount);
+        string Buy(string Symbol, double Price, double Amount);
 
-        int Sell(string Symbol, double Price, double Amount);
+        string Sell(string Symbol, double Price, double Amount);
         #endregion
     }
 }

@@ -304,12 +304,13 @@ namespace KFCC.EQuoine
         /// <param name="t"></param>
         protected void UpdateTicker(string tradingpair, Ticker t)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 ((RESTHelper)SubscribedTradingPairs[tradingpair]).TradeInfo.t = t;
             }
         }
-        protected int Trade(OrderType type, string tradingpair, double price, double amount)
+        protected string Trade(OrderType type, string tradingpair, double price, double amount)
         {
             CheckSet();
             price = CommonLab.Utility.ToFixed(price, 6);
@@ -386,7 +387,7 @@ namespace KFCC.EQuoine
             {
                 JObject obj = JObject.Parse(rawresponse);
        
-                return Convert.ToInt32(obj["orderId"]);
+                return obj["orderId"].ToString();
             }
             catch (Exception e)
             {
@@ -767,7 +768,7 @@ namespace KFCC.EQuoine
             return false;
         }
 
-        public bool CancelAllOrders()
+        public bool CancelAllOrders(string tradingpair = "")
         {
             bool flag = false;
             try
@@ -795,7 +796,7 @@ namespace KFCC.EQuoine
 
         }
 
-        public int Buy(string Symbol, double Price, double Amount)
+        public string Buy(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -805,10 +806,10 @@ namespace KFCC.EQuoine
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETBUY, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
-        public int Sell(string Symbol, double Price, double Amount)
+        public string Sell(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -818,7 +819,7 @@ namespace KFCC.EQuoine
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETSELL, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
         public void CheckSet()

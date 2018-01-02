@@ -232,7 +232,8 @@ namespace KFCC.EOkCoin
         /// <param name="d"></param>
         protected void UpdateDepth(string tradingpair, Depth d)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 ((RESTHelper)SubscribedTradingPairs[tradingpair]).TradeInfo.d = d;
             }
@@ -243,12 +244,13 @@ namespace KFCC.EOkCoin
         /// <param name="t"></param>
         protected void UpdateTicker(string tradingpair, Ticker t)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 ((RESTHelper)SubscribedTradingPairs[tradingpair]).TradeInfo.t=t;
             }
         }
-        protected int Trade(OrderType type, string tradingpair,double price, double amount)
+        protected string Trade(OrderType type, string tradingpair,double price, double amount)
         {
             CheckSet();
             string url = GetPublicApiURL("", "trade.do");
@@ -305,7 +307,7 @@ namespace KFCC.EOkCoin
 
                      throw (new Exception("error:" + SpotErrcode2Msg.Prase(obj["error_code"].ToString())));
                 }
-                return Convert.ToInt32(obj["order_id"]);
+                return obj["order_id"].ToString();
             }
             catch (Exception e)
             {
@@ -692,7 +694,7 @@ namespace KFCC.EOkCoin
             return false ;
         }
 
-        public bool CancelAllOrders()
+        public bool CancelAllOrders(string tradingpair = "")
         {
             bool flag = false;
             try
@@ -702,6 +704,11 @@ namespace KFCC.EOkCoin
                     foreach (KeyValuePair<string, SubscribeInterface> item in SubscribedTradingPairs)
                     {
                         string raw = "";
+                        if(tradingpair.Length>0&&tradingpair!=item.Key)
+                        {
+                            continue;
+                           
+                        }
                         List<CommonLab.Order> orders = GetOrdersStatus(item.Key, out raw);
                         if (orders != null)
                         {
@@ -709,6 +716,7 @@ namespace KFCC.EOkCoin
                             { CancelOrder(orders[i].Id, item.Key, out raw); }
                             flag = true;
                         }
+
                     }
                 }
                 return flag;
@@ -720,7 +728,7 @@ namespace KFCC.EOkCoin
             
         }
 
-        public int Buy(string Symbol, double Price, double Amount)
+        public string Buy(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -730,10 +738,10 @@ namespace KFCC.EOkCoin
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETBUY, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
-        public int Sell(string Symbol, double Price, double Amount)
+        public string Sell(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -743,7 +751,7 @@ namespace KFCC.EOkCoin
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETSELL, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
         public void CheckSet()

@@ -153,7 +153,7 @@ namespace LeekReaperTest
                             p3 = OrderBook.Bids[0].Price;
                         try
                         {
-                            int oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p1, 0.5);
+                            string oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p1, 0.5);
                             log.log("Trading:Balance BUY price:" + p1 + " orderbook sell at:" + OrderBook.Asks[0].Price + " amount:" + 0.01 + " orderid:" + oid);
                             oid = exchange.Buy(exchange.GetLocalTradingPairString(tradepair), p2, 0.5);
                             log.log("Trading:Balance BUY price:" + p2 + " orderbook sell at:" + OrderBook.Asks[0].Price + " amount:" + 0.01 + " orderid:" + oid);
@@ -182,7 +182,7 @@ namespace LeekReaperTest
                             p3 = OrderBook.Asks[0].Price;
                         try
                         {
-                            int oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p1, 0.5);
+                            string oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p1, 0.5);
                             log.log("Trading:Balance SELL price:" + p1 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
                             oid = exchange.Sell(exchange.GetLocalTradingPairString(tradepair), p2, 0.5);
                             log.log("Trading:Balance SELL price:" + p2 + " orderbook buy at:" + OrderBook.Bids[0].Price + " amount:" + 0.01 + " orderid:" + oid);
@@ -342,7 +342,7 @@ namespace LeekReaperTest
                         continue;
                     }
                     string raw;
-                    int orderid=0;
+                    string orderid="";
                     try
                     {
 
@@ -366,7 +366,7 @@ namespace LeekReaperTest
                     }
 
                     Thread.Sleep(200);
-                    if (orderid > 0)
+                    if (orderid.Length>0)
                     {
                         while (true)
                         {

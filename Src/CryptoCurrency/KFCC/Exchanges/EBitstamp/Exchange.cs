@@ -204,12 +204,13 @@ namespace KFCC.EBitstamp
         /// 更新深度数据
         /// </summary>
         /// <param name="d"></param>
-        protected void UpdateDepth(string tradingpair,Depth d)
+        protected void UpdateDepth(string tradingpair, Depth d)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
-            {
-                ((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateDepth(d);
-            }
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
+                {
+                    ((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateDepth(d);
+                }
         }
         /// <summary>
         /// 更新深度数据
@@ -217,10 +218,11 @@ namespace KFCC.EBitstamp
         /// <param name="t"></param>
         protected void UpdateTicker(string tradingpair, Ticker t)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
-            {
-                ((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateTicker(t);
-            }
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
+                {
+                    ((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateTicker(t);
+                }
         }
         public string GetPublicApiURL(string tradingpair, string method)
         {
@@ -269,17 +271,17 @@ namespace KFCC.EBitstamp
             throw new NotImplementedException();
         }
 
-        public bool CancelAllOrders()
+        public bool CancelAllOrders(string tradingpair = "")
         {
             throw new NotImplementedException();
         }
 
-        public int Buy(string Symbol, double Price, double Amount)
+        public string Buy(string Symbol, double Price, double Amount)
         {
             throw new NotImplementedException();
         }
 
-        public int Sell(string Symbol, double Price, double Amount)
+        public string Sell(string Symbol, double Price, double Amount)
         {
             throw new NotImplementedException();
         }

@@ -55,11 +55,11 @@ namespace KFCC.EHuobiExchange
         }
         public WssHelper(CommonLab.TradePair tp, Ticker t, Depth d)
         {
-            if (tp.FromSymbol.ToLower() == "bch")
-                _tradingpair= "bcc" + tp.ToSymbol.ToLower();
-            else if (tp.ToSymbol.ToLower() == "bch")
-                _tradingpair = tp.FromSymbol.ToLower() + "bcc";
-            else
+            //if (tp.FromSymbol.ToLower() == "bch")
+            //    _tradingpair= "bcc" + tp.ToSymbol.ToLower();
+            //else if (tp.ToSymbol.ToLower() == "bch")
+            //    _tradingpair = tp.FromSymbol.ToLower() + "bcc";
+            //else
             _tradingpair = tp.FromSymbol.ToLower() + tp.ToSymbol.ToLower();
             _tradinginfo = new TradingInfo(SubscribeTypes.WSS, _tradingpair,tp);
             _tradinginfo.t = t;

@@ -118,6 +118,98 @@ namespace CommonLab
             var hash = hmacSha256.ComputeHash(Encoding.UTF8.GetBytes(hashSource)).ToArray();
             return Convert.ToBase64String(hash);
         }
+        public static string CreateSign_ZB(string secretKey, Dictionary<string, object> data)
+        {
+            var hashSource ="";
+            secretKey = digest(secretKey);
+            if (data != null)
+            {
+                hashSource += ConvertQueryString_Huobi(data, true);
+            }
+            byte[] k_ipad = new byte[64];
+            byte[] k_opad = new byte[64];
+            byte[] keyb;
+            byte[] value;
+            Encoding coding = Encoding.GetEncoding("UTF-8");
+            try
+            {
+                keyb = coding.GetBytes(secretKey);
+                // aKey.getBytes(encodingCharset);
+                value = coding.GetBytes(hashSource);
+                // aValue.getBytes(encodingCharset);
+            }
+            catch (Exception e)
+            {
+                keyb = null;
+                value = null;
+                //throw;
+            }
+            for (int i = keyb.Length; i < 64; i++)
+            {
+                k_ipad[i] = (byte)54;
+                k_opad[i] = (byte)92;
+            }
+            for (int i = 0; i < keyb.Length; i++)
+            {
+                k_ipad[i] = (byte)(keyb[i] ^ 0x36);
+                k_opad[i] = (byte)(keyb[i] ^ 0x5c);
+            }
+            byte[] sMd5_1 = MakeMD5(k_ipad.Concat(value).ToArray());
+            byte[] dg = MakeMD5(k_opad.Concat(sMd5_1).ToArray());
+            return toHex(dg);
+            
+        }
+        /**
+    * SHA加密
+    * @param aValue
+    * @return
+    */
+        public static String digest(String aValue)
+        {
+            aValue = aValue.Trim();
+            byte[] value;
+            SHA1 sha = null;
+            Encoding coding = Encoding.GetEncoding("UTF-8");
+            try
+            {
+                value = coding.GetBytes(aValue);
+                // aValue.getBytes(encodingCharset);
+                HashAlgorithm ha = (HashAlgorithm)CryptoConfig.CreateFromName("SHA");
+                value = ha.ComputeHash(value);
+            }
+            catch (Exception e)
+            {
+                //value = coding.GetBytes(aValue);
+                throw;
+            }
+            return toHex(value);
+        }
+        public static String toHex(byte[] input)
+        {
+            if (input == null)
+                return null;
+            StringBuilder output = new StringBuilder(input.Length * 2);
+            for (int i = 0; i < input.Length; i++)
+            {
+                int current = input[i] & 0xff;
+                if (current < 16)
+                    output.Append('0');
+                output.Append(current.ToString("x"));
+            }
+            return output.ToString();
+        }
+        /// <summary>
+        /// 生成MD5摘要
+        /// </summary>
+        /// <param name="original">数据源</param>
+        /// <returns>摘要</returns>
+        public static byte[] MakeMD5(byte[] original)
+        {
+            MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+            byte[] keyhash = hashmd5.ComputeHash(original);
+            hashmd5 = null;
+            return keyhash;
+        }
         public static string CreateSign_Binance(Dictionary<string, string> data, string secretKey)
         {
             string str = ConvertQueryString_Binance(data,true);

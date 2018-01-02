@@ -25,7 +25,7 @@ namespace KFCC.EZBExchange
         private const string SignatureMethod = "HmacSHA256";
         private const int SignatureVersion = 2;
         static private Dictionary<string, KFCC.ExchangeInterface.SubscribeInterface> _subscribedtradingpairs = null;
-        static private string ApiUrl = @"http://api.zb.com/data/v1/";
+        static private string ApiUrl = @"http://api.zb.com/data/v1";
         static private string Domain = "api.zb.com";
         public string Name { get { return "ZB"; } }
         public string ExchangeUrl { get { return "zb.com"; } }
@@ -127,11 +127,15 @@ namespace KFCC.EZBExchange
         {
             if (TickerEvent != null && tt == TradeEventType.TRADE)
             {
-                TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tp);
+                TradeEvent(this, ti.trade, (CommonLab.EventTypes)ti.type, ti.tp);
             }
             if (DepthEvent != null && tt == TradeEventType.ORDERS)
             {
                 DepthEvent(this, ti.d, (CommonLab.EventTypes)ti.type, ti.tp);
+            }
+            if (TickerEvent != null && tt == TradeEventType.TICKER)
+            {
+                TickerEvent(this, ti.t, (CommonLab.EventTypes)ti.type, ti.tp);
             }
         }
 
@@ -139,21 +143,21 @@ namespace KFCC.EZBExchange
         {
             DateTime st = DateTime.Now;
             //throw new NotImplementedException();
-            string url = ApiUrl+ "/market/detail/merged?symbol="+tradingpair;
+            string url = ApiUrl+ "/ticker?market=" + tradingpair;
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
             CommonLab.Ticker t = new Ticker();
             JObject obj = JObject.Parse(rawresponse);
             try
             {
-                JObject ticker = JObject.Parse(obj["tick"].ToString());
+                JObject ticker = JObject.Parse(obj["ticker"].ToString());
                 t.High = Convert.ToDouble(ticker["high"].ToString());
                 t.Low = Convert.ToDouble(ticker["low"].ToString());
-                t.Last = Convert.ToDouble(ticker["close"].ToString());
-                t.Sell = Convert.ToDouble(JArray.Parse(ticker["ask"].ToString())[0]);
-                t.Buy = Convert.ToDouble(JArray.Parse(ticker["bid"].ToString())[0]);
+                t.Last = Convert.ToDouble(ticker["last"].ToString());
+                t.Sell = Convert.ToDouble(ticker["sell"].ToString());
+                t.Buy = Convert.ToDouble(ticker["buy"].ToString());
                 t.Volume = Convert.ToDouble(ticker["vol"].ToString());
-                t.Open = Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
-                t.ExchangeTimeStamp = Convert.ToDouble(obj["ts"].ToString());
+                t.Open = 0;// Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
+                t.ExchangeTimeStamp = Convert.ToDouble(obj["date"].ToString());
                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                 t.Delay = (DateTime.Now - st).TotalMilliseconds;
                 UpdateTicker(tradingpair, t);
@@ -168,13 +172,13 @@ namespace KFCC.EZBExchange
         public Depth GetDepth(string tradingpair, out string rawresponse)
         {
             DateTime st = DateTime.Now;
-            string url = ApiUrl+ "/market/depth?symbol="+tradingpair+"&type=step0";
+            string url = ApiUrl+ "/depth?market=" + tradingpair+"&size=20";
             rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
             CommonLab.Depth d = new Depth();
             d.Asks = new List<MarketOrder>();
             d.Bids = new List<MarketOrder>();
             JObject obj = JObject.Parse(rawresponse);
-            JArray jasks = JArray.Parse(obj["tick"]["asks"].ToString());
+            JArray jasks = JArray.Parse(obj["asks"].ToString());
             for (int i = 0; i < jasks.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
@@ -183,7 +187,7 @@ namespace KFCC.EZBExchange
                 d.Asks.Add(m);
             }
 
-            JArray jbids = JArray.Parse(obj["tick"]["bids"].ToString());
+            JArray jbids = JArray.Parse(obj["bids"].ToString());
             for (int i = 0; i < jbids.Count; i++)
             {
                 MarketOrder m = new MarketOrder();
@@ -191,7 +195,7 @@ namespace KFCC.EZBExchange
                 m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
                 d.Bids.Add(m);
             }
-            d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"]);// Convert.ToDouble(obj["timestamp"].ToString());
+            d.ExchangeTimeStamp = Convert.ToDouble(obj["timestamp"]);// Convert.ToDouble(obj["timestamp"].ToString());
             d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
             d.Delay = (DateTime.Now - st).TotalMilliseconds;
             UpdateDepth(tradingpair, d);
@@ -199,7 +203,31 @@ namespace KFCC.EZBExchange
         }
         public Trade[] GetTrades(string tradepair, out string rawresponse, string since = "0")
         {
-            rawresponse = "";
+            List<Trade> trades = new List<CommonLab.Trade>();
+            string url = ApiUrl + "/trades?market=" + tradepair ;
+            if (since != "0")
+            {
+                url += "&since=" + since;
+            }
+            rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", _proxy);
+
+            JArray obj = JArray.Parse(rawresponse);
+            for (int i = 0; i < obj.Count; i++)
+            {
+                JObject trade = JObject.Parse(obj[i].ToString());
+                Trade t = new CommonLab.Trade();
+                t.TradeID = trade["tid"].ToString();
+                t.Amount = Convert.ToDouble(trade["amount"].ToString());
+                t.Price = Convert.ToDouble(trade["price"].ToString());
+                t.Type = CommonLab.Trade.GetType(trade["type"].ToString());
+                t.ExchangeTimeStamp = Convert.ToDouble(trade["date"].ToString()) ; //时间戳 交易所返回的
+                t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now); //本地时间戳
+                t.BuyOrderID = "";//成交的交易号
+                t.SellOrderID = "";//成交的交易号
+                trades.Add(t);
+            }
+            if (trades.Count > 0)
+                return trades.ToArray();
             return null;
         }
             /// <summary>
@@ -208,7 +236,8 @@ namespace KFCC.EZBExchange
             /// <param name="d"></param>
             protected void UpdateDepth(string tradingpair, Depth d)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 //((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateDepth(d);
             }
@@ -219,84 +248,80 @@ namespace KFCC.EZBExchange
         /// <param name="t"></param>
         protected void UpdateTicker(string tradingpair, Ticker t)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 //((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateTicker(t);
             }
         }
-        protected int Trade(OrderType type, string tradingpair, double price, double amount)
+        protected string Trade(OrderType type, string tradingpair, double price, double amount)
         {
             CheckSet();
-            var action = $"/v1/order/orders/place";
-            var method = "POST";
+//            GET https://trade.zb.com/api/order?accesskey=youraccesskey&amount=1.502
+//&currency = qtum_usdt & method = order & price = 1.9001 & tradeType = 1
+//    & sign = 请求加密签名串 & reqTime = 当前时间毫秒数
+           
             string typestr = "";
 
             switch (type)
             {
                 case OrderType.ORDER_TYPE_BUY:
-                    typestr = "buy-limit";
+                    typestr = "1";
                    
                     break;
                 case OrderType.ORDER_TYPE_SELL:
-                    typestr = "sell-limit";
+                    typestr = "0";
                   
                     break;
                 case OrderType.ORDER_TYPE_MARKETBUY:
-                    typestr = "buy-market";
-                    break;
+                    typestr = "1";
+                    return "";
+                   
                 case OrderType.ORDER_TYPE_MARKETSELL:
-                    typestr = "sell-market";
-                    break;
-                default:
-                    break;
+                    typestr = "0";
+                    return "";
+                  
             }
             var data = new Dictionary<string, object>()
             {
-                {"AccessKeyId", _key},
-                {"SignatureMethod", SignatureMethod},
-                {"SignatureVersion", SignatureVersion},
-                {"Timestamp", GetDateTime()},
-                //{"account-id", _account.ID },
-                //{ "amount", amount},
-                //{"symbol", tradingpair },
-               // {"type", typestr },
+                {"accesskey", _key},
+                {"amount", amount },
+                {"currency", tradingpair},
+                {"method", "order"},
+                {"price", price},
+                {"tradeType", typestr},
+                
             };
-            //if (typestr.IndexOf("limit") > 0)
-                //data.Add("price", price);
-            var sign =CommonLab.TokenGen.CreateSign_Huobi(Domain,method, action, _secret, data);
-            data["Signature"] = sign;
-            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
+            var sign = CommonLab.TokenGen.CreateSign_ZB(_secret, data);
+            data["sign"] = sign;
+           
+            DateTime timeStamp = new DateTime(1970, 1, 1);
+            long stamp = (DateTime.UtcNow.Ticks - timeStamp.Ticks) / 10000;
+            data["reqTime"] = stamp;
+           var url = "https://trade.zb.com/api/order";
+           
             RestClient rc = new RestClient(url);
             if (_proxy != null)
             {
                 rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
             }
-            var postData = new Dictionary<string, object>()
+           
+            RestRequest rr = new RestRequest(Method.GET);
+            foreach (KeyValuePair<string, object> item in data)
             {
-                {"account-id", _account.ID},
-                {"amount", amount},
-                
-                {"symbol", tradingpair},
-                {"type", typestr}
-            };
-            RestRequest rr = new RestRequest(Method.POST);
+                rr.AddParameter(item.Key, item.Value.ToString());
+            }
             //rr.AddHeader("ContentType ", "application/json");
             
-           
-            if (typestr.IndexOf("limit") > 0)
-                postData.Add("price", price.ToString("F2"));
-            rr.RequestFormat = DataFormat.Json;
-            rr.AddJsonBody(JsonConvert.SerializeObject(postData));
-            var response = new RestClient(url).Execute(rr);
-
-
-            string rawresponse = RequestDataSync(url, method, postData, null);
+        
+            var response = rc.Execute(rr);
+            string rawresponse = response.Content;
 
             try
             {
                 JObject obj = JObject.Parse(rawresponse);
                 
-                return Convert.ToInt32(obj["data"]);
+                return obj["id"].ToString();
             }
             catch (Exception e)
             {
@@ -406,10 +431,10 @@ namespace KFCC.EZBExchange
             //    return t.FromSymbol.ToLower() + "_" + t.ToSymbol.ToLower();
             //}
             if (t.FromSymbol.ToLower() == "bch")
-                return "bcc" + t.ToSymbol.ToLower();
+                return "bcc" + "_"+t.ToSymbol.ToLower();
             if (t.ToSymbol.ToLower() == "bch")
-                return t.FromSymbol.ToLower()+ "bcc" ;
-            return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
+                return t.FromSymbol.ToLower()+ "_" + "bcc" ;
+            return t.FromSymbol.ToLower() + "_" + t.ToSymbol.ToLower();
         }
         private string GetDateTime() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss");
 
@@ -418,115 +443,78 @@ namespace KFCC.EZBExchange
             CheckSet();
 
             rawresponse = "";
+            //  "https://trade.zb.com/api/getAccountInfo?accesskey=youraccesskey&method=getAccountInfo"
+            //  &sign = 请求加密签名串 & reqTime = 当前时间毫秒数
             if (_account == null)
+                _account = new Account();
+
+            #region
+
+            var data = new Dictionary<string, object>()
             {
-                #region
-                var action = "/v1/account/accounts";
-                var method = "GET";
-                var data = new Dictionary<string, object>()
-            {
-                {"AccessKeyId", _key},
-                {"SignatureMethod", SignatureMethod},
-                {"SignatureVersion", SignatureVersion},
-                {"Timestamp",GetDateTime()},
+                {"accesskey", _key},
+                {"method", "getAccountInfo"},
             };
-                var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
-                data["Signature"] = sign;
-                var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
+            var sign = CommonLab.TokenGen.CreateSign_ZB(_secret, data);
+            DateTime timeStamp = new DateTime(1970, 1, 1);
+            long stamp = (DateTime.UtcNow.Ticks - timeStamp.Ticks) / 10000;
+            var url = $"https://trade.zb.com/api/getAccountInfo?accesskey={_key}&method=getAccountInfo&sign={sign}&reqTime={stamp}";
 
-                #endregion
-
-
-                RestClient rc = new RestClient(url);
-                if (_proxy != null)
-                {
-                    rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
-                }
-                RestRequest rr = new RestRequest(Method.GET);
-
-                var response = new RestClient(url).Execute(rr);
-                rawresponse = response.Content;
-                try
-                {
-                    _account = new Account();
-                    JObject obj = JObject.Parse(rawresponse);
-                    _account.ID = obj["data"][0]["id"].ToString();
-                }
-                catch
-                {
-
-                }
+            #endregion
 
 
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
             }
+            RestRequest rr = new RestRequest(Method.GET);
 
-            if(_account != null)
+            var response = rc.Execute(rr);
+            rawresponse = response.Content;
+
+            try
             {
-                var action = $"/v1/account/accounts/" + _account.ID + "/balance";
-                var method = "GET";
-                var data = new Dictionary<string, object>()
-            {
-                           {"AccessKeyId", _key},
-                {"SignatureMethod", SignatureMethod},
-                {"SignatureVersion", SignatureVersion},
-                {"Timestamp",GetDateTime()},
-
-                {"account-id", _account.ID}
-            };
-                var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
-                data["Signature"] = sign;
-
-                var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
-                RestClient rc = new RestClient(url);
-                if (_proxy != null)
+                JObject obj = JObject.Parse(rawresponse);
+                JArray jlist = JArray.Parse(obj["result"]["coins"].ToString());
+                for (int i = 0; i < jlist.Count; i++)
                 {
-                    rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
-                }
-                RestRequest rr = new RestRequest(Method.GET);
 
-                var response = new RestClient(url).Execute(rr);
-                rawresponse = response.Content;
-                try
-                {
-                    JObject obj = JObject.Parse(rawresponse);
-                    JArray jlist = JArray.Parse(obj["data"]["list"].ToString());
-                    for (int i = 0; i < jlist.Count; i++)
+                    string Name = jlist[i]["key"].ToString();
+
+                    double available = Convert.ToDouble(jlist[i]["available"].ToString());
+                    double freez = Convert.ToDouble(jlist[i]["freez"].ToString());
+                    if (_account.Balances.ContainsKey(Name))
                     {
-                       
-                        string Name = jlist[i]["currency"].ToString();
-                        string type = jlist[i]["type"].ToString();
-                        double balance = Convert.ToDouble(jlist[i]["balance"].ToString());
-                        if (_account.Balances.ContainsKey(Name))
-                        {
 
-                            _account.Balances[Name].borrow =0;
-                            if(type== "trade")
-                            _account.Balances[Name].available = balance;
-                            if(type== "frozen")
-                            _account.Balances[Name].reserved = balance;
-                            _account.Balances[Name].balance = _account.Balances[Name].available + _account.Balances[Name].reserved;
-                        }
-                        else
-                        {
-                            Balance b = new Balance();
-                            b.borrow = 0;
-                            if (type == "trade")
-                                b.available = balance;
-                            if (type == "frozen")
-                                b.reserved = balance;
-                            b.balance = b.available + b.reserved;
+                        _account.Balances[Name].borrow = 0;
 
-                         
+                        _account.Balances[Name].available = available;
 
-                            _account.Balances.Add(Name, b);
-                        }
+                        _account.Balances[Name].reserved = freez;
+                        _account.Balances[Name].balance = _account.Balances[Name].available + _account.Balances[Name].reserved;
+                    }
+                    else
+                    {
+                        Balance b = new Balance();
+                        b.borrow = 0;
+
+                        b.available = available;
+
+                        b.reserved = freez;
+                        b.balance = b.available + b.reserved;
+
+
+
+                        _account.Balances.Add(Name, b);
                     }
                 }
-                catch
-                {
-
-                }
             }
+            catch
+            {
+
+            }
+
             return _account;
         }
 
@@ -574,48 +562,57 @@ namespace KFCC.EZBExchange
         {
             CheckSet();
             Order order = null;
-            var action = $"/v1/order/orders/{OrderID}";
-            var method = "GET";
             var data = new Dictionary<string, object>()
             {
-                {"AccessKeyId", _key},
-                {"SignatureMethod", SignatureMethod},
-                {"SignatureVersion", SignatureVersion},
-                {"Timestamp",GetDateTime()},
-                {"order-id", OrderID}
+                {"accesskey", _key},
+                {"currency", tradingpair},
+                {"id", OrderID},
+                {"method", "getOrder"},
+
+
             };
-            var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
-            data["Signature"] = sign;
-            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
-           
+            var sign = CommonLab.TokenGen.CreateSign_ZB(_secret, data);
+            data["sign"] = sign;
+
+            DateTime timeStamp = new DateTime(1970, 1, 1);
+            long stamp = (DateTime.UtcNow.Ticks - timeStamp.Ticks) / 10000;
+            data["reqTime"] = stamp;
+            var url = "https://trade.zb.com/api/getOrder";
+
             RestClient rc = new RestClient(url);
             if (_proxy != null)
             {
                 rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
             }
+
             RestRequest rr = new RestRequest(Method.GET);
-            var response = new RestClient(url).Execute(rr);
+            foreach (KeyValuePair<string, object> item in data)
+            {
+                rr.AddParameter(item.Key, item.Value.ToString());
+            }
+            //rr.AddHeader("ContentType ", "application/json");
 
 
+            var response = rc.Execute(rr);
             rawresponse = response.Content;
             try
             {
-                JObject obj = JObject.Parse(rawresponse);
-                if (obj["status"].ToString() == "error")
-                {
-                    throw (new Exception("error:" + rawresponse));
-                }
-                JObject orders = JObject.Parse(obj["data"].ToString());
+           
+       
+                JObject orders = JObject.Parse(rawresponse);
 
                 order = new Order();
                 order.Id = orders["id"].ToString();
-                order.Amount = Convert.ToDouble(orders["amount"].ToString());
-                order.DealAmount = Convert.ToDouble(orders["field-amount"].ToString());
+                order.Amount = Convert.ToDouble(orders["total_amount"].ToString());
+                order.DealAmount = Convert.ToDouble(orders["trade_amount"].ToString());
                 order.Price = Convert.ToDouble(orders["price"].ToString());
-                order.AvgPrice = Convert.ToDouble(orders["field-cash-amount"].ToString()) / Convert.ToDouble(orders["field-amount"].ToString());
+                if (Convert.ToDouble(orders["trade_amount"].ToString()) > 0)
+                    order.AvgPrice = Convert.ToDouble(orders["trade_money"].ToString()) / Convert.ToDouble(orders["trade_amount"].ToString());
+                else
+                    order.AvgPrice = 0;
                 order.Type = GetOrderTypeFromString(orders["type"].ToString());
-                order.Status = GetOrderStatus(orders["state"].ToString());
-                order.TradingPair = orders["symbol"].ToString();
+                order.Status = GetOrderStatus(orders["status"].ToString());
+                order.TradingPair = orders["currency"].ToString();
 
 
             }
@@ -632,37 +629,48 @@ namespace KFCC.EZBExchange
         {
             CheckSet();
 
-            var action = $"/v1/order/orders/{OrderID}/submitcancel";
-            var method = "POST";
             var data = new Dictionary<string, object>()
             {
-                {"AccessKeyId", _key},
-                {"SignatureMethod", SignatureMethod},
-                {"SignatureVersion", SignatureVersion},
-                {"Timestamp",GetDateTime()},
-                {"order-id", OrderID}
+                {"accesskey", _key},
+                {"currency", tradingpair},
+                {"id", OrderID},
+                {"method", "cancelOrder"},
+
             };
-            var sign = CommonLab.TokenGen.CreateSign_Huobi(Domain, method, action, _secret, data);
-            data["Signature"] = sign;
-            var url = $"{ApiUrl}{action}?{CommonLab.TokenGen.ConvertQueryString_Huobi(data, true)}";
+            var sign = CommonLab.TokenGen.CreateSign_ZB(_secret, data);
+            data["sign"] = sign;
 
-            rawresponse = RequestDataSync(url, method, null, null);
+            DateTime timeStamp = new DateTime(1970, 1, 1);
+            long stamp = (DateTime.UtcNow.Ticks - timeStamp.Ticks) / 10000;
+            data["reqTime"] = stamp;
+            var url = "https://trade.zb.com/api/cancelOrder";
 
-            
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+
+            RestRequest rr = new RestRequest(Method.GET);
+            foreach (KeyValuePair<string, object> item in data)
+            {
+                rr.AddParameter(item.Key, item.Value.ToString());
+            }
+            //rr.AddHeader("ContentType ", "application/json");
+
+
+            var response = rc.Execute(rr);
+            rawresponse = response.Content;
+
             try
             {
                 JObject obj = JObject.Parse(rawresponse);
-                if (obj["status"].ToString() == "error")
+             
+                if (obj["code"].ToString() == "1000")
                 {
-                    throw (new Exception("error:" + rawresponse));
-                }
-                if (obj["status"].ToString() == "ok")
-                {
-                    if (obj["data"].ToString() == OrderID)
-                    {
+                 
                         return true;
 
-                    }
                 }
 
 
@@ -675,12 +683,114 @@ namespace KFCC.EZBExchange
             return false;
         }
 
-        public bool CancelAllOrders()
+        public bool CancelAllOrders(string tradingpair = "")
         {
-            throw new NotImplementedException();
-        }
+            bool flag = false;
+            try
+            {
+                if (SubscribedTradingPairs != null)
+                {
+                    foreach (KeyValuePair<string, SubscribeInterface> item in SubscribedTradingPairs)
+                    {
+                        string raw = "";
+                        if (tradingpair.Length > 0 && tradingpair != item.Key)
+                        {
+                            continue;
 
-        public int Buy(string Symbol, double Price, double Amount)
+                        }
+                        List<CommonLab.Order> orders = GetOrdersStatus(item.Key, out raw);
+                        if (orders != null)
+                        {
+                            for (int i = 0; i < orders.Count; i++)
+                            { CancelOrder(orders[i].Id, item.Key, out raw); }
+                            flag = true;
+                        }
+                    }
+                }
+                return flag;
+            }
+            catch
+            {
+                return flag;
+            }
+        }
+        public List<Order> GetOrdersStatus(string tradingpair, out string rawresponse)
+        {
+            CheckSet();
+            Order order = null;
+            var data = new Dictionary<string, object>()
+            {
+                {"accesskey", _key},
+                {"currency", tradingpair},
+                {"method", "getUnfinishedOrdersIgnoreTradeType"},
+                {"pageIndex", "1"},
+                {"pageSize", "10"},
+            };
+            var sign = CommonLab.TokenGen.CreateSign_ZB(_secret, data);
+            data["sign"] = sign;
+
+            DateTime timeStamp = new DateTime(1970, 1, 1);
+            long stamp = (DateTime.UtcNow.Ticks - timeStamp.Ticks) / 10000;
+            data["reqTime"] = stamp;
+            var url = "https://trade.zb.com/api/getUnfinishedOrdersIgnoreTradeType";
+
+            RestClient rc = new RestClient(url);
+            if (_proxy != null)
+            {
+                rc.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+            }
+
+            RestRequest rr = new RestRequest(Method.GET);
+            foreach (KeyValuePair<string, object> item in data)
+            {
+                rr.AddParameter(item.Key, item.Value.ToString());
+            }
+            //rr.AddHeader("ContentType ", "application/json");
+
+
+            var response = rc.Execute(rr);
+            rawresponse = response.Content;
+            try
+            {
+                
+                JArray orders = JArray.Parse(rawresponse);
+                if (orders.Count > 0)
+                {
+                    List<Order> orders_array = new List<Order>();
+                    for (int i = 0; i < orders.Count; i++)
+                    {
+
+
+                        order = new Order();
+                        JObject order1 = JObject.Parse(orders[i].ToString());
+
+
+                        order.Id = order1["id"].ToString();
+                        order.Amount = Convert.ToDouble(order1["total_amount"].ToString());
+                        order.DealAmount = Convert.ToDouble(order1["trade_amount"].ToString());
+                        order.Price = Convert.ToDouble(order1["price"].ToString());
+                        if (Convert.ToDouble(order1["trade_amount"].ToString()) > 0)
+                            order.AvgPrice = Convert.ToDouble(order1["trade_money"].ToString()) / Convert.ToDouble(order1["trade_amount"].ToString());
+                        else
+                            order.AvgPrice = 0;
+                        order.Type = GetOrderTypeFromString(order1["type"].ToString());
+                        order.Status = GetOrderStatus(order1["status"].ToString());
+                        order.TradingPair = order1["currency"].ToString();
+                        orders_array.Add(order);
+                    }
+                    return orders_array;
+                }
+
+            }
+            catch (Exception e)
+            {
+                Exception err = new Exception("订单获取解析json失败" + e.Message);
+                throw err;
+            }
+            return null;
+
+        }
+        public string Buy(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -690,10 +800,10 @@ namespace KFCC.EZBExchange
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETBUY, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
-        public int Sell(string Symbol, double Price, double Amount)
+        public string Sell(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -703,7 +813,7 @@ namespace KFCC.EZBExchange
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETSELL, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
         public void CheckSet()
@@ -715,9 +825,9 @@ namespace KFCC.EZBExchange
         }
         static public OrderType GetOrderTypeFromString(string str)
         {
-            if (str.ToLower() == "buy-limit")
+            if (str.ToLower() == "1")
                 return OrderType.ORDER_TYPE_BUY;
-            if (str.ToLower() == "sell-limit")
+            if (str.ToLower() == "0")
                 return OrderType.ORDER_TYPE_SELL;
             if (str.ToLower() == "buy_market")
                 return OrderType.ORDER_TYPE_MARKETBUY;
@@ -728,13 +838,13 @@ namespace KFCC.EZBExchange
         static public OrderStatus GetOrderStatus(string str)
         {
             //status:-1:已撤销  0:未成交  1:部分成交  2:完全成交 4:撤单处理中
-            if (str.ToLower() == "canceled")
+            if (str.ToLower() == "1")
                 return OrderStatus.ORDER_STATE_CANCELED;
             if (str.ToLower() == "submitted")
                 return OrderStatus.ORDER_STATE_PENDING;
-            if (str.ToLower() == "partial-filled")
+            if (str.ToLower() == "3")
                 return OrderStatus.ORDER_STATE_PARTITAL;
-            if (str.ToLower() == "filled ")
+            if (str.ToLower() == "2 ")
                 return OrderStatus.ORDER_STATE_SUCCESS;
             if (str.ToLower() == "4")
                 return OrderStatus.ORDER_STATE_CANCELING;

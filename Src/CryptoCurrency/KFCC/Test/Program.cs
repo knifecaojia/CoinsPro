@@ -14,7 +14,7 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            CommonLab.TradePair tp = new CommonLab.TradePair("btc","usd");
+            CommonLab.TradePair tp = new CommonLab.TradePair("tv","btc");
             string raw;
 
 
@@ -130,18 +130,36 @@ namespace Test
             // CommonLab.Order order = exchange.GetOrderStatus("13081100", exchange.GetLocalTradingPairString(tp), out raw);
             // Console.WriteLine(raw);
             #endregion
-            KFCC.EQuoine.EQuoineExchange exchange= new KFCC.EQuoine.EQuoineExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
+            #region Quoine测试
+           
+            //KFCC.EQuoine.EQuoineExchange exchange= new KFCC.EQuoine.EQuoineExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
 
-            //// CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
-            CommonLab.Depth d= exchange.GetDepth(exchange.GetLocalTradingPairString(tp), out raw);
-            Console.Write(d.ToString());
-            #region 交易所Quoine测试
+            ////// CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
+            //CommonLab.Depth d= exchange.GetDepth(exchange.GetLocalTradingPairString(tp), out raw);
+            //Console.Write(d.ToString());
             #endregion
-          
+            #region 交易所ZB测试
+            KFCC.EZBExchange.ZBExchange exchange = new KFCC.EZBExchange.ZBExchange("16de7c10-2315-454d-b023-048058a6aed5", "1b3f8111-6dfe-4160-8eab-143986e04629", "rqno1092", "caojia");
+            exchange.Subscribe(tp, CommonLab.SubscribeTypes.RESTAPI);
+            //CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
+            //string id=exchange.Buy(exchange.GetLocalTradingPairString(tp), t.Sell * 0.9, 1);
+            //CommonLab.Order o = exchange.GetOrderStatus(id, exchange.GetLocalTradingPairString(tp), out raw);
+            //exchange.CancelOrder(id, exchange.GetLocalTradingPairString(tp), out raw);
+            exchange.CancelAllOrders();
+            //// CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
+            // CommonLab.Account a = exchange.GetAccount(out raw);
+            //exchange.TickerEvent += Exchange_TickerEvent;
+            //exchange.DepthEvent += Exchange_DepthEvent;
+            //exchange.TradeEvent += Exchange_TradeEvent;
+            //Console.WriteLine(a);
+            //CommonLab.Trade[] trades = exchange.GetTrades(exchange.GetLocalTradingPairString(tp), out raw);
+
+            #endregion
+
             Console.ReadKey();
         }
 
-
+  
 
         private static void Exchange_TradeEvent(object sender, CommonLab.Trade t, CommonLab.EventTypes et, CommonLab.TradePair tp)
         {

@@ -208,7 +208,8 @@ namespace KFCC.EHuobiExchange
             /// <param name="d"></param>
             protected void UpdateDepth(string tradingpair, Depth d)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 //((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateDepth(d);
             }
@@ -219,12 +220,13 @@ namespace KFCC.EHuobiExchange
         /// <param name="t"></param>
         protected void UpdateTicker(string tradingpair, Ticker t)
         {
-            if (SubscribedTradingPairs.ContainsKey(tradingpair))
+            if (SubscribedTradingPairs != null)
+                if (SubscribedTradingPairs.ContainsKey(tradingpair))
             {
                 //((PusherHelper)SubscribedTradingPairs[tradingpair]).UpdateTicker(t);
             }
         }
-        protected int Trade(OrderType type, string tradingpair, double price, double amount)
+        protected string Trade(OrderType type, string tradingpair, double price, double amount)
         {
             CheckSet();
             var action = $"/v1/order/orders/place";
@@ -296,7 +298,7 @@ namespace KFCC.EHuobiExchange
             {
                 JObject obj = JObject.Parse(rawresponse);
                 
-                return Convert.ToInt32(obj["data"]);
+                return obj["data"].ToString();
             }
             catch (Exception e)
             {
@@ -405,10 +407,10 @@ namespace KFCC.EHuobiExchange
             //{
             //    return t.FromSymbol.ToLower() + "_" + t.ToSymbol.ToLower();
             //}
-            if (t.FromSymbol.ToLower() == "bch")
-                return "bcc" + t.ToSymbol.ToLower();
-            if (t.ToSymbol.ToLower() == "bch")
-                return t.FromSymbol.ToLower()+ "bcc" ;
+            //if (t.FromSymbol.ToLower() == "bch")
+            //    return "bcc" + t.ToSymbol.ToLower();
+            //if (t.ToSymbol.ToLower() == "bch")
+            //    return t.FromSymbol.ToLower()+ "bcc" ;
             return t.FromSymbol.ToLower() + t.ToSymbol.ToLower();
         }
         private string GetDateTime() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss");
@@ -675,12 +677,12 @@ namespace KFCC.EHuobiExchange
             return false;
         }
 
-        public bool CancelAllOrders()
+        public bool CancelAllOrders(string tradingpair = "")
         {
             throw new NotImplementedException();
         }
 
-        public int Buy(string Symbol, double Price, double Amount)
+        public string Buy(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -690,10 +692,10 @@ namespace KFCC.EHuobiExchange
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETBUY, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
-        public int Sell(string Symbol, double Price, double Amount)
+        public string Sell(string Symbol, double Price, double Amount)
         {
             if (Price > 0)
             {
@@ -703,7 +705,7 @@ namespace KFCC.EHuobiExchange
             {
                 return Trade(OrderType.ORDER_TYPE_MARKETSELL, Symbol, Price, Amount);
             }
-            return 0;
+            return "";
         }
 
         public void CheckSet()

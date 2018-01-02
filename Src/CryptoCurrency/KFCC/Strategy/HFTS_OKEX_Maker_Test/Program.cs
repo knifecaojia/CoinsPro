@@ -107,7 +107,7 @@ namespace HFTS_OKEX_Maker_Test
                     nbtc = account.Balances[tp.ToSymbol].balance + account.Balances[tp.FromSymbol].balance * d.Bids[0].Price;
                     bcp = 100 * nbtc / sbtc;
                     Console.WriteLine("sLTC:{0} nLTC:{1} diff:{2}%  sBTC:{3} nBTC:{4} diff:{2}% ", sltc, nltc, cp.ToString("f4"), sbtc, nbtc, bcp.ToString("f4"));
-                    int sorder = 0, border = 0;
+                    string sorder , border ;
 
                     if (Bull && cansellamount > 0.01)
                         sorder = exchange.Sell(tp.FromSymbol + "_" + tp.ToSymbol, sprice, cansellamount);

@@ -71,4 +71,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /e /r /y $(TargetPath) $(SolutionDir)\Plugins</PostBuildEvent>
+  </PropertyGroup>
 </Project>

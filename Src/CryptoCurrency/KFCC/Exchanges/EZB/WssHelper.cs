@@ -55,11 +55,7 @@ namespace KFCC.EZBExchange
         }
         public WssHelper(CommonLab.TradePair tp, Ticker t, Depth d)
         {
-            if (tp.FromSymbol.ToLower() == "bch")
-                _tradingpair= "bcc" + tp.ToSymbol.ToLower();
-            else if (tp.ToSymbol.ToLower() == "bch")
-                _tradingpair = tp.FromSymbol.ToLower() + "bcc";
-            else
+            
             _tradingpair = tp.FromSymbol.ToLower() + tp.ToSymbol.ToLower();
             _tradinginfo = new TradingInfo(SubscribeTypes.WSS, _tradingpair,tp);
             _tradinginfo.t = t;
@@ -70,9 +66,10 @@ namespace KFCC.EZBExchange
             ws = new WebSocket(spotwssurl);
             ws.OnOpen += (sender, e) =>
             {
+                LastCommTimeStamp = DateTime.Now;
                 ws.Send("{'event':'addChannel','channel':'" + _tradingpair + "_ticker'}");
                 ws.Send("{'event':'addChannel','channel':'" + _tradingpair + "_depth'}");
-                ws.Send("{'event':'addChannel','channel':'" + _tradingpair + "_deals'}");
+                ws.Send("{'event':'addChannel','channel':'" + _tradingpair + "_trades'}");
                 if (!CheckTread.IsAlive)
                 CheckTread.Start();
             };
@@ -80,17 +77,17 @@ namespace KFCC.EZBExchange
             ws.OnMessage += (sender, e) =>
             {
                 LastCommTimeStamp = DateTime.Now;
-                if (e.IsBinary)
+                if (e.IsText)
                 {
                     JObject obj = null;
-                    string str = CommonLab.GZipUtil.UnZip(e.RawData);
+                  
                     try
                     {
-                        obj = JObject.Parse(str);
+                        obj = JObject.Parse(e.Data);
                     }
                     catch
                     {
-                        Console.WriteLine(str);
+                        Console.WriteLine(e.Data);
 
 
                         return;
@@ -120,21 +117,21 @@ namespace KFCC.EZBExchange
 
                             try
                             {
-                                JObject ticker = JObject.Parse(obj["tick"].ToString());
+                                JObject ticker = JObject.Parse(obj["ticker"].ToString());
                                 t.High = Convert.ToDouble(ticker["high"].ToString());
                                 t.Low = Convert.ToDouble(ticker["low"].ToString());
-                                t.Last = Convert.ToDouble(ticker["close"].ToString());
-                                //t.Sell = Convert.ToDouble(JArray.Parse(ticker["ask"].ToString())[0]);
-                                //t.Buy = Convert.ToDouble(JArray.Parse(ticker["bid"].ToString())[0]);
+                                t.Last = Convert.ToDouble(ticker["last"].ToString());
+                                t.Sell = Convert.ToDouble(ticker["sell"].ToString());
+                                t.Buy = Convert.ToDouble(ticker["buy"].ToString());
                                 t.Volume = Convert.ToDouble(ticker["vol"].ToString());
-                                t.Open = Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
-                                t.ExchangeTimeStamp = Convert.ToDouble(obj["ts"].ToString()) / 1000;
+                                t.Open = 0;// Convert.ToDouble(ticker["open"].ToString()); ;// Convert.ToDouble(ticker["open"].ToString());
+                                t.ExchangeTimeStamp = Convert.ToDouble(obj["date"].ToString()) / 1000;
                                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                                 t.Delay = t.LocalServerTimeStamp - t.ExchangeTimeStamp;
                                 //UpdateTicker(tradingpair, t);
                                 _tradinginfo.t = t;
 
-                                TradeInfoEvent(_tradinginfo, TradeEventType.TRADE);
+                                TradeInfoEvent(_tradinginfo, TradeEventType.TICKER);
                             }
                             catch (Exception err)
                             {
@@ -143,7 +140,7 @@ namespace KFCC.EZBExchange
                         }
                         if (ch.IndexOf("depth") > 0) //深度数据
                         {
-                            JArray jasks = JArray.Parse(obj["tick"]["asks"].ToString());
+                            JArray jasks = JArray.Parse(obj["asks"].ToString());
                             _tradinginfo.d.Asks = new List<MarketOrder>();
                             for (int i = 0; i < jasks.Count; i++)
                             {
@@ -153,7 +150,7 @@ namespace KFCC.EZBExchange
                                 _tradinginfo.d.AddNewAsk(m);
                             }
 
-                            JArray jbids = JArray.Parse(obj["tick"]["bids"].ToString());
+                            JArray jbids = JArray.Parse(obj["bids"].ToString());
                             _tradinginfo.d.Bids = new List<MarketOrder>();
                             for (int i = 0; i < jbids.Count; i++)
                             {
@@ -162,9 +159,9 @@ namespace KFCC.EZBExchange
                                 m.Amount = Convert.ToDouble(JArray.Parse(jbids[i].ToString())[1]);
                                 _tradinginfo.d.AddNewBid(m);
                             }
-                            _tradinginfo.d.ExchangeTimeStamp = Convert.ToDouble(obj["tick"]["ts"]) ;// Convert.ToDouble(obj["timestamp"].ToString());
+                            _tradinginfo.d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["tick"]["ts"]) ;// Convert.ToDouble(obj["timestamp"].ToString());
                             _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
-                            _tradinginfo.d.Delay = _tradinginfo.d.LocalServerTimeStamp - _tradinginfo.d.ExchangeTimeStamp;
+                            _tradinginfo.d.Delay = 0;// _tradinginfo.d.LocalServerTimeStamp - _tradinginfo.d.ExchangeTimeStamp;
                             if ((_tradinginfo.t.Buy != _tradinginfo.d.Bids[0].Price) || (_tradinginfo.t.Sell != _tradinginfo.d.Asks[0].Price))
                             {
                                 TradeInfoEvent(_tradinginfo, TradeEventType.TICKER);
@@ -172,8 +169,22 @@ namespace KFCC.EZBExchange
                             _tradinginfo.t.UpdateTickerBuyDepth(_tradinginfo.d);
                             TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
                         }
-                        if (ch.IndexOf("trade") > 0) //交易数据
+                        if (ch.IndexOf("trades") > 0) //交易数据
                         {
+                            JObject trade = JObject.Parse(obj["data"][0].ToString());
+
+                            _tradinginfo.trade.TradeID = trade["tid"].ToString();
+                            _tradinginfo.trade.Price = Convert.ToDouble(trade["price"].ToString());
+                            _tradinginfo.trade.Amount = Convert.ToDouble(trade["amount"].ToString());
+                            _tradinginfo.trade.ExchangeTimeStamp = Convert.ToDouble(trade["date"].ToString());
+                            _tradinginfo.trade.Type = Trade.GetType(trade["type"].ToString());
+                            _tradinginfo.trade.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                            //UpdateTicker(tradingpair, t);
+
+
+
+                            TradeInfoEvent(_tradinginfo, TradeEventType.TRADE);
+
                         }
                         if (ch.IndexOf("detail") > 0) //市场数据
                         {

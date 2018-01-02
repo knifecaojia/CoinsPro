@@ -12,8 +12,13 @@ namespace CommonLab
         {
             System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0, 0));
             double t = (dt - startTime).TotalSeconds;   //除10000调整为13位      
-            return t;
+            return Math.Round(t);
         }
+        /// <summary>
+        /// 返回的是nano
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
         static public long GetTimeStampMilliSeconds(DateTime dt)
         {
             System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1, 0, 0, 0, 0));
