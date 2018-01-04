@@ -46,7 +46,7 @@ namespace LeekReaperTest
             FromSymbol = "LTC";
             ToSymbol = "BTC";
             tradepair = new TradePair(FromSymbol, ToSymbol);
-            exchange = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
+            exchange = new KFCC.Exchanges.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
             exchange.Subscribe(tradepair, CommonLab.SubscribeTypes.WSS);
             exchange.TradeEvent += Exchange_TradeEvent;
             exchange.DepthEvent += Exchange_DepthEvent;
@@ -228,7 +228,7 @@ namespace LeekReaperTest
             string raw;
             try
             {
-                List<Order> Orders = ((KFCC.EOkCoin.OkCoinExchange)exchange).GetOrdersStatus(exchange.GetLocalTradingPairString(tradepair), out raw);
+                List<Order> Orders = ((KFCC.Exchanges.EOkCoin.OkCoinExchange)exchange).GetOrdersStatus(exchange.GetLocalTradingPairString(tradepair), out raw);
                 if (Orders == null || Orders.Count == 0)
                     return;
                 foreach (Order o in Orders)

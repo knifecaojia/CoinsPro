@@ -1,4 +1,4 @@
-﻿using KFCC.EBitstamp;
+﻿using KFCC.Exchanges.EBitstamp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,9 @@ using System.IO;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
+using KFCC.Exchanges.EHuobiExchange;
+using KFCC.Exchanges.EBitstamp;
+using KFCC.Exchanges.EBinance;
 
 namespace RawOCHL
 {
@@ -16,9 +19,9 @@ namespace RawOCHL
     {
         public static Dictionary<string, exchangecahe> Cache = new Dictionary<string, exchangecahe>();
         static KFCC.ExchangeInterface.IExchanges exchangebitstamp = new BitstampExchange("SkDFzpEwvEHyXl45Bvc0nlHXPeP3e1Wa", "hIW0CYUK1NvbZR73N5rPDO0yly4GgK3l", "rqno1092", "caojia");
-        static KFCC.ExchangeInterface.IExchanges exchangeokex = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
-        static KFCC.EHuobiExchange.HuobiExchange exchangehuobi = new KFCC.EHuobiExchange.HuobiExchange("cbf0909f-7842f68b-8c0db43c-04172", "7e022c00-19e4e4a8-2b3ed1d9-312e0", "0", "caojia");
-        static KFCC.EBinance.EBinanceExchange exchangebianace= new KFCC.EBinance.EBinanceExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
+        static KFCC.ExchangeInterface.IExchanges exchangeokex = new KFCC.Exchanges.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
+        static HuobiExchange exchangehuobi = new KFCC.Exchanges.EHuobiExchange.HuobiExchange("cbf0909f-7842f68b-8c0db43c-04172", "7e022c00-19e4e4a8-2b3ed1d9-312e0", "0", "caojia");
+        static EBinanceExchange exchangebianace= new EBinanceExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
         static CommonLab.TradePair ltc_btc = new CommonLab.TradePair("ltc", "btc");
         static string input = "";
         //static CommonLab.TradePair bch_btc = new CommonLab.TradePair("bch", "btc");

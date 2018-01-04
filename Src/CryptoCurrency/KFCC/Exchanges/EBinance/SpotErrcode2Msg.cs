@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KFCC.EBinance
+namespace KFCC.Exchanges.EBinance
 {
     internal class SpotErrcode2Msg
     {

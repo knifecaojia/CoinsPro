@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonLab;
 
-namespace KFCC.EOkCoin
+namespace KFCC.Exchanges.EOkCoin
 {
     class RESTHelper : KFCC.ExchangeInterface.SubscribeInterface
     {

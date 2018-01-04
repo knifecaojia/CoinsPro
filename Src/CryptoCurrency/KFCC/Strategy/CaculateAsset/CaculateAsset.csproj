@@ -63,8 +63,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-mkdir $(TargetDir)\Plugins
+    <PostBuildEvent>mkdir $(TargetDir)\Plugins
 xcopy /e /r /y $(SolutionDir)\Plugins $(TargetDir)\Plugins</PostBuildEvent>
   </PropertyGroup>
 </Project>

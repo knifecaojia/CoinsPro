@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace KFCC.EBitstamp
+namespace KFCC.Exchanges.EBitstamp
 {
     public class PusherHelper:KFCC.ExchangeInterface.SubscribeInterface
     {

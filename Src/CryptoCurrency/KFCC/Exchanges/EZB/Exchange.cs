@@ -13,7 +13,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KFCC.EZBExchange
+namespace KFCC.Exchanges.EZBExchange
 {
     public class ZBExchange : IExchanges
     {

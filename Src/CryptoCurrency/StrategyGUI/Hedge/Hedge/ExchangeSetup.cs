@@ -45,17 +45,40 @@ namespace Hedge
                 textBox5.Text = "0.2";
                 textBox6.Text = "0.2";
             }
+            else if (exchange.Name == "Binance")
+            {
+                textBox1.Text = "EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n";
+                textBox2.Text = "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3";
+                textBox3.Text = "0";
+                textBox4.Text = "caojia";
+                textBox5.Text = "0.2";
+                textBox6.Text = "0.2";
+            }
+            else if (exchange.Name == "ZB")
+            {
+                textBox1.Text = "16de7c10-2315-454d-b023-048058a6aed5";
+                textBox2.Text = "1b3f8111-6dfe-4160-8eab-143986e04629";
+                textBox3.Text = "0";
+                textBox4.Text = "caojia";
+                textBox5.Text = "0.2";
+                textBox6.Text = "0.2";
+            }
             Set();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            exchange.SetupExchage(textBox1.Text, textBox2.Text, textBox3.Text, textBox4.Text);
+            Set();// exchange.SetupExchage(textBox1.Text, textBox2.Text, textBox3.Text, textBox4.Text);
         }
         private void Set()
         {
-            exchange.SetupExchage(textBox1.Text, textBox2.Text, textBox3.Text, textBox4.Text);
-            exchange.SetupFee(textBox5.Text, textBox6.Text);
+            try
+            {
+                exchange.SetupExchage(textBox1.Text, textBox2.Text, textBox3.Text, textBox4.Text);
+                exchange.SetupFee(textBox5.Text, textBox6.Text);
+            }
+            catch
+            { }
         }
     }
 }

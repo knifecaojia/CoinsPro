@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KFCC.EOkCoin
+namespace KFCC.Exchanges.EOkCoin
 {
     class MD5Util
     {

@@ -66,6 +66,16 @@ namespace CommonLab
             return t;
         }
     }
+    public enum TickerType
+    {
+        m1=0,
+        m3=1,
+        m5=2,
+        m15=3,
+        m30=4,
+        h1=5,
+        d1=6
+    }
     public class TradingInfo
     {
         public Ticker t;

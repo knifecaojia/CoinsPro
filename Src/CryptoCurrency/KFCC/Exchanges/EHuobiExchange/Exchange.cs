@@ -13,7 +13,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KFCC.EHuobiExchange
+namespace KFCC.Exchanges.EHuobiExchange
 {
     public class HuobiExchange : IExchanges
     {

@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Net;
 
-namespace KFCC.EQuoine
+namespace KFCC.Exchanges.EQuoine
 {
     public class EQuoineExchange : KFCC.ExchangeInterface.IExchanges
     {

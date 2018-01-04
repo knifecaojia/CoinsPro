@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonLab;
 
-namespace KFCC.EZBExchange
+namespace KFCC.Exchanges.EZBExchange
 {
     class RESTHelper : KFCC.ExchangeInterface.SubscribeInterface
     {

@@ -8,7 +8,7 @@ using WebSocketSharp;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-namespace KFCC.EZBExchange
+namespace KFCC.Exchanges.EZBExchange
 {
     class WssHelper : KFCC.ExchangeInterface.SubscribeInterface
     {

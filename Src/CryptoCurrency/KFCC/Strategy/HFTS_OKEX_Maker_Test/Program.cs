@@ -28,7 +28,7 @@ namespace HFTS_OKEX_Maker_Test
         {
             #region 交易所Okex现货测试
             tradeCacheManage = new CommonLab.TradeCacheManage(CacheMinuts);
-            exchange = new KFCC.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
+            exchange = new KFCC.Exchanges.EOkCoin.OkCoinExchange("a8716cf5-8e3d-4037-9a78-6ad59a66d6c4", "CF44F1C9F3BB23B148523B797B862D4C", "", "");
             exchange.Subscribe(tp, CommonLab.SubscribeTypes.RESTAPI);
             exchange.Subscribe(new CommonLab.TradePair("btc","usdt"),CommonLab.SubscribeTypes.WSS);
             exchange.TradeEvent += Exchange_TradeEvent;

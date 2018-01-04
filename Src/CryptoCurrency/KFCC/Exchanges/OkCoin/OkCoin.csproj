@@ -7,7 +7,7 @@
     <ProjectGuid>{DDB3740C-E219-4D1E-BE80-F3E518D41515}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OkCoin</RootNamespace>
+    <RootNamespace>KFCC.Exchanges.OkCoin</RootNamespace>
     <AssemblyName>OkCoin</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

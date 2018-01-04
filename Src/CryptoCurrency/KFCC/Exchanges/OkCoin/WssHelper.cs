@@ -8,7 +8,7 @@ using WebSocketSharp;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-namespace KFCC.EOkCoin
+namespace KFCC.Exchanges.EOkCoin
 {
     class WssHelper : KFCC.ExchangeInterface.SubscribeInterface
     {

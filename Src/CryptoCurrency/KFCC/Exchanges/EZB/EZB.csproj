@@ -7,7 +7,7 @@
     <ProjectGuid>{7B694130-53A4-47FC-AF07-6C6405AE3D7C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EZB</RootNamespace>
+    <RootNamespace>KFCC.Exchanges.EZB</RootNamespace>
     <AssemblyName>EZB</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

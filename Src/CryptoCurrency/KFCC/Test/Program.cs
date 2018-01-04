@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-using KFCC.EBitstamp;
+using KFCC.Exchanges.EBitstamp;
 using System.Data;
-using KFCC.EBinance;
+using KFCC.Exchanges.EBinance;
+
 
 namespace Test
 {
@@ -14,7 +15,7 @@ namespace Test
     {
         static void Main(string[] args)
         {
-            CommonLab.TradePair tp = new CommonLab.TradePair("tv","btc");
+            CommonLab.TradePair tp = new CommonLab.TradePair("ltc","btc");
             string raw;
 
 
@@ -131,7 +132,7 @@ namespace Test
             // Console.WriteLine(raw);
             #endregion
             #region Quoine测试
-           
+
             //KFCC.EQuoine.EQuoineExchange exchange= new KFCC.EQuoine.EQuoineExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
 
             ////// CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
@@ -139,13 +140,13 @@ namespace Test
             //Console.Write(d.ToString());
             #endregion
             #region 交易所ZB测试
-            KFCC.EZBExchange.ZBExchange exchange = new KFCC.EZBExchange.ZBExchange("16de7c10-2315-454d-b023-048058a6aed5", "1b3f8111-6dfe-4160-8eab-143986e04629", "rqno1092", "caojia");
-            exchange.Subscribe(tp, CommonLab.SubscribeTypes.RESTAPI);
+            //KFCC.EZBExchange.ZBExchange exchange = new KFCC.EZBExchange.ZBExchange("16de7c10-2315-454d-b023-048058a6aed5", "1b3f8111-6dfe-4160-8eab-143986e04629", "rqno1092", "caojia");
+            //exchange.Subscribe(tp, CommonLab.SubscribeTypes.RESTAPI);
             //CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
             //string id=exchange.Buy(exchange.GetLocalTradingPairString(tp), t.Sell * 0.9, 1);
             //CommonLab.Order o = exchange.GetOrderStatus(id, exchange.GetLocalTradingPairString(tp), out raw);
             //exchange.CancelOrder(id, exchange.GetLocalTradingPairString(tp), out raw);
-            exchange.CancelAllOrders();
+            //exchange.CancelAllOrders();
             //// CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
             // CommonLab.Account a = exchange.GetAccount(out raw);
             //exchange.TickerEvent += Exchange_TickerEvent;
@@ -156,6 +157,11 @@ namespace Test
 
             #endregion
 
+
+            #region 测试市场数据获取
+            KFCC.BackTest.Model.MarketData.TxtDataSource ts = new KFCC.BackTest.Model.MarketData.TxtDataSource(@"M:\CoinPor-Git\Src\CryptoCurrency\KFCC\Test\bin\Debug\raw", "Huobi", "ltcbtc", new DateTime(2017, 12, 18), new DateTime(2017, 12, 19));
+            ts.GetTickers(CommonLab.TickerType.m1);
+#endregion
             Console.ReadKey();
         }
 

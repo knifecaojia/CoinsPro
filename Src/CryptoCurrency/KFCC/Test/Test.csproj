@@ -53,6 +53,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\BackTest\KFCC.BackTest.Model\KFCC.BackTest.Model.csproj">
+      <Project>{6436878d-95f9-4ad5-86c4-e5822c374dc0}</Project>
+      <Name>KFCC.BackTest.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CommonLab\CommonLab.csproj">
       <Project>{09f95fc2-52a7-45f4-9624-25912dc293fa}</Project>
       <Name>CommonLab</Name>

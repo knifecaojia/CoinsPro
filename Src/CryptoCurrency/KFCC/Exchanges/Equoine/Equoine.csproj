@@ -7,7 +7,7 @@
     <ProjectGuid>{CBBD3204-3C5E-4CCA-8BC5-1BBDDF8FAB04}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Equoine</RootNamespace>
+    <RootNamespace>KFCC.Exchanges.Equoine</RootNamespace>
     <AssemblyName>Equoine</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommonLab;
 
-namespace KFCC.EQuoine
+namespace KFCC.Exchanges.EQuoine
 {
     class RESTHelper : KFCC.ExchangeInterface.SubscribeInterface
     {

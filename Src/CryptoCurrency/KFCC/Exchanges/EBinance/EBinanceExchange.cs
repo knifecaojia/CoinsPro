@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Net;
 
-namespace KFCC.EBinance
+namespace KFCC.Exchanges.EBinance
 {
     public class EBinanceExchange : KFCC.ExchangeInterface.IExchanges
     {

@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Net;
 
-namespace KFCC.EBitstamp
+namespace KFCC.Exchanges.EBitstamp
 {
     public class BitstampExchange : KFCC.ExchangeInterface.IExchanges
     {

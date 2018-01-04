@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KFCC.EOkCoin
+namespace KFCC.Exchanges.EOkCoin
 {
     static public class SpotErrcode2Msg
     {

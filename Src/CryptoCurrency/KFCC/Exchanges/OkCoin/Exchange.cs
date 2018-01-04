@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System.Net;
 
-namespace KFCC.EOkCoin
+namespace KFCC.Exchanges.EOkCoin
 {
     public class OkCoinExchange : IExchanges
     {
