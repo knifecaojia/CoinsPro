@@ -155,9 +155,9 @@ namespace CaculateAsset
                 {
                      a = e.Value.GetAccount(out raw);
                 }
-                catch
+                catch(Exception err)
                 {
-                    Console.WriteLine(e.Key + " GetAccount faile");
+                    Console.WriteLine(err.Message+" exchange:"+e.Key + " GetAccount faile");
                 }
                 if (e.Value.Name == "Bitstamp")
                 {
