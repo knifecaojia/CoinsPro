@@ -89,7 +89,7 @@ namespace KFCC.Exchanges.EBinance
                     Ticker t = GetTicker(GetLocalTradingPairString(tp), out raw);
                     Depth d = GetDepth(GetLocalTradingPairString(tp), out raw);
                     _subscribedtradingpairs.Add(tradingpairs, new WssHelper(tp, t, d));
-                    _subscribedtradingpairs[tradingpairs].TradeInfoEvent += OkCoinExchange_TradeInfoEvent;
+                    _subscribedtradingpairs[tradingpairs].TradeInfoEvent += BinanceExchange_TradeInfoEvent;
                 }
             }
             else if (st == SubscribeTypes.RESTAPI)
@@ -102,6 +102,7 @@ namespace KFCC.Exchanges.EBinance
                 if (_subscribedtradingpairs.ContainsKey(tradingpairs))
                 {
                     //有这个订阅
+                    
                 }
                 else
                 {
@@ -117,7 +118,7 @@ namespace KFCC.Exchanges.EBinance
             return true;
         }
 
-        private void OkCoinExchange_TradeInfoEvent(TradingInfo ti, TradeEventType tt)
+        private void BinanceExchange_TradeInfoEvent(TradingInfo ti, TradeEventType tt)
         {
             if (TickerEvent != null && tt == TradeEventType.TICKER)
             {

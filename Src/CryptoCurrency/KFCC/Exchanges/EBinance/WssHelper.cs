@@ -84,12 +84,12 @@ namespace KFCC.Exchanges.EBinance
                         //UpdateTicker(tradingpair, t);
 
                         _tradinginfo.t = t;
-
-                        TradeInfoEvent(_tradinginfo, TradeEventType.TICKER);
+                        if (TradeInfoEvent != null)
+                            TradeInfoEvent(_tradinginfo, TradeEventType.TICKER);
                     }
                     catch (Exception err)
                     {
-                        Console.WriteLine(err.Message + e.Data);
+                        Console.WriteLine("ticker err:"+err.Message + e.Data);
                     }
 
 
@@ -117,11 +117,12 @@ namespace KFCC.Exchanges.EBinance
                         else
                             _tradinginfo.trade.Type = TradeType.Sell;
                         _tradinginfo.trade.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
-                           TradeInfoEvent(_tradinginfo, TradeEventType.TRADE);
+                        if (TradeInfoEvent != null)
+                            TradeInfoEvent(_tradinginfo, TradeEventType.TRADE);
                     }
                     catch (Exception err)
                     {
-                        Console.WriteLine(err.Message + e.Data);
+                        Console.WriteLine("trade err:" + err.Message + e.Data);
                     }
 
 
@@ -159,11 +160,12 @@ namespace KFCC.Exchanges.EBinance
                         }
                         _tradinginfo.d.ExchangeTimeStamp = 0;// Convert.ToDouble(obj["timestamp"].ToString());
                         _tradinginfo.d.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                        if(TradeInfoEvent!=null)
                         TradeInfoEvent(_tradinginfo, TradeEventType.ORDERS);
                     }
                     catch (Exception err)
                     {
-                        Console.WriteLine(err.Message + e.Data);
+                        Console.WriteLine("depth err:" + err.Message + e.Data);
                     }
 
 
