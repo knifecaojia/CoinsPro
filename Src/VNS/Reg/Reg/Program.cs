@@ -20,116 +20,496 @@ namespace Reg
 {
     class Program
     {
-        private static Yzm yzm = new Yzm();
-        private static string SmsToken = "";
-        private static Proxy proxy = new Proxy("127.0.0.1", 1080);
-        private static string invPhone = "";
+     
+        static string proxyHost = "http://http-pro.abuyun.com";
+        static string proxyPort = "9010";
+        static Log log = new Log("log/log.txt");
+        static Log NewUserLog= new Log("log/newuserlog.txt");
+        private static Proxy localproxy = new Proxy("127.0.0.1", 1080);
+        private static WebProxy webproxy = null;
         public static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
         {   // 总是接受  
             return true;
         }
         private const string CodeBreak = "https://way.jd.com/showapi/checkcode_ys?typeId=34&convert_to_jpg=0&appkey=3b2ad84f1ed6b6456e1e9c5ce1bfcc20";
         private const string VCodeImgUrl = "http://www.vnscoin.com/api/user/create_code_img/";
-        private const string Sms = "【VNScore】尊敬的用户，您本次的验证码为901693，请于3分钟内正确输入，切勿泄露他人。";
+        //private const string Sms = "【VNScore】尊敬的用户，您本次的验证码为901693，请于3分钟内正确输入，切勿泄露他人。";
+        //static SmsInterface Sms = null;
+        static List<SmsInterface> Smss = new List<SmsInterface>();
+        static bool Working = false;
+        static void InitWebProxy()
+        {
+            string proxyUser = "H5OO4JWC15HLR46P";
+            string proxyPass = "A730FAF6BE67E59B";
+
+            var proxy = new WebProxy();
+            proxy.Address = new Uri(string.Format("{0}:{1}", proxyHost, proxyPort));
+            proxy.Credentials = new NetworkCredential(proxyUser, proxyPass);
+            webproxy = proxy;
+        }
+        static void UpdateWebProxy()
+        {
+            //string targetUrl = "http://test.abuyun.com/proxy.php";
+            string targetUrl = "http://proxy.abuyun.com/switch-ip";
+            //string targetUrl = "http://proxy.abuyun.com/current-ip";
+            var request = WebRequest.Create(targetUrl) as HttpWebRequest;
+            request.AllowAutoRedirect = true;
+            request.KeepAlive = true;
+            request.Method = "GET";
+            request.Proxy = webproxy;
+
+            using (var response = request.GetResponse() as HttpWebResponse)
+            using (var sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8))
+            {
+                string htmlStr = sr.ReadToEnd();
+            }
+        }
+        static int ThreadCount = 0;
+        static Thread threadsCheckThread = null;
+        static RegDBQueue regqueue = null;
+        static Thread threadUpdateDBThread = null;
         static void Main(string[] args)
         {
-            //Console.WriteLine(getyzm(Sms, 6));
-            //Login("18648611298", "vn,.?1wyky..", new Proxy("127.0.0.1", 1080));
-            //登陆短信接码平台
+            //整理用户
+            //Dictionary<string, RegInfo> newusers = new Dictionary<string, RegInfo>();
+            // StreamReader sr = new StreamReader("newuserlog.txt");
+            //string line= sr.ReadLine();
+            //while (line!=null&&line.Length > 2)
+            //{
+            //    string phone = line.Substring(line.IndexOf(":") + 1, 11);
+            //    if (!newusers.ContainsKey(phone))
+            //    {
+            //        RegInfo nu = new RegInfo(null);
+            //        nu.Phone = phone;
+            //        nu.UpdateDB1();
+            //        newusers.Add(phone, nu);
+            //    }
+            //    line = sr.ReadLine();
+            //}
+            StreamReader sr = new StreamReader("ll.txt");
+            string ll = sr.ReadToEnd();
+            sr.Close();
+            DataTable dt = SqlHelper.ExecuteDataset(SqlHelper.GetConnection(), CommandType.Text, "select * from vns where password=''").Tables[0];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                string phone = dt.Rows[i]["username"].ToString().Trim();
+                string password = ll.Substring(ll.IndexOf(phone + "&phone_code=") + 39, 12);
+                SqlHelper.ExecuteNonQuery(SqlHelper.GetConnSting(), CommandType.Text, "update vns set password='" + password + "' where username='" + phone + "'");
+            }
 
-            //string ivc = GetInvCodeList();
-            //string ps= GetRandomString(12, true, true, true);
-            //SqlHelper.ExecuteNonQuery(SqlHelper.GetConnSting(), CommandType.Text, "insert into vns(username,password,invfrom,invcode,jifen,jiangli) values('" + 13514727682 + "','" + ps + "','18686111298','DDDDDDDD',1,2)");
+            Console.ReadKey();
 
-            //SqlHelper.ExecuteNonQuery(SqlHelper.GetConnSting(), CommandType.Text, "update vns set invcount=invcount+1 where invcode='" + ivc + "'");
 
+
+
+
+
+
+
+
+
+
+            //InitWebProxy();
+            regqueue = new RegDBQueue();
+            //测试 隧道故障
+            //webproxy = new WebProxy(proxy.IP, proxy.Port);
+            //log.Write("Vns Autoreg bot! Select SMS service 1=suma 2=yima");
+            //Console.WriteLine("Vns Autoreg bot! Select SMS service 1=suma 2=yima");
+            //string input = Console.ReadLine();
+            //if (input == "2")
+            //{
+            SmsInterface Sms1 = new YiMaSmsService("13950");
+            Console.WriteLine("尝试登陆易码SMS服务");
+            bool islogined1 = Sms1.Login();
+            if (!islogined1)
+            {
+                Console.WriteLine("易码SMS登陆失败...");
+
+
+            }
+            else
+            {
+                Smss.Add(Sms1);
+            }
+            //}
+            //else if (input == "1")
+            //{
+            SmsInterface Sms2 = new SuMaSmsService("37555");
+            Console.WriteLine("尝试登陆速码SMS服务");
+            bool islogined2 = Sms2.Login();
+            if (!islogined2)
+            {
+                Console.WriteLine("速码SMS登陆失败...");
+
+            }
+            else
+            {
+                Smss.Add(Sms2);
+            }
+
+            //SmsInterface Sms3 = new ShenhuaSmsService("185753");
+            //Console.WriteLine("尝试登陆神话SMS服务");
+            //bool islogined3 = Sms3.Login();
+            //if (!islogined3)
+            //{
+            //    Console.WriteLine("神话SMS登陆失败...");
+
+            //}
+            //else
+            //{
+            //    Smss.Add(Sms3);
+            //}
+            if (Smss.Count == 0)
+            {
+                Console.WriteLine("SMS服务 全部登陆失败，退出...");
+                return;
+            }
+            Console.WriteLine("SMS平台数{0}开始注册...",Smss.Count);
+            //}
+
+            //string p=Sms3.GetPhone();
+            //Console.WriteLine(p);
+            //while (true)
+            //{
+            //    Thread.Sleep(4000);
+            //    string msg = Sms3.GetMsg(p);
+            //    Console.WriteLine(msg);
+            //    if (msg.Length > 10)
+            //        break;
+
+            //}
             //Console.ReadKey();
 
 
 
-            Console.WriteLine("Vns Autoreg bot!");
 
+            Working = true;
+            threadsCheckThread = new Thread(CheckThreads);
+            threadsCheckThread.IsBackground = true;
+            threadsCheckThread.Start();
 
+            threadUpdateDBThread = new Thread(UpdateDB);
+            threadUpdateDBThread.IsBackground = true;
+            threadUpdateDBThread.Start();
 
-
-
-
-            smslogin("knifeandcj", "twgdhbtzhy2010...");
             while (true)
             {
-                Reg();
-                Console.ReadKey();
+                // Reg();
+                //Console.ReadKey();
+                string inputstr = Console.ReadLine();
+                if (inputstr == "q")
+                {
+                    Working = false;
+                    Thread.Sleep(1000);
+                    threadUpdateDBThread.Abort();
+                    threadsCheckThread.Abort();
+
+                }
+               
             }
             //Console.ReadKey();
         }
-        static void GetProxy()
+        static void UpdateDB()
         {
+            while (Working)
+            {
+                regqueue.UpdateDB();
+                Thread.Sleep(1000);
 
+            }
         }
+        static void CheckThreads()
+        {
+            while (Working)
+            {
+                if (ThreadCount < 60)
+                {
+                    //启动新的注册线程
+                    ThreadCount++;
+                    Thread.Sleep(1000);
+                    Thread regThread = new Thread(new ThreadStart(Reg));
+                    regThread.IsBackground = true;
+                    regThread.Start();
+
+                }
+                Thread.Sleep(500);
+
+            }
+        }
+        static Proxy gloabproxy = null;
+        static bool GetProxy(RegInfo user,string tid)
+        {
+            bool flag = false;
+            if (gloabproxy != null && (DateTime.Now - gloabproxy.InitTime).Seconds < 2)
+            {
+                user.proxy = gloabproxy;
+                flag = true;
+                return flag;
+            }
+            try
+            {
+                String line = "http://webapi.http.zhimacangku.com/getip?num=1&type=2&pro=&city=0&yys=0&port=1&time=1&ts=0&ys=0&cs=0&lb=1&sb=0&pb=4&mr=1&regions=";
+                try
+                {
+                    using (StreamReader sr = new StreamReader("Proxy.txt"))
+                    {
+                        // Read the stream to a string, and write the string to the console.
+                        line = sr.ReadToEnd();
+                        Console.WriteLine(line);
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+
+
+                RestClient rc = new RestClient(line);
+                RestRequest rr = new RestRequest(Method.GET);
+                var response = rc.Execute(rr);
+                string rawresponse = response.Content;
+                if (rawresponse.Length > 0)
+                {
+                    JObject obj = JObject.Parse(rawresponse);
+                    if (Convert.ToBoolean(obj["success"]))
+                    {
+                        JArray ips = JArray.Parse(obj["data"].ToString());
+                        if (ips.Count > 0)
+                        {
+                            gloabproxy= new Proxy(ips[0]["ip"].ToString(), Convert.ToInt32(ips[0]["port"].ToString()));
+                            user.proxy = gloabproxy;
+                            flag = true;
+                            Console.WriteLine(tid + "代理服务器{0}:{1}获取成功:" ,user.proxy.IP,user.proxy.Port);
+                        }
+                            
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(tid + "代理服务器获取失败:" + e.Message);
+                log.WriteLine(tid + "代理服务器获取失败:" + e.Message);
+            }
+            return flag;
+        }
+        //Thread.CurrentThread.ManagedThreadId.ToString() 获取线程ID
         static void Reg()
         {
-            
-
+            string tid = Thread.CurrentThread.ManagedThreadId.ToString();
+            Console.WriteLine("线程:{0}启动...", tid);
             Thread.Sleep(1000);
-            string phone = getMobileNum("37555");
-            if (phone.Length != 11)
-                return;
-            Console.WriteLine("获得手机号:" + phone);
-            //破解验证码
+            RegInfo newuser = new RegInfo(Smss);
 
-
-            bool piccodeflag = false;
-            CookieContainer cc = new CookieContainer();
-            while (!piccodeflag)
+            //获取代理服务器
+            bool proxyflag = GetProxy(newuser, tid);
+            int proxycount = 0;
+            while (!proxyflag)
             {
-                Bitmap capimg = LoadImg(VCodeImgUrl, out cc, proxy);
-                //capimg.Save("temp.png");
-                string piccode = CrackImg(capimg);
-                string path = Directory.GetCurrentDirectory() + @"\imgs\" + piccode + ".png";
-                capimg.Save(path);
-                Console.WriteLine("图片验证码:" + piccode);
-                //判断验证码是否识别正确，根据返回值判断
-                piccodeflag = true;
+                Thread.Sleep(300);
+                proxyflag = GetProxy(newuser, tid);
+                proxycount++;
+                if (proxycount > 3)
+                {
+                    break;
+                }
             }
-            
-
-            string msg=getMessage(phone, "37555");
-            if (msg.Length > 10)
+            if (!proxyflag)
             {
-                Console.WriteLine("Raw SmsMsg:" + msg);
-                string msgcode = getyzm(msg, 6);
-                Console.WriteLine("Sms Verficode:" + msgcode);
-                //获取邀请码
-                string invcode = GetInvCodeList();
-                Console.WriteLine("返回随机邀请码：" + invcode);
+                newuser.proxy = null;
+            }
 
-                string password = GetRandomString(12, true, true, true);
+            newuser.Phone = newuser.Sms.GetPhone();
+            if (newuser.Phone.Length != 11)
+            {
+                Console.WriteLine(tid + "手机号获取失败:"+newuser.Sms.ServiceName + newuser.Phone);
+                log.WriteLine(tid + "手机号获取失败:" + newuser.Sms.ServiceName + newuser.Phone);
+                ThreadCount--;
+                return;
+            }
+            Console.WriteLine(tid + "手机号获取:" + newuser.Sms.ServiceName + newuser.Phone+" 成功");
+            log.WriteLine(tid + "手机号获取:" + newuser.Sms.ServiceName + newuser.Phone + " 成功");
+          
+            
+            //破解验证码
+            int piccount = 1;
+            while (!BreakImgCode(newuser, tid))
+            {
+                Console.WriteLine(tid + "尝试第{0}次破解图片验证码", (piccount + 1));
+                piccount++;
+                if (piccount > 5)
+                    break;
 
+            }
+            if (newuser.PicVCode == "")
+            {
+                ThreadCount--;
+                return;
+            }
+            try
+
+            {
+                SendSmsMsg(newuser.Phone, newuser);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                ThreadCount--;
+                return;
+            }
+            //获取短信内容
+            int times = 0;
+            string Smsresult = "";
+            while (true)
+            {
+                if (times > 20)
+                {
+
+                    break;
+                }
+                if (!Working)
+                {
+
+                    break;
+                }
+                Smsresult = newuser.Sms.GetMsg(newuser.Phone);
+                if (Smsresult.Length > 4)
+                {
+
+                    break;
+                }
+                else
+                {
+                    times++;
+                    //Console.WriteLine(string.Format(tid  +newuser.Sms.ServiceName+"正在第 {0} 次获取验证码。", times));
+                    Thread.Sleep(5000);
+                }
+            }
+            if (Smsresult.Length < 4)
+            {
+                Console.WriteLine(tid + "获取短信内容失败" + newuser.Sms.ServiceName);
+                log.WriteLine(tid + "获取短信内容失败" + newuser.Sms.ServiceName);
+                newuser.Sms.AddIngore(newuser.Phone);
+                newuser.Sms.Release(newuser.Phone);
+                ThreadCount--;
+                return;
+            }
+            //获取短信验证码 正则方式
+            newuser.PhoneSmsCode = getyzm(Smsresult, 6);
+            Console.WriteLine(tid + "Raw SmsMsg:" + Smsresult + newuser.Sms.ServiceName);
+            Console.WriteLine(tid + "Sms Verficode:" + newuser.PhoneSmsCode + newuser.Sms.ServiceName);
+
+            //获取邀请码
+            newuser.InviteCodeFrom = GetInvCodeList();
+            Console.WriteLine(tid + "返回随机邀请码：" + newuser.InviteCodeFrom);
+
+            newuser.Password = GetRandomString(12, true, true, true);
+            newuser.Password = newuser.Password.Substring(0, 11) + "0";
+            Console.WriteLine(tid + "返回随机密码：" + newuser.Password);
+
+            int regtime = 1;
+            while (true)
+            {
+              
+                Console.WriteLine(tid + "第{0}次尝试注册：", regtime);
+                
+                bool flag = RegNewUser(newuser, tid);
+                if (flag)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(tid + "第{0}次尝试注册成功，更新数据库...", regtime);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    log.WriteLine(tid + "第" + regtime + "次尝试注册成功，更新数据库...");
+                    //更新数据库
+                    regqueue.Put(newuser);
+                    //newuser.UpdateDB();
+                    break;
+                }
+               
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine(tid + "第{0}次尝试注册失败，..", regtime);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    log.WriteLine(tid + "第" + regtime + "次尝试注册失败...");
+                    regtime++;
+                }
+
+                
+
+                if (regtime >= 4)
+                {
+                    Console.WriteLine(tid + "超过注册次数限制，失败！");
+                    log.WriteLine(tid + "超过注册次数限制，失败！");
+                    break;
+                }
+                // 默认注册失败是由于 图片验证码破解失败造成破解验证码
+                piccount = 1;
+                while (!BreakImgCode(newuser, tid))
+                {
+                    Console.WriteLine(tid + "第{1}次尝试注册 尝试第{0}次破解图片验证码", (piccount + 1), regtime);
+                    piccount++;
+                    if (piccount > 5)
+                        break;
+                }
+            }
+            //该号码拉黑
+            newuser.Sms.AddIngore(newuser.Phone);
+            if (newuser.Sms.Release(newuser.Phone))
+                Console.WriteLine("释放手机号:" + newuser.Phone + "成功！");
+            else
+            {
+                Console.WriteLine("释放手机号:" + newuser.Phone + "失败！");
+            }
+            ThreadCount--;
+            //UpdateWebProxy();
+        }
+        
+        static bool RegNewUser(RegInfo user,string tid)
+        {
+            try
+            {
                 HttpWebRequest request = null;
-                string url = "http://www.vnscoin.com/user/register/?code=" + invcode;   //登录页面
+                string url = "http://www.vnscoin.com/user/register/?code=" + user.InviteCodeFrom;   //登录页面
                 request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "POST";
-
+                if (user.proxy != null)
+                {
+                    request.Proxy = new WebProxy(user.proxy.IP, user.proxy.Port);
+                }
+                else
+                {
+                    if (webproxy != null)
+                    {
+                        request.Proxy = webproxy;
+                    }
+                    else
+                    {
+                        request.Proxy = new WebProxy(localproxy.IP, localproxy.Port);
+                    }
+                }
                 request.Accept = "*/*;";
                 request.UserAgent = "Mozilla/5.0";
                 request.ContentType = "application/x-www-form-urlencoded";
                 request.AllowAutoRedirect = true;
-                request.CookieContainer = cc;
+                request.CookieContainer = user.CC;
                 request.KeepAlive = true;
                 /*
- * code:TOfUKS7u
-mobile:18648611298
-phone_code:901693
-password:vn,.?1wyky..
-pwd_again:vn,.?1wyky..
-*/
-                string postData = string.Format("code={0}&mobile={1}&phone_code={2}&password={3}&pwd_again={4}",
-                    System.Web.HttpUtility.UrlEncode(invcode),
-                    System.Web.HttpUtility.UrlEncode(phone),
-                    System.Web.HttpUtility.UrlEncode(msgcode),
-                    System.Web.HttpUtility.UrlEncode(password),
-                    System.Web.HttpUtility.UrlEncode(password));  //这里按照前面FireBug中查到的POST字符串做相应修改。
-                byte[] postdatabyte = Encoding.UTF8.GetBytes(postData);
+    * code:TOfUKS7u
+    mobile:18648611298
+    phone_code:901693
+    password:vn,.?1wyky..
+    pwd_again:vn,.?1wyky..
+    */
+
+               string  postData = string.Format("code={0}&mobile={1}&phone_code={2}&password={3}&pwd_again={4}&check_code={5}",
+                   System.Web.HttpUtility.UrlEncode(user.InviteCodeFrom),
+                   System.Web.HttpUtility.UrlEncode(user.Phone),
+                   System.Web.HttpUtility.UrlEncode(user.PhoneSmsCode),
+                   System.Web.HttpUtility.UrlEncode(user.Password),
+                   System.Web.HttpUtility.UrlEncode(user.Password),
+                    System.Web.HttpUtility.UrlEncode(user.PicVCode));
+                log.WriteLine(postData);//这里按照前面FireBug中查到的POST字符串做相应修改。
+               byte[] postdatabyte = Encoding.UTF8.GetBytes(postData);
                 request.ContentLength = postdatabyte.Length;
 
                 using (Stream stream = request.GetRequestStream())
@@ -139,61 +519,146 @@ pwd_again:vn,.?1wyky..
 
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
-                string strWebData = string.Empty;
+               string strWebData = string.Empty;
                 using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                 {
                     strWebData = reader.ReadToEnd();
                 }
-                if (response.Headers.Get("Location") == "/user/my/")
+                if (strWebData.IndexOf("奖") > 0)
                 {
-                    //登陆
-                    //
-                    //尝试获取邀请码
-                    request = null;
-                    url = "http://www.vnscoin.com/user/my";   //登录页面
-                    request = (HttpWebRequest)WebRequest.Create(url);
-                    request.Method = "GET";
-
-                    request.Accept = "*/*;";
-                    request.UserAgent = "Mozilla/5.0";
-                    request.ContentType = "application/x-www-form-urlencoded";
-                    request.AllowAutoRedirect = true;
-                    request.CookieContainer = cc;
-                    request.KeepAlive = true;
-
-
-
-                    response = (HttpWebResponse)request.GetResponse();
-
-                    strWebData = string.Empty;
-                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
-                    {
-                        strWebData = reader.ReadToEnd();
-                    }
-
                     var doc = new HtmlDocument();
                     doc.LoadHtml(strWebData);
-                    var yaoqing = doc.DocumentNode.SelectNodes("/html/body/div[2]/div/div[3]/div[3]/div[2]/table/tbody/tr[2]/td[2]/div").First().InnerText;
-                    var jifen = doc.DocumentNode.SelectNodes("/html/body/div[2]/div/div[3]/div[3]/div[2]/table/tbody/tr[4]/td[2]").First().InnerText;
-                    var jiangli = doc.DocumentNode.SelectNodes("/html/body/div[2]/div/div[3]/div[3]/div[2]/table/tbody/tr[5]/td[2]").First().InnerText;
+                    try
+                    {
+                        var yaoqing = doc.DocumentNode.SelectNodes("/html/body/div[2]/div/div[3]/div[3]/div[2]/table/tbody/tr[2]/td[2]/div").First().InnerText;
+                        var jifen = doc.DocumentNode.SelectNodes("/html/body/div[2]/div/div[3]/div[3]/div[2]/table/tbody/tr[4]/td[2]").First().InnerText;
+                        var jiangli = doc.DocumentNode.SelectNodes("/html/body/div[2]/div/div[3]/div[3]/div[2]/table/tbody/tr[5]/td[2]").First().InnerText;
+                        user.InviteCode = yaoqing;
+                        user.JiFen = Convert.ToInt32(jifen);
+                        user.JiangLi = Convert.ToInt32(jiangli);
+                    }
+                    catch
+                    { }
 
-                    Console.WriteLine("新用户:{0}注册成功！！！,邀请:{1},积分:{2},奖励:{3}", phone, yaoqing, jifen, jiangli);
-
-                    //更新数据库
-                    SqlHelper.ExecuteNonQuery(SqlHelper.GetConnSting(), CommandType.Text, "insert into vns(username,password,invfrom,invcode,jifen,jiangli) values('" + phone + "','" + password + "','" + invPhone + "','" + yaoqing + "'," + jifen + "," + jiangli + ")");
-
-                    SqlHelper.ExecuteNonQuery(SqlHelper.GetConnSting(), CommandType.Text, "update vns set invcount=invcount+1 where invcode='" + invcode + "'");
-
+                    string info = string.Format(tid + "新用户:{0}注册成功！！！,邀请:{1},积分:{2},奖励:{3}", user.Phone, user.InviteCode, user.JiFen, user.JiangLi);
+                    Console.WriteLine(info);
+                    log.WriteLine(info);
+                    NewUserLog.WriteLine(info);
+                    return true;
                 }
+                else
+                {
+                    throw new Exception(strWebData);
+                }
+            }
+            catch(Exception e)
+            {
+                string info = string.Format(tid + "新用户:{0}注册失败 Err{1}",user.Phone,e.Message);
+                string info1 = string.Format(tid + "新用户:{0}注册失败 ", user.Phone);
 
-
+                Console.WriteLine(info1);
+                log.WriteLine(info);
+            }
+            return false;
+        }
+        static bool BreakImgCode(RegInfo user,string tid)
+        {
+            try
+            {
+                string piccode = "";
+                bool piccodeflag = false;
+                CookieContainer cc = new CookieContainer();
+                while (!piccodeflag)
+                {
+                    Bitmap capimg = LoadImg(VCodeImgUrl, out cc, user.proxy);
+                    int trycount= 0;
+                    while (capimg == null)
+                    {
+                        trycount++;
+                        Thread.Sleep(500);
+                        capimg = LoadImg(VCodeImgUrl, out cc, user.proxy);
+                        if (trycount > 6)
+                            break;
+                    }
+                    if (capimg == null)
+                        return false;
+                    //capimg.Save("temp.png");
+                    piccode = CrackImg(capimg);
+                    string path = Directory.GetCurrentDirectory() + @"\imgs\" + piccode + ".png";
+                    capimg.Save(path);
+                    Console.WriteLine(tid + "图片验证码:" + piccode);
+                    log.WriteLine(tid + "图片验证码:" + piccode);
+                    //判断验证码是否识别正确，根据返回值判断
+                    piccodeflag = true;
+                }
+                user.PicVCode = piccode;
+                user.CC = cc;
+                return true;
+            }
+            catch(Exception e)
+            {
+             
+                Console.WriteLine(tid + "图片验证码破解失败:" + e.Message);
+                log.WriteLine(tid + "图片验证码破解失败:" + e.Message);
+                return false;
+            }
+        }
+        static string SendSmsMsg(string phone,RegInfo user)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://www.vnscoin.com/api/user/getsms/");
+            //http://2017.ip138.com/ic.asp
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create("http://2017.ip138.com/ic.asp");
+            request.Method = "POST";
+            if (user.proxy != null)
+            {
+                request.Proxy = new WebProxy(user.proxy.IP, user.proxy.Port);
             }
             else
             {
-                Console.WriteLine("验证码短信读取错误");
+                if (webproxy != null)
+                {
+                    request.Proxy = webproxy;
+                }
+                else
+                {
+                    request.Proxy = new WebProxy(localproxy.IP, localproxy.Port);
+                }
             }
-            string result = yzm.cancelAllRecv(SmsToken);
-            Console.WriteLine("释放手机号:" + result);
+            request.Accept = "*/*;";
+            request.UserAgent = "Mozilla/5.0";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.AllowAutoRedirect = true;
+            request.KeepAlive = true;
+            string postData = string.Format("mobile={0}&res=W&code={1}", System.Web.HttpUtility.UrlEncode(phone),System.Web.HttpUtility.UrlEncode(user.PicVCode));
+            log.WriteLine(postData);//这里按照前面FireBug中查到的POST字符串做相应修改。
+            byte[] postdatabyte = Encoding.UTF8.GetBytes(postData);
+            request.ContentLength = postdatabyte.Length;
+            request.CookieContainer = user.CC;
+            string strWebData = string.Empty;
+            try
+
+            {
+                using (Stream stream = request.GetRequestStream())
+                {
+                    stream.Write(postdatabyte, 0, postdatabyte.Length);
+                }
+
+
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+
+               
+                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                {
+                    strWebData = reader.ReadToEnd();
+                    Console.WriteLine(strWebData);
+                }
+            }
+            catch (Exception e)
+            {
+            }
+
+            return strWebData;
         }
         /**  
 * 从短信字符窜提取验证码  
@@ -222,100 +687,27 @@ pwd_again:vn,.?1wyky..
             }
             return null;
         }
-        static private void smslogin(string username,string password)
-        {
-           
-            string result = yzm.login(username, password);
-           
-            if (result.StartsWith("1|"))
-            {
-                Console.WriteLine("Sms code receive sys logined!");
-                string[] array = result.Split('|');
-                if (array.Length == 2)
-                {
-                    SmsToken = array[1];
-                   
-                }
-                
-            }
-            else
-            {
-                Console.WriteLine("Sms code receive sys fucked!");
-            }
-        }
-        private static string getMobileNum(string sid)
-        {
-           
-            string result = yzm.getPhone(SmsToken, sid, "", "", "", "", "","");
-            if (result.StartsWith("1|"))
-            {
-                return result.Split('|')[1];
-             
-            }
-            else
-            {
-                return "";
-            }
-           
-        }
-        private static bool _exitGetYzm = false;
-        private static string getMessage(string phone,string sid)
-        {
-
-            string rawmsg = "";
-            try
-            {
-             
-
-
-                int times = 0;
-                while (true)
-                {
-                    if (times > 10)
-                    {
-                     
-                        break;
-                    }
-                    if (_exitGetYzm)
-                    {
-                        
-                        break;
-                    }
-
-                    string result = yzm.getMessage(SmsToken, sid, phone, "knifeandcj");
-                    if (result.StartsWith("1|"))
-                    {
-                        rawmsg= result.Split('|')[1];
-                        break;
-                    }
-                    else
-                    {
-                        times++;
-                        Console.WriteLine(string.Format("正在第 {0} 次获取验证码。", times));
-                        Thread.Sleep(5000);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-               Console.WriteLine(ex.Message);
-            }
-            return rawmsg;
-
-
-        }
+       
+       
+     
+      
         static string GetInvCodeList()
         {
             //从数据库选择邀请数量小于5的用户
-            DataTable dt = SqlHelper.ExecuteDataset(SqlHelper.GetConnSting(), CommandType.Text, "select * from vns where invcount<5 and id<100").Tables[0];
-            if (dt != null && dt.Rows.Count > 0)
-            {
-                Random r = new Random();
-                int index = r.Next(dt.Rows.Count);
-                invPhone= dt.Rows[index]["username"].ToString();
-                return dt.Rows[index]["invcode"].ToString();
-            }
-            return "";
+            string[] invs = { "	1Wb4s3UzMKhSQo7Z", "h1Nt7rjU", "db217u8mSRxPnYek", "hB4X3ANm", "oCmdPNQbGMXBAy83" };
+            //DataTable dt = SqlHelper.ExecuteDataset(SqlHelper.GetConnSting(), CommandType.Text, "select * from vns where id<30").Tables[0];
+            //if (dt != null && dt.Rows.Count > 0)
+            //{
+            //    Random r = new Random();
+            //    int index = r.Next(dt.Rows.Count);
+            //    //invPhone= dt.Rows[index]["username"].ToString();
+            //    return dt.Rows[index]["invcode"].ToString();
+            //}
+            long tick = DateTime.Now.Ticks;
+            Random r = new Random((int)(tick & 0xffffffffL) | (int)(tick >> 32));
+            //Random r = new Random(DateTime.Now.);
+            int index = r.Next(0, 4);
+            return invs[index];
         }
         ///<summary>
         ///生成随机字符串 
@@ -459,8 +851,21 @@ pwd_again:vn,.?1wyky..
                 wrq.ContentType = "application/x-www-form-urlencoded";
                 if (_proxy != null)
                 {
-                    wrq.Proxy = new WebProxy(_proxy.IP, Convert.ToInt32(_proxy.Port));
+                    wrq.Proxy = new WebProxy(_proxy.IP, _proxy.Port);
                 }
+                else
+                {
+                    if (webproxy != null)
+                    {
+                        wrq.Proxy = webproxy;
+                    }
+                    else
+                    {
+                        wrq.Proxy = new WebProxy(localproxy.IP, localproxy.Port);
+                    }
+                }
+               
+               
                 //获取返回资源
                 HttpWebResponse response = (HttpWebResponse)wrq.GetResponse();
                 //foreach (Cookie c in response.Cookies)
@@ -492,8 +897,150 @@ pwd_again:vn,.?1wyky..
         {
             this.IP = ip;
             this.Port = port;
+            InitTime = DateTime.Now;
         }
         public string IP;
         public int Port;
+        public DateTime InitTime;
+    }
+    public class Log
+    {
+        private string logFile;
+        private StreamWriter writer;
+        private FileStream fileStream = null;
+        private string _fileName;
+        private static Dictionary<long, long> lockDic = new Dictionary<long, long>();
+        /// <summary>  
+        /// 获取或设置文件名称  
+        /// </summary>  
+        public string FileName
+        {
+            get { return _fileName; }
+            set { _fileName = value; }
+        }
+        /// <summary>  
+        /// 构造函数  
+        /// </summary>  
+        /// <param name="byteCount">每次开辟位数大小，这个直接影响到记录文件的效率</param>  
+        /// <param name="fileName">文件全路径名</param>  
+
+        /// <summary>  
+        /// 创建文件  
+        /// </summary>  
+        /// <param name="fileName"></param>  
+        public void Create(string fileName)
+        {
+            if (!System.IO.File.Exists(fileName))
+            {
+                using (System.IO.FileStream fs = System.IO.File.Create(fileName))
+                {
+                    fs.Close();
+                }
+            }
+        }
+        /// <summary>  
+        /// 写入文本  
+        /// </summary>  
+        /// <param name="content">文本内容</param>  
+        private void Write(string content, string newLine)
+        {
+            if (string.IsNullOrEmpty(_fileName))
+            {
+                throw new Exception("FileName不能为空！");
+            }
+            using (System.IO.FileStream fs = new System.IO.FileStream(_fileName, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite, System.IO.FileShare.ReadWrite, 8, System.IO.FileOptions.Asynchronous))
+            {
+                //Byte[] dataArray = System.Text.Encoding.ASCII.GetBytes(System.DateTime.Now.ToString() + content + "/r/n");  
+                Byte[] dataArray = System.Text.Encoding.Default.GetBytes(content + newLine);
+                bool flag = true;
+                long slen = dataArray.Length;
+                long len = 0;
+                while (flag)
+                {
+                    try
+                    {
+                        if (len >= fs.Length)
+                        {
+                            fs.Lock(len, slen);
+                            lockDic[len] = slen;
+                            flag = false;
+                        }
+                        else
+                        {
+                            len = fs.Length;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        while (!lockDic.ContainsKey(len))
+                        {
+                            len += lockDic[len];
+                        }
+                    }
+                }
+                fs.Seek(len, System.IO.SeekOrigin.Begin);
+                fs.Write(dataArray, 0, dataArray.Length);
+                fs.Close();
+            }
+        }
+        /// <summary>  
+        /// 写入文件内容  
+        /// </summary>  
+        /// <param name="content"></param>  
+        public void WriteLine(string content)
+        {
+            this.Write(content, System.Environment.NewLine);
+        }
+        /// <summary>  
+        /// 写入文件  
+        /// </summary>  
+        /// <param name="content"></param>  
+        public void Write(string content)
+        {
+            this.Write(content, "");
+        }
+        public Log(string fileName)
+        {
+            logFile = fileName;
+            CreateDirectory(logFile);
+            _fileName = fileName;
+        }
+        //使用
+        //Log log = new Log(AppDomain.CurrentDomain.BaseDirectory + @"/log/Log.txt");
+        //log.log(basePath);
+        public void log(string info)
+        {
+            try
+            {
+
+                WriteLine(DateTime.Now + ": " + info);
+                WriteLine("----------------------------------");
+            }
+            finally
+            {
+
+            }
+        }
+        public void RawLog(string info)
+        {
+            try
+            {
+
+                WriteLine(info);
+
+            }
+            finally
+            {
+
+            }
+        }
+        public void CreateDirectory(string infoPath)
+        {
+            DirectoryInfo directoryInfo = Directory.GetParent(infoPath);
+            if (!directoryInfo.Exists)
+            {
+                directoryInfo.Create();
+            }
+        }
     }
 }

@@ -15,6 +15,7 @@ namespace Test
     {
         static void Main(string[] args)
         {
+           //string  rawresponse = CommonLab.Utility.GetHttpContent("http://sta.github.io/websocket-sharp/", "GET", "", null);
             CommonLab.TradePair tp = new CommonLab.TradePair("ltc","btc");
             string raw;
 
@@ -107,29 +108,29 @@ namespace Test
             //            EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n
             //Secret:
             //BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3
-            //EBinanceExchange exchange = new KFCC.EBinance.EBinanceExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
-            //exchange.proxy = new CommonLab.Proxy("127.0.0.1", 8888);
-            //exchange.Subscribe(tp, CommonLab.SubscribeTypes.RESTAPI);
+            EBinanceExchange exchange = new KFCC.Exchanges.EBinance.EBinanceExchange("EspHWtI5WbB3FVUoywxqpE9SkawJKQcrb3q2vu54b428uGdNdIyZlESi29DIBS4n", "BT5OJjq1IQuVmfp8yInJMfiy8aMBdFbRIHSQoB8QyRMucbBQmjWPdI1Plzdz54o3", "rqno1092", "caojia");
+            exchange.proxy = new CommonLab.Proxy("127.0.0.1", 1080);
+            exchange.Subscribe(tp, CommonLab.SubscribeTypes.WSS);
             //exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
-            //exchange.TickerEvent += Exchange_TickerEvent;
+           exchange.TickerEvent += Exchange_TickerEvent;
             //exchange.DepthEvent += Exchange_DepthEvent;
-            //exchange.TradeEvent += Exchange_TradeEvent;
-            //CommonLab.Trade[] trades= exchange.GetTrades(exchange.GetLocalTradingPairString(tp), out raw);
+           // exchange.TradeEvent += Exchange_TradeEvent;
+            //CommonLab.Trade[] trades = exchange.GetTrades(exchange.GetLocalTradingPairString(tp), out raw);
             //CommonLab.Ticker t = exchange.GetTicker(exchange.GetLocalTradingPairString(tp), out raw);
+            exchange.GetAccount(out raw);
+           Console.Write(exchange.Account.ToString(true));
+            //int orderid = exchange.Sell(exchange.GetLocalTradingPairString(tp), t.Buy + 0.000015, 0.1);
             //exchange.GetAccount(out raw);
-            // Console.Write(exchange.Account.ToString(true));
-            //int orderid=exchange.Sell(exchange.GetLocalTradingPairString(tp), t.Buy +0.000015, 0.1);
-            //exchange.GetAccount(out raw);
-            //List<CommonLab.Order> orders = exchange.GetOrdersStatus(exchange.GetLocalTradingPairString(tp), out raw);
-            // foreach (CommonLab.Order o in orders)
+           // List<CommonLab.Order> orders = exchange.GetOrdersStatus(exchange.GetLocalTradingPairString(tp), out raw);
+            //foreach (CommonLab.Order o in orders)
             //{
-            //     if (o.Status == CommonLab.OrderStatus.ORDER_STATE_PENDING||1==1)
-            //     {
-            //         exchange.CancelOrder(o.Id, exchange.GetLocalTradingPairString(tp),out raw);
-            //     }
-            // }
-            // CommonLab.Order order = exchange.GetOrderStatus("13081100", exchange.GetLocalTradingPairString(tp), out raw);
-            // Console.WriteLine(raw);
+            //    if (o.Status == CommonLab.OrderStatus.ORDER_STATE_PENDING || 1 == 1)
+            //    {
+           //         exchange.CancelOrder(o.Id, exchange.GetLocalTradingPairString(tp), out raw);
+           //     }
+           // }
+            //CommonLab.Order order = exchange.GetOrderStatus("13081100", exchange.GetLocalTradingPairString(tp), out raw);
+            //Console.WriteLine(raw);
             #endregion
             #region Quoine测试
 

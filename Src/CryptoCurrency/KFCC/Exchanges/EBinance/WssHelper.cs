@@ -53,6 +53,9 @@ namespace KFCC.Exchanges.EBinance
             wsticker = new WebSocket(spotwssurl+ _tradingpair+"@ticker");
             wstrade = new WebSocket(spotwssurl + _tradingpair + "@trade");
             wsdepth = new WebSocket(spotwssurl + _tradingpair + "@depth20");
+            wsticker.SetProxy("http://127.0.0.1:1080", "", "");
+            wstrade.SetProxy("http://127.0.0.1:1080", "", "");
+            wsdepth.SetProxy("http://127.0.0.1:1080", "", "");
             //wsticker.OnOpen += (sender, e) =>
             //{
             //    ws.Send("{'event':'addChannel','channel':'ok_sub_spot_"+_tradingpair+"_ticker'}");

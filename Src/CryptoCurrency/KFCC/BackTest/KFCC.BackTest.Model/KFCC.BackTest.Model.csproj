@@ -30,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonLab">
-      <HintPath>..\..\CommonLab\bin\Debug\CommonLab.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,6 +43,12 @@
     <Compile Include="DataHandlers\IDataHandler.cs" />
     <Compile Include="MarketData\TxtDataSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonLab\CommonLab.csproj">
+      <Project>{09f95fc2-52a7-45f4-9624-25912dc293fa}</Project>
+      <Name>CommonLab</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
