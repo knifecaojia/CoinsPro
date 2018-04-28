@@ -32,14 +32,14 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.开始监测ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aPIKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.使用帮助ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.aPIKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.textBox1 = new System.Windows.Forms.RichTextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.使用帮助ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.label1 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -83,6 +83,19 @@
             this.开始监测ToolStripMenuItem.Name = "开始监测ToolStripMenuItem";
             this.开始监测ToolStripMenuItem.Size = new System.Drawing.Size(68, 21);
             this.开始监测ToolStripMenuItem.Text = "开始监测";
+            this.开始监测ToolStripMenuItem.Click += new System.EventHandler(this.开始监测ToolStripMenuItem_Click);
+            // 
+            // aPIKeyToolStripMenuItem
+            // 
+            this.aPIKeyToolStripMenuItem.Name = "aPIKeyToolStripMenuItem";
+            this.aPIKeyToolStripMenuItem.Size = new System.Drawing.Size(63, 21);
+            this.aPIKeyToolStripMenuItem.Text = "API key";
+            // 
+            // 使用帮助ToolStripMenuItem
+            // 
+            this.使用帮助ToolStripMenuItem.Name = "使用帮助ToolStripMenuItem";
+            this.使用帮助ToolStripMenuItem.Size = new System.Drawing.Size(68, 21);
+            this.使用帮助ToolStripMenuItem.Text = "使用帮助";
             // 
             // splitContainer1
             // 
@@ -121,16 +134,10 @@
             // 
             this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textBox1.Location = new System.Drawing.Point(0, 0);
-            this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(277, 251);
-            this.textBox1.TabIndex = 0;
-            // 
-            // aPIKeyToolStripMenuItem
-            // 
-            this.aPIKeyToolStripMenuItem.Name = "aPIKeyToolStripMenuItem";
-            this.aPIKeyToolStripMenuItem.Size = new System.Drawing.Size(63, 21);
-            this.aPIKeyToolStripMenuItem.Text = "API key";
+            this.textBox1.TabIndex = 1;
+            this.textBox1.Text = "";
             // 
             // panel1
             // 
@@ -143,15 +150,6 @@
             this.panel1.Size = new System.Drawing.Size(552, 58);
             this.panel1.TabIndex = 0;
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 9);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(149, 12);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "策略启动时间（运行时长）";
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
@@ -161,11 +159,14 @@
             this.label2.TabIndex = 1;
             this.label2.Text = "服务器状态";
             // 
-            // 使用帮助ToolStripMenuItem
+            // label1
             // 
-            this.使用帮助ToolStripMenuItem.Name = "使用帮助ToolStripMenuItem";
-            this.使用帮助ToolStripMenuItem.Size = new System.Drawing.Size(68, 21);
-            this.使用帮助ToolStripMenuItem.Text = "使用帮助";
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(13, 9);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(149, 12);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "策略启动时间（运行时长）";
             // 
             // MainWindow
             // 
@@ -177,6 +178,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainWindow";
             this.Text = "BinanceETF";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainWindow_FormClosing);
             this.Load += new System.EventHandler(this.MainWindow_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -185,7 +187,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
-            this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
@@ -203,12 +204,12 @@
         private System.Windows.Forms.ToolStripMenuItem 开始监测ToolStripMenuItem;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.ToolStripMenuItem aPIKeyToolStripMenuItem;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripMenuItem 使用帮助ToolStripMenuItem;
+        private System.Windows.Forms.RichTextBox textBox1;
     }
 }
 
