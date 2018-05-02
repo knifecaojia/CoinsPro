@@ -43,12 +43,13 @@ namespace BinacneETF
                         dataGridView1.Rows[j].Cells[4].Value = symbols[i].Ticker.Sell;
                         dataGridView1.Rows[j].Cells[5].Value = symbols[i].Ticker.SellQuantity;
                         dataGridView1.Rows[j].Cells[6].Value = symbols[i].Ticker.PriceChange;
-                        dataGridView1.Rows[j].Cells[7].Value = symbols[i].Ticker.PriceChangePct;
+                        dataGridView1.Rows[j].Cells[7].Value = symbols[i].Ticker.Last;
                         dataGridView1.Rows[j].Cells[8].Value = symbols[i].Ticker.Open;
                         dataGridView1.Rows[j].Cells[9].Value = symbols[i].Ticker.High;
                         dataGridView1.Rows[j].Cells[10].Value = symbols[i].Ticker.Low;
                         dataGridView1.Rows[j].Cells[11].Value = symbols[i].Ticker.VolumeBase;
                         dataGridView1.Rows[j].Cells[12].Value = symbols[i].Ticker.Volume;
+                        dataGridView1.Rows[j].Cells[13].Value = symbols[i].Symbol;
 
                     }
                 }
@@ -58,18 +59,19 @@ namespace BinacneETF
                 {
                     dataGridView1.Rows.Add();
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[0].Value = symbols[i].BaseAsset;
-                    dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[1].Value = false;
+                    dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[1].Value = Config.strategyConfig.IsSymbolInETF(symbols[i].Symbol);
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[2].Value = symbols[i].Ticker.Buy;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[3].Value = symbols[i].Ticker.BuyQuantity;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[4].Value = symbols[i].Ticker.Sell;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[5].Value = symbols[i].Ticker.SellQuantity;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[6].Value = symbols[i].Ticker.PriceChange;
-                    dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[7].Value = symbols[i].Ticker.PriceChangePct;
+                    dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[7].Value = symbols[i].Ticker.Last;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[8].Value = symbols[i].Ticker.Open;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[9].Value = symbols[i].Ticker.High;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[10].Value = symbols[i].Ticker.Low;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[11].Value = symbols[i].Ticker.VolumeBase;
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[12].Value = symbols[i].Ticker.Volume;
+                    dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[13].Value = symbols[i].Symbol;
                 }
             }
         }
@@ -79,6 +81,19 @@ namespace BinacneETF
             {
                 UpdateDataGDV upd = new UpdateDataGDV(UpdateDGVMethod);
                 dataGridView1.Invoke(upd, new object[] { (object)symbols });
+            }
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == 1)
+            {
+                DataGridViewCheckBoxCell checkCell = (DataGridViewCheckBoxCell)dataGridView1.Rows[e.RowIndex].Cells[1];
+                Boolean flag = Convert.ToBoolean(checkCell.Value);
+
+                checkCell.Value = !flag;
+                Config.strategyConfig.UpdateSymbol(dataGridView1.Rows[e.RowIndex].Cells[13].Value.ToString(), !flag);
+                
             }
         }
     }

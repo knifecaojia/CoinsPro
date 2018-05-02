@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace BinacneETF
     public partial class MainWindow : Form
     {
         private TabControl QuoteSymbolTabC;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -78,6 +80,15 @@ namespace BinacneETF
             //Config.Log.log("读取交易所信息");
             Config.RaiseUpdateConsoleEvent(Color.Black, Config.Exchange.ToString());
 
+
+            #region 读取历史数据
+            //foreach (TradingSymbol t in Config.Exchange.Symbols)
+            //{
+            //    Config.RaiseUpdateConsoleEvent(Color.Blue, "读取"+ t.Symbol+"历史数据");
+            //    Config.Exchange.GetHisData(t.Symbol, new DateTime(2018, 1, 1));
+            //}
+            #endregion
+            timer1.Start();
         }
 
         private void 开始监测ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -99,7 +110,70 @@ namespace BinacneETF
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Config.Exchange.Stop();
+            try
+            {
+                Config.Exchange.Stop();
+            }
+            catch
+            { }
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            Config.strategyConfig.SaveConfig(Config.strategyConfig);
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (Config.IsStrategyWorking)
+            {
+                label1.ForeColor = Color.DarkBlue;
+                label1.Text = "策略启动时间:" + Config.StrategyStartTime.ToString() + " 运行时常:" + ((DateTime.Now - Config.StrategyStartTime).ToString("h'h 'm'm 's's'"));
+            }
+            else
+            {
+                label1.ForeColor = Color.DarkRed;
+                label1.Text = "策略未启动";
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Config.IsStrategyWorking = true;
+            Config.StrategyStartTime = DateTime.Now;
+            Config.Exchange.LoadHisData(dateTimePicker1.Value);
+            Config.UpdateTickerEvent += Config_UpdateTickerEvent;
+        }
+
+        private void Config_UpdateTickerEvent()
+        {
+            string str = "";
+            double index = Config.Exchange.CacCoinIndex();
+            str = "监测时间:" + DateTime.Now.ToString() + " CoinIndex:"+ index;
+            if (index > 1)
+                UpdateWatch(Color.Red, str);
+            else
+                UpdateWatch(Color.Green, str);
+        }
+
+        private delegate void UpdateWatchHandle(Color c, string msg);
+        private void UpdateWatchMthod(Color c, string msg)
+        {
+
+            label5.ForeColor = c;
+            label5.Text = msg;
+        }
+        public void UpdateWatch(Color c, string Msg)
+        {
+            if (label5.InvokeRequired)
+            {
+                UpdateWatchHandle uc = new UpdateWatchHandle(UpdateWatchMthod);
+                label5.Invoke(uc, new object[] { (object)c, Msg });
+            }
+            else
+            {
+                UpdateWatchMthod(c, Msg);
+            }
         }
     }
     public class TradingSymbol
@@ -115,6 +189,20 @@ namespace BinacneETF
         public double minQty { get; set; }
         public double maxQty { get; set; }
         public BATicker Ticker { get; set; }
-        
+        /// <summary>
+        /// 用于计算指数的历史数据，如果没有历史数据的化，就按能取到的最早数据进行测算
+        /// </summary>
+        public BATicker HisTicker { get; set; }
+        public void LoadHisData(DateTime t)
+        {
+            string json = "";
+            using (StreamReader sr = new StreamReader(@"HisData\" + Symbol + ".config"))
+            {
+                json = sr.ReadToEnd();
+            }
+            List<CommonLab.Ticker> tickers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CommonLab.Ticker>>(json);
+            CommonLab.Ticker ticker=tickers.Where(item => item.ExchangeTimeStamp > CommonLab.TimerHelper.GetTimeStampMilliSeconds(t)).OrderBy(i=>i.ExchangeTimeStamp).ToArray()[0];
+            HisTicker = new BATicker(ticker);
+        }
     }
 }

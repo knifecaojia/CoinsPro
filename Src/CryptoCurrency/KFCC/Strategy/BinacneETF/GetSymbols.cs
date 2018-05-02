@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
+using System.IO;
 namespace BinacneETF
 {
     public class ExchangeInfo
@@ -92,6 +93,79 @@ namespace BinacneETF
         {
             wsshelper.Stop();
         }
+        public void LoadHisData(DateTime t)
+        {
+            foreach (string key in Config.strategyConfig.SelectedSymbols)
+            {
+                Config.Exchange.Symbols.Where(item => item.Symbol == key).ToArray()[0].LoadHisData(t);
+            }
+        }
+        public double CacCoinIndex()
+        {
+            double index = 0;
+            int count = 0;
+            double sumpricediff = 0;
+            foreach (string key in Config.strategyConfig.SelectedSymbols)
+            {
+                count++;
+                TradingSymbol t = Config.Exchange.Symbols.Where(item => item.Symbol == key).ToArray()[0];
+                sumpricediff += t.Ticker.Last / t.HisTicker.Last;
+            }
+            if (count > 0)
+                index = sumpricediff / count;
+            return Math.Round(index,8);
+        }
+        /// <summary>
+        /// 临时使用历史Kline 数据
+        /// </summary>
+        public void GetHisData(string symbol,DateTime start)
+        {
+            DateTime st = DateTime.Now;
+            //throw new NotImplementedException();
+            string url = @"https://api.binance.com/api/v1/klines?" + "symbol=" + symbol + "&interval=1d&startTime="+CommonLab.TimerHelper.GetTimeStampMilliSeconds(start);
+            string rawresponse = CommonLab.Utility.GetHttpContent(url, "GET", "", Config.Proxy);
+           
+            JArray JaTickers = JArray.Parse(rawresponse);
+            List<CommonLab.Ticker> ticklist = new List<Ticker>();
+            for (int i = 0; i < JaTickers.Count; i++)
+            {
+                CommonLab.Ticker t = new Ticker();
+                JArray ticker = JArray.Parse(JaTickers[i].ToString());
+                try
+                {
+
+                    t.High = Convert.ToDouble(ticker[2].ToString());
+                    t.Low = Convert.ToDouble(ticker[3].ToString());
+                    t.Last = Convert.ToDouble(ticker[4].ToString());
+                    //t.Sell = Convert.ToDouble(ticker["sell"].ToString());
+                    //t.Buy = Convert.ToDouble(ticker["buy"].ToString());
+                    t.Volume = Convert.ToDouble(ticker[5].ToString());
+                    t.Open = Convert.ToDouble(ticker[1].ToString());// Convert.ToDouble(ticker["open"].ToString());
+                    t.ExchangeTimeStamp = Convert.ToDouble(ticker[6]);
+                    t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                    t.Delay = (DateTime.Now - st).TotalMilliseconds;
+                    ticklist.Add(t);
+
+
+                }
+                catch
+                {
+
+                }
+            }
+            if (File.Exists(@"HisData\"+ symbol + ".config"))
+            {
+                File.Delete(@"HisData\" + symbol + ".config");
+            }
+            string json = "";
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(ticklist);
+            using (StreamWriter sw = new StreamWriter(@"HisData\" + symbol + ".config"))
+            {
+                sw.Write(json);
+            }
+
+
+        }
     }
     public class BATicker
     {
@@ -112,6 +186,23 @@ namespace BinacneETF
         public double ExchangeTimeStamp;//时间戳 交易所返回的
         public double LocalServerTimeStamp;//本地时间戳
         public double Delay;
+        public DateTime ExchangeTime { get { return CommonLab.TimerHelper.ConvertStringToDateTime(ExchangeTimeStamp/1000); } }
+        public BATicker()
+        { }
+        public BATicker(CommonLab.Ticker t)
+        {
+            High = t.High;
+            Low = t.Low;
+            Sell = t.Sell;
+            Buy = t.Buy;
+            Last = t.Last;
+            Volume = t.Volume;
+            Open = t.Open;
+            ExchangeTimeStamp = t.ExchangeTimeStamp;
+            LocalServerTimeStamp = t.LocalServerTimeStamp;
+            Delay = t.Delay;
+         
+        }
         public void UpdateTickerBuyTrade(Trade t)
         {
             Last = t.Price;
@@ -148,6 +239,11 @@ namespace BinacneETF
             t.High = High;//	:最高价
             t.Low = Low;//	:最低价
             t.Sell = Sell;//	:卖一价
+            t.SellQuantity = SellQuantity;
+            t.BuyQuantity = BuyQuantity;
+            t.PriceChange = PriceChange;
+            t.PriceChangePct = PriceChangePct;
+            t.VolumeBase = VolumeBase;
             t.Buy = Buy;//	:买一价
             t.Last = Last;//	:最后成交价
             t.Volume = Volume;//	:最近成交量
@@ -157,5 +253,6 @@ namespace BinacneETF
             t.Delay = Delay;
             return t;
         }
+       
     }
 }

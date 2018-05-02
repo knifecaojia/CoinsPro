@@ -43,6 +43,7 @@
             this.Column9 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column10 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column11 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column14 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -72,7 +73,8 @@
             this.Column8,
             this.Column9,
             this.Column10,
-            this.Column11});
+            this.Column11,
+            this.Column14});
             this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(0, 0);
             this.dataGridView1.Name = "dataGridView1";
@@ -81,6 +83,7 @@
             this.dataGridView1.RowTemplate.Height = 23;
             this.dataGridView1.Size = new System.Drawing.Size(407, 261);
             this.dataGridView1.TabIndex = 0;
+            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // Column13
             // 
@@ -135,7 +138,7 @@
             // Column6
             // 
             this.Column6.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column6.HeaderText = "价变比";
+            this.Column6.HeaderText = "最新价";
             this.Column6.Name = "Column6";
             this.Column6.ReadOnly = true;
             // 
@@ -174,6 +177,13 @@
             this.Column11.Name = "Column11";
             this.Column11.ReadOnly = true;
             // 
+            // Column14
+            // 
+            this.Column14.HeaderText = "Column14";
+            this.Column14.Name = "Column14";
+            this.Column14.ReadOnly = true;
+            this.Column14.Visible = false;
+            // 
             // TradingInfo_Symbol
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -202,5 +212,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column9;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column10;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column11;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column14;
     }
 }

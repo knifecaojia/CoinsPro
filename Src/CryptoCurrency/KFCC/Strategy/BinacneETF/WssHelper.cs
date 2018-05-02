@@ -44,7 +44,7 @@ namespace BinacneETF
                                 BATicker t = tvar.ToArray()[0].Ticker;
                                 t.High = Convert.ToDouble(ticker["h"].ToString());
                                 t.Low = Convert.ToDouble(ticker["l"].ToString());
-                                t.Last = Convert.ToDouble(ticker["C"].ToString());
+                                t.Last = Convert.ToDouble(ticker["c"].ToString());
                                 t.Sell = Convert.ToDouble(ticker["a"].ToString());
                                 t.Buy = Convert.ToDouble(ticker["b"].ToString());
                                 t.SellQuantity = Convert.ToDouble(ticker["A"].ToString());
@@ -56,6 +56,8 @@ namespace BinacneETF
                                 t.Open = Convert.ToDouble(ticker["o"].ToString());
                                 t.ExchangeTimeStamp = Convert.ToDouble(ticker["E"].ToString());
                                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
+                                if (tvar.ToArray()[0].HisTicker == null)
+                                    tvar.ToArray()[0].HisTicker = t.Clone();
                             }
                         }
 
