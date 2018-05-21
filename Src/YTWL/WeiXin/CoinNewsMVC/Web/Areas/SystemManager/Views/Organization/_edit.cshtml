@@ -1,0 +1,55 @@
+﻿@using Common;
+@using Web.helper;
+@using (Ajax.BeginForm("", new { }, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "tips(data)", OnBegin = "ValidateLog" }))
+{
+    <div class="modal fade bs-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="z-index:1000">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新增</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" class="form-control" id="id">
+                    <div class="form-group">
+                        <label for="txt_departmentname">上级标识</label>
+                        @Html.Raw(Html.select_org())
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_departmentname">名称</label>
+                        <input type="text" name="txt_name" class="form-control" id="txt_name" placeholder="名称">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_departmentname">类型</label>
+                        @Html.Raw(Html.select_org_type())
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">排序</label>
+                        <input type="text" name="txt_sort_id" class="form-control" id="txt_sort_id" value="99" placeholder="数字越小越靠前" required="" onkeyup="value=value.replace(/[^\d]/g,'')">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_departmentlevel">状态</label>
+                        <input type="hidden" id="txt_status" name="txt_status" value="0" /> @*用一个隐藏元素保存选中状态*@
+                        <div class="rdo">
+                            <input type="radio" name="rdo" class="rdolist" checked="checked" />
+                            <label class="rdobox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">有效</span>
+                            </label>
+                            <input type="radio" name="rdo" class="rdolist" />
+                            <label class="rdobox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">无效</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>关闭</button>
+                    <button class="btn btn-primary block full-width m-b" id="btn_submit" onclick="onck()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>保存</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}

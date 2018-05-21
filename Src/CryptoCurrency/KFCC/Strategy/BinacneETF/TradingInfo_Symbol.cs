@@ -13,6 +13,9 @@ namespace BinacneETF
     public partial class TradingInfo_Symbol : UserControl
     {
         public string SymbolQuoteKey;
+        public double[] c7;
+        public double[] c11;
+        public double[] c12;
         public TradingInfo_Symbol(string symbolkey)
         {
             InitializeComponent();
@@ -74,6 +77,15 @@ namespace BinacneETF
                     dataGridView1.Rows[dataGridView1.Rows.Count - 1].Cells[13].Value = symbols[i].Symbol;
                 }
             }
+            c7 = new double[dataGridView1.Rows.Count];
+            c11 = new double[dataGridView1.Rows.Count];
+            c12 = new double[dataGridView1.Rows.Count];
+            for (int i = 0; i < dataGridView1.Rows.Count; i++)
+            {
+                c7[i] = Convert.ToDouble(dataGridView1.Rows[i].Cells[7].Value);
+                c11[i] = Convert.ToDouble(dataGridView1.Rows[i].Cells[11].Value);
+                c12[i] = Convert.ToDouble(dataGridView1.Rows[i].Cells[12].Value);
+            }
         }
         private void UpdateDGV(List<TradingSymbol> symbols)
         {
@@ -93,7 +105,42 @@ namespace BinacneETF
 
                 checkCell.Value = !flag;
                 Config.strategyConfig.UpdateSymbol(dataGridView1.Rows[e.RowIndex].Cells[13].Value.ToString(), !flag);
-                
+                Config.RaiseUpdateServiceStatusEvent(Color.DarkBlue, "监测:" + Config.strategyConfig.SelectedSymbols.Count + "种币");
+            }
+        }
+
+        private void dataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+           
+        }
+
+        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+    
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+            if (c7 == null) return;
+            DataGridViewCell ee = ((DataGridView)sender).Rows[e.RowIndex].Cells[e.ColumnIndex];
+            if (e.ColumnIndex == 7 || e.ColumnIndex == 11 || e.ColumnIndex == 12)
+            {
+                if (e.ColumnIndex == 7 && ((Convert.ToDouble(ee.Value) - c7[e.RowIndex]) >= 0))
+                {
+                    ee.Style.ForeColor = Color.Red;
+                }
+                else if (e.ColumnIndex == 7 && ((Convert.ToDouble(ee.Value) - c7[e.RowIndex]) < 0))
+                    ee.Style.ForeColor = Color.Green;
+                if (e.ColumnIndex == 11 && ((Convert.ToDouble(ee.Value) - c11[e.RowIndex]) >= 0))
+                {
+                    ee.Style.ForeColor = Color.Red;
+                }
+                else if (e.ColumnIndex == 11 && ((Convert.ToDouble(ee.Value) - c11[e.RowIndex]) < 0))
+                    ee.Style.ForeColor = Color.Green;
+                if (e.ColumnIndex == 12 && ((Convert.ToDouble(ee.Value) - c12[e.RowIndex]) >= 0))
+                {
+                    ee.Style.ForeColor = Color.Red;
+                }
+                else if (e.ColumnIndex == 12 && ((Convert.ToDouble(ee.Value) - c12[e.RowIndex]) < 0))
+                    ee.Style.ForeColor = Color.Green;
+                //e.Handled = true;
             }
         }
     }

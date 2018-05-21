@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="Navigation" table="Navigation" lazy="false">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>      		
+		<property name="parent_id" column="parent_id" type="int"  />
+		<property name="channel_id" column="channel_id" type="int"  />
+		<property name="nav_type" column="nav_type" type="string"  />
+		<property name="name" column="name" type="string"  />
+		<property name="title" column="title" type="string"  />
+		<property name="sub_title" column="sub_title" type="string"  />
+		<property name="icon_url" column="icon_url" type="string"  />
+		<property name="link_url" column="link_url" type="string"  />
+    <property name="controllerName" column="controllerName" type="string"  />
+		<property name="sort_id" column="sort_id" type="int"  />
+		<property name="is_lock" column="is_lock" type="string"  />
+		<property name="remark" column="remark" type="string"  />
+		<property name="action_type" column="action_type" type="string"  />
+		<property name="is_sys" column="is_sys" type="int"  />
+				
+	</class>
+</hibernate-mapping>

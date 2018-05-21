@@ -1,0 +1,37 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="News" table="News" lazy="false">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>
+    <many-to-one name="news_type" column="type_id"  cascade="none" lazy="false" />
+		<property name="title" column="title" type="string"  />
+		<property name="link_url" column="link_url" type="string"  />
+		<property name="img_url" column="img_url" type="string"  />
+		<property name="seo_title" column="seo_title" type="string"  />
+		<property name="seo_keywords" column="seo_keywords" type="string"  />
+		<property name="seo_description" column="seo_description" type="string"  />
+		<property name="tags" column="tags" type="string"  />
+		<property name="summary" column="summary" type="string"  />
+
+    <property name="content" type="String" >
+      <column name="content" sql-type="Text" length="16" />
+    </property>
+
+    <property name="sort_id" column="sort_id" type="int"  />
+		<property name="click" column="click" type="int"  />
+		<property name="status" column="status" type="int"  />
+		<property name="is_msg" column="is_msg" type="int"  />
+		<property name="is_top" column="is_top" type="int"  />
+		<property name="is_red" column="is_red" type="int"  />
+		<property name="is_hot" column="is_hot" type="int"  />
+		<property name="is_slide" column="is_slide" type="int"  />    
+    <many-to-one name="manager" column="manager_id"  cascade="none" lazy="false" />
+		<property name="add_time" column="add_time" type="DateTime"  />
+		<property name="start_time" column="start_time" type="DateTime"  />
+    <property name="update_time" column="update_time" type="DateTime"  />
+    <property name="source" column="source" type="string"  />
+    <property name="author" column="author" type="string"  />
+    <property name="is_lock" column="is_lock" type="string"  />
+  </class>
+</hibernate-mapping>

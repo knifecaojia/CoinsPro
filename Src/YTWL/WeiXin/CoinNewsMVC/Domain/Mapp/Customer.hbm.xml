@@ -1,0 +1,20 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+  <class name="Customer" table="Customer">
+    <id name="Id" column="Id" type="int" unsaved-value="0">
+      <generator class="native" />
+    </id>
+    <version name="Version"/>
+    <property name="FirstName" column="FirstName" type="string"  not-null="true"  />
+    <property name="LastName" column="LastName" type="string"  not-null="true"  />
+    <property name="AverageRating" column="AverageRating" type="decimal"  />
+    <property name="Points" column="Points" type="int"  />
+    <property name="HasGoldStatus" column="HasGoldStatus" type="bool"  />
+    <property name="MemberSince" column="MemberSince" type="DateTime"  />
+    <property name="CreditRating" column="CreditRating" type="CustomerCreditRating"  />
+    <property name="Street" column="Street" type="string"  />
+    <property name="City" column="City" type="string"  />
+    <property name="Province" column="Province" type="string"  />
+    <property name="Country" column="Country" type="string"  />
+  </class>
+</hibernate-mapping>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="News_type" table="News_type" lazy="false">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>      		
+		<property name="title" column="title" type="string"  />
+		<property name="parent_id" column="parent_id" type="int"  />
+		<property name="sort_id" column="sort_id" type="int"  />
+		<property name="content" column="content" type="string"  />
+		<property name="seo_title" column="seo_title" type="string"  />
+		<property name="seo_keywords" column="seo_keywords" type="string"  />
+		<property name="seo_description" column="seo_description" type="string"  />
+				
+	</class>
+</hibernate-mapping>

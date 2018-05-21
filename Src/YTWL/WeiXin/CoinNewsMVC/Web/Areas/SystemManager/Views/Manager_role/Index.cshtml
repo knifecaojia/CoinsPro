@@ -1,0 +1,135 @@
+﻿@{
+    ViewBag.Title = "角色列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using Web.helper;
+@{
+    var actionName = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+    var manager_id = User.Identity.Name;
+}
+@section list
+{
+<div class="panel-body" style="padding-bottom:0px;">
+
+    @Html.Raw(Html.select_auth(manager_id, actionName))
+    <table id="tb_departments"></table>
+</div>
+}
+@section add
+{
+@RenderPage("~/Areas/SystemManager/Views/Manager_role/_edit.cshtml")
+}
+@section js
+{
+<script src="~/js/lsj/manager_role.js"></script>
+<script>
+    $(document).ready(function () {
+        //参数{input类名，选择类型(单选or多选)}
+        $(".rdolist").labelauty("rdolist", "rdo");
+        $(".chklist").labelauty("chklist", "check");
+
+        //单行全选
+        $(".ckAll").click(function () {
+            var t = $(this);
+            $(this).parent().parent().prev().find(".chkbox").each(function () {
+                if ($(t).prev().prop("checked")) {
+                    $(this).prev().prop("checked", "checked");
+                    $(this).removeClass("unchecked");
+                    $(this).addClass("checked");
+                    $(this).children(".check-image").css("background", "url(../img/input-checked.png)");
+                } else {
+                    $(this).prev().prop("checked", "");
+                    $(this).removeClass("checked");
+                    $(this).addClass("unchecked");
+                    $(this).children(".check-image").css("background", "url(../img/input-unchecked.png)");
+                }
+            })
+
+        })
+
+        //所有全选
+        $(".ckAlls").click(function () {
+            var t = $(this);
+            $(".table-responsive table tbody tr td .chkbox").each(function () {
+                if ($(t).prev().prop("checked")) {
+                    $(this).prev().prop("checked", "checked");
+                    $(this).removeClass("unchecked");
+                    $(this).addClass("checked");
+                    $(this).children(".check-image").css("background", "url(../img/input-checked.png)");
+                } else {
+                    $(this).prev().prop("checked", "");
+                    $(this).removeClass("checked");
+                    $(this).addClass("unchecked");
+                    $(this).children(".check-image").css("background", "url(../img/input-unchecked.png)");
+                }
+            })
+        })
+
+
+    });
+    function onck() {
+        //选中权限
+        //格式: 1:查看,修改;2:删除,修改,审核;6:;
+        var action_type = "";
+        $(".table-responsive table tbody").find("tr").each(function () {
+            var t = $(this).find("td").eq(0).find(".chkbox");
+            action_type += $(t).attr("id") + ":";
+            $(t).each(function () {
+                if ($(this).prev().prop("checked")) {
+                    action_type += $(this).children(".radiobox-content").html() + ","
+                }
+            })
+
+            if (action_type.charAt(action_type.length - 1) == ",") {
+                action_type = action_type.substring(0, action_type.length - 1);
+            }
+            action_type += ";";
+        })
+        $("#txt_action_type").val(action_type);
+    }
+
+
+    //登录前js验证
+    function ValidateLog() {
+
+        $.loading(true);
+    }
+
+
+    //登录回调函数
+    function tips(data) {
+        $.loading(false);
+
+
+        if (data.status == 0) {
+            //添加成功
+
+            //显示模态框
+            $.dialog(data.msg, 0);
+            //先关闭主窗体
+            $('#myModal').modal('hide')
+            //刷新数据
+            $('#tb_departments').bootstrapTable('refresh', { url: '/Manager_role/GetManager_roleList' });
+        } else if (data.pitchId != "") {
+            point(data.pitchId, data.msg);
+        } else {
+            $.dialog(data.msg, -1);
+        }
+    }
+
+    //输出提示信息
+    function point(id, content) {
+        var follow = document.getElementById(id);
+        var d = dialog({
+            align: 'bottom',
+            content: '<span class="label label-warning">!</span> ' + content
+        });
+        d.show(follow);
+        setTimeout(function () {
+            d.close().remove();
+        }, 2000);
+    }
+
+</script>
+
+}

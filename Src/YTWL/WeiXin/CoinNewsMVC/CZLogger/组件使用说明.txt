@@ -1,0 +1,76 @@
+
+
+2.添加配置文件\Config\Environment\log4net.config
+
+
+3.修改配置文件
+日志存放路径，共6处：
+<file type="log4net.Util.PatternString" value="D:\Log4NetTest\Log\ConsoleApplication1\error\error%_" />
+
+日志目录规范为：磁盘(D):\WebLog\Project\错误级别(error)\错误级别(error)%_
+
+
+4.日志组件初始化
+1)网站一般会在global.asax:
+
+	/// <summary>
+	/// 初始化Log4Net配置
+	/// </summary>
+	void InitLog4Net()
+	{
+		string filePath = System.Threading.Thread.GetDomain().BaseDirectory;
+		System.IO.FileInfo fileInfo = new System.IO.FileInfo(filePath + "\\Config\\Environment\\log4net.config");
+		log4net.Config.XmlConfigurator.Configure(fileInfo);
+	}
+	
+    void Application_Start(object sender, EventArgs e) 
+    {
+
+		InitLog4Net();
+    }
+
+2)其它winform程序：
+		static void Main(string[] args)
+		{
+			InitLog4Net();
+
+			Test();
+		}
+
+		/// <summary>
+		/// 初始化Log4Net配置
+		/// </summary>
+		static void InitLog4Net()
+		{
+			string filePath = System.Threading.Thread.GetDomain().BaseDirectory;
+			System.IO.FileInfo fileInfo = new System.IO.FileInfo(filePath + "\\Config\\Environment\\log4net.config");
+			log4net.Config.XmlConfigurator.Configure(fileInfo);
+		}
+
+
+
+5.写日志实例
+static void Test()
+		{
+			Logger.Trace("Program.Test() Begin");//进入函数 Trac跟踪
+			try
+			{
+				int i = 0;
+
+				Logger.Info("sql exe ! i=" + i);//输入信息 Info，记录函数执行参数等重要信息
+
+				int x = 10 / i;
+
+				Logger.Info("Program.Test() Done!");//输入信息 Info
+			}
+			catch (System.DivideByZeroException ex1)
+			{
+				Logger.Error(ex1);//可预知的异常 Error
+			}
+			catch (System.Exception ex)
+			{
+				Logger.Fatal(ex);//未知致命错误 Fatal
+			}
+
+			Logger.Trace("Program.Test() End");//结束函数 Trac跟踪
+		}

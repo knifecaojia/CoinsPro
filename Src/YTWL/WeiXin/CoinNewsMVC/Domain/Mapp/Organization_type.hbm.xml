@@ -1,0 +1,12 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="Organization_type" table="Organization_type" lazy="false">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>      		
+		<property name="orgtype_name" column="orgtype_name" type="string"  />
+		<property name="sort_id" column="sort_id" type="int"  />
+		<property name="remark" column="remark" type="string"  />
+				
+	</class>
+</hibernate-mapping>

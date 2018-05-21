@@ -1,0 +1,53 @@
+﻿<div class="">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <td>名称</td>
+                <td>
+                    编号
+                </td>
+                <td>
+                    默认
+                </td>
+                <td>
+                    创建时间
+                </td>
+                <td>
+                    有效
+                </td>
+                <td>
+                    备注
+                </td>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var obj = Convert.ToInt32(ViewData["obj"]);
+                if (obj == -1)
+                {
+                    <tr>
+                        <td colspan="6">暂无内容</td>
+                    </tr>
+                        return;
+                        }
+                        Common.EnumBase eb = new Common.EnumBase();
+                        var list_enum = eb.GetList_Enum();
+                        foreach (var item in list_enum[obj].Keys)
+                        {
+<tr>
+                        <td>@item.ToString()</td>
+                        <td>
+                            @list_enum[obj][item]
+                        </td>
+                        <td>
+                            <span class="label label-primary">系统默认</span>
+                        </td>
+                        <td></td>
+                        <td><i class="fa fa-circle text-navy" title="有效"></i></td>
+                        <td>内部枚举</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

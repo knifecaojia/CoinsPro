@@ -1,0 +1,99 @@
+﻿<script src="~/js/lsj/organization_type.js"></script>
+@using Web.helper;
+@{
+    var actionName = "diction".ToLower();
+    var manager_id = User.Identity.Name;
+}
+@Html.Raw(Html.select_auth(manager_id, actionName))
+<table id="tb_departments"></table>
+@using (Ajax.BeginForm("", new { }, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "tips(data)", OnBegin = "ValidateLog" }))
+{
+    <div class="modal fade bs-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="z-index:1000">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新增</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" class="form-control" id="id">
+                    <div class="form-group">
+                        <label for="txt_departmentname">名称</label>
+                        <input type="text" name="txt_name" class="form-control" id="txt_name" placeholder="名称" required="">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">排序</label>
+                        <input type="text" name="txt_sort_id" class="form-control" id="txt_sort_id" placeholder="排序" value="99">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">备注</label>
+                        <input type="text" maxlength="100" name="txt_remark" class="form-control" id="txt_remark" placeholder="备注">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>关闭</button>
+                    <button class="btn btn-primary block full-width m-b" id="btn_submit"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+
+
+
+    //登录前js验证
+    function ValidateLog() {
+
+    }
+
+
+    //登录回调函数
+    function tips(data) {
+        var d = dialog({
+            padding: 30,
+            content: data.msg
+        });
+
+        if (data.status == 0) {
+            //添加成功
+
+            //显示模态框
+            d.show();
+            //先关闭主窗体
+            $('#myModal').modal('hide')
+            //刷新数据
+            $('#tb_departments').bootstrapTable('refresh', { url: '/Parcel/GetOrganization_typeList' });
+            //关闭提示模态框
+            setTimeout(function () {
+                d.close().remove();
+            }, 2000);
+        } else if (data.pitchId != "") {
+            point(data.pitchId, data.msg);
+        } else {
+            //添加失败
+            d = dialog({
+                padding: 30,
+                content: data.msg
+            });
+            //关闭提示模态框
+            setTimeout(function () {
+                d.close().remove();
+            }, 2000);
+        }
+    }
+
+    //输出提示信息
+    function point(id, content) {
+        var follow = document.getElementById(id);
+        var d = dialog({
+            align: 'bottom',
+            content: '<span class="label label-warning">!</span> ' + content
+        });
+        d.show(follow);
+        setTimeout(function () {
+            d.close().remove();
+        }, 2000);
+    }
+</script>

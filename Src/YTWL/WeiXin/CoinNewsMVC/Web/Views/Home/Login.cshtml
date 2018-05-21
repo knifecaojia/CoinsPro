@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>BootStrap Table使用</title>
+    <link href="~/css/bootstrap-table.css" rel="stylesheet" />
+    <link href="~/css/bootstrap.css" rel="stylesheet" />
+    <link href="~/css/ui-dialog.css" rel="stylesheet" />
+    <link href="/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="~/css/login.min.css" rel="stylesheet" />
+    <link href="~/css/lsj.css" rel="stylesheet" />
+
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/bootstrap-table.js"></script>
+    <script src="~/js/bootstrap-table-zh-CN.js"></script>
+    <script src="~/js/jquery.unobtrusive-ajax.js"></script>
+    <script src="/js/content.min.js?v=1.0.0"></script>
+    <script src="~/js/dialog-plus-min.js"></script>
+    <script src="~/js/svgloader.js"></script>
+    <script src="~/js/lsj/login.js"></script>
+    <script src="~/js/lsj.js"></script>
+</head>
+<body>
+    <style>
+        .center-vertical {
+            margin-top: -30%;
+            -webkit-transform: translateY(-50%);
+        }
+
+        body {
+            /*text-align: center;*/
+            background: #F7FAFC;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        #imgcode {
+            cursor: pointer;
+        }
+    </style>
+    <canvas id="Mycanvas"></canvas>
+    <div class="col-lg-3 col-lg-offset-4 center-vertical">
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <a style="float:right;" target="_blank" href="//shang.qq.com/wpa/qunwpa?idkey=2fd11a4043abbe02391a168505d402ae6f9d27cc121439bc8f743dabe45fceb7"><img border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="LSJ_NHibernate+MVC+EF" title="LSJ_NHibernate+MVC+EF"></a>
+                <h3 class="panel-title">
+                    欢迎使用LSJ_NHibernate
+                </h3>
+            </div>
+            @using (Ajax.BeginForm("login", new { }, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "tips(data)", OnBegin = "ValidateLog" }))
+            {
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">用户名</label>
+                        <input type="text" name="un" class="form-control" placeholder="请输入用户名" required="" value="admin">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">密码</label>
+                        <input type="password" name="pwd" class="form-control" placeholder="请输入密码" required="" value="123456">
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-10" style="padding-left:0px;float:initial">
+                            <label for="txt_parentdepartment">验证码</label>
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <input type="text" name="code" placeholder="请输入验证码" class="form-control" required="" maxlength="4">
+                                </div>
+                                <div class="col-md-2">
+                                    <img id="imgcode" class="" src="~/Home/GetAuthCode" width="80" height="34" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary col-sm-12">登 录</button>
+                </div>
+            }
+        </div>
+    </div>
+    <div id="loader" style="z-index:99999;" class="pageload-overlay" data-opening="M 40 -21.875 C 11.356078 -21.875 -11.875 1.3560784 -11.875 30 C -11.875 58.643922 11.356078 81.875 40 81.875 C 68.643922 81.875 91.875 58.643922 91.875 30 C 91.875 1.3560784 68.643922 -21.875 40 -21.875 Z">
+        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 80 60" preserveAspectRatio="xMidYMid slice">
+            <path d="M40,30 c 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 0,0 Z" />
+        </svg>
+    </div>
+
+</body>
+</html>
+<script>
+    loader = new SVGLoader(document.getElementById('loader'), { speedIn: 300, easingIn: mina.easeinout });
+    //登录前js验证
+    function ValidateLog() {
+        loader.show(function () {
+
+        })
+    }
+
+    //登录回调函数
+    function tips(data) {
+        $("#loader").hide();
+        loader.hide();
+        if (data.status == "0") {
+            window.location.href = data.returnUrl;
+        } else {
+            $("#imgcode").attr("src", "/Home/GetAuthCode?time=" + Math.random());
+            $.dialog(data.msg, -1);
+        }
+    }
+    $("#imgcode").click(function () {
+        $(this).attr("src", "/Home/GetAuthCode?time=" + Math.random());
+    });
+</script>

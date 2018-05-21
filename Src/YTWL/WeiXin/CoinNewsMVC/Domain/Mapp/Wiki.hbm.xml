@@ -1,0 +1,21 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="Wiki" table="Wiki" lazy="false">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>      		
+		<property name="title" column="title" type="string"  />
+		<property name="tags" column="tags" type="string"  />
+		<property name="synopsis" column="synopsis" type="string"  />
+    <property name="content" type="String" >
+      <column name="content" sql-type="Text" length="16" />
+    </property>
+		<property name="add_time" column="add_time" type="DateTime"  />
+    <many-to-one name="manager" column="manager_id"  cascade="none" lazy="false" />
+		<property name="parent_id" column="parent_id" type="int"  />
+		<property name="parent_ids" column="parent_ids" type="string"  />
+    <property name="levels" column="levels" type="int"  />
+    <property name="status" column="status" type="int"  />
+    <property name="sort_id" column="sort_id" type="int"  />
+  </class>
+</hibernate-mapping>

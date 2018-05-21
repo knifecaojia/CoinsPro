@@ -1,0 +1,21 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="Backups" table="Backups" lazy="false">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>      		
+		<property name="backupType" column="backupType" type="string"  />
+		<property name="dbName" column="dbName" type="string"  />
+		<property name="fileName" column="fileName" type="string"  />
+		<property name="fileSize" column="fileSize" type="string"  />
+		<property name="filePath" column="filePath" type="string"  />
+		<property name="addTime" column="addTime" type="DateTime"  />
+    <many-to-one name="addManager" column="addManagerID"  cascade="none" lazy="false" />
+
+    <property name="delTime" column="delTime" type="DateTime"  />
+    <many-to-one name="delManager" column="delManagerID"  cascade="none" lazy="false" />
+    <property name="remark" type="String" >
+      <column name="remark" sql-type="Text" length="16" />
+    </property>
+	</class>
+</hibernate-mapping>

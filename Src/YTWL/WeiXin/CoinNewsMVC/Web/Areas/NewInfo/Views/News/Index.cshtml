@@ -1,0 +1,153 @@
+﻿@{
+    ViewBag.Title = "资讯列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using Common;
+@using Web.helper;
+@{
+    var actionName = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+    var manager_id = User.Identity.Name;
+    var imagespath = ViewData["imagespath"].ToString();
+}
+@section list
+{
+    <div class="panel-body" style="padding-bottom:0px;">
+    @Html.Raw(Html.select_auth(manager_id, actionName))
+    <table id="tb_departments"></table>
+</div>
+
+}
+@section add
+{
+    @RenderPage("~/Areas/NewInfo/Views/News/_edit.cshtml")
+}
+@section exam
+{
+    @RenderPage("~/Areas/NewInfo/Views/News/_exam.cshtml")
+}
+@section js
+{
+<script src="~/js/lsj/news.js"></script>
+
+<script>
+    var imagespath = '@imagespath';
+    $(document).ready(function () {
+        //参数{input类名，选择类型(单选or多选)}
+        $(".rdolist").labelauty("rdolist", "rdo");
+        $("#myModal .chklist").labelauty("chklist", "check");
+
+        $("#myModal .rdobox").click(function () {
+            if ($(this).html() == $("#myModal .rdobox:first").html()) {
+                //显示
+                $("#txt_is_lock").val("√");
+            } else {
+                //隐藏
+                $("#txt_is_lock").val("×");
+            }
+        })
+
+        $("#myExam .rdobox").click(function () {
+            if ($(this).html() == $("#myExam .rdobox:first").html()) {
+                //未审核
+                $("#txt_status").val("0");
+            } else if ($(this).html() == $("#myExam .rdobox").eq(1).html()) {
+                //成功
+                $("#txt_status").val("1");
+            } else {
+                //失败
+                $("#txt_status").val("2");
+            }
+        })
+
+    });
+    $('#myModal').on('show.bs.modal', function (e) {
+        $(".chkbox").each(function () {
+            $(this).prev().prop("checked", "");
+            $(this).removeClass("checked");
+            $(this).addClass("unchecked");
+            $(this).children(".check-image").css("background", "url(../img/input-unchecked.png)");
+        });
+    })
+
+</script>
+<script>
+
+    //提交的onclick,此时还可以修改表单里面的值,且后台可以获取
+    function onck() {
+        $('.selectpicker').selectpicker('refresh');//不加这个,默认显示无法获取
+        //获取多选的值
+        var action_type = "";
+        $(".chkbox").each(function () {
+            if ($(this).prev().prop("checked") == true) {
+                action_type += $(this).children(".radiobox-content").html() + ",";
+            }
+        })
+        if (action_type.length > 0) {
+            action_type = action_type.substring(0, action_type.length - 1);
+            $("#txt_action_type").val(action_type);
+
+        } else {
+            $("#txt_action_type").val('');
+        }
+
+        //采用jquery-form.js 异步上传文件后,将导致h5的验证失效,这里手写h5的一些验证
+        if ($("#txt_title").val() == "") {
+            point("txt_title", "请输入标题!");
+            return false;
+        }
+    }
+
+
+    //登录回调函数
+    function tips(data) {
+        $.loading(false);
+        if (data.status == 0) {
+            //添加成功
+
+            //显示模态框
+            $.dialog(data.msg, 0);
+            //先关闭主窗体
+            $('#myModal').modal('hide')
+            $('#myExam').modal('hide')
+            //刷新数据
+            $('#tb_departments').bootstrapTable('refresh', { url: '/News/GetNewsList' });
+        } else if (data.pitchId != "") {
+            point(data.pitchId, data.msg);
+        } else {
+            $.dialog(data.msg, -1);
+        }
+    }
+
+    //输出提示信息
+    function point(id, content) {
+        var follow = document.getElementById(id);
+        var d = dialog({
+            align: 'bottom',
+            content: '<span class="label label-warning">!</span> ' + content
+        });
+        d.show(follow);
+        setTimeout(function () {
+            d.close().remove();
+        }, 2000);
+    }
+
+</script>
+<script>
+    (function () {
+        $('form').ajaxForm({
+            beforeSend: function () {
+                $.loading(true);
+            },
+            uploadProgress: function (event, position, total, percentComplete) {
+            },
+            success: function (data) {
+                tips(data);
+            },
+            complete: function (xhr) {
+            }
+        });
+
+    })();
+</script>
+}
+

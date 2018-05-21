@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>BootStrap Table使用</title>
+    <link href="~/css/bootstrap-table.css" rel="stylesheet" />
+    <link href="~/css/bootstrap.css" rel="stylesheet" />
+    <link href="~/css/ui-dialog.css" rel="stylesheet" />
+    <link href="/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/bootstrap-table.js"></script>
+    <script src="~/js/bootstrap-table-zh-CN.js"></script>
+    <script src="~/js/jquery.unobtrusive-ajax.js"></script>
+    <script src="/js/content.min.js?v=1.0.0"></script>
+    <script src="~/js/dialog-plus-min.js"></script>
+</head>
+<body>
+    <style>
+        .center-vertical {
+            margin-top: 25%;
+            height: 50%;
+            -webkit-transform: translateY(-50%);
+        }
+    </style>
+    <div class="col-lg-6 col-lg-offset-3 center-vertical">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    阿里大鱼发送短信模板
+                </h3>
+            </div>
+            @using (Ajax.BeginForm("Demo/AddSend_sms", new { }, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "tips(data)", OnBegin = "ValidateLog" }))
+            {
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">appKey</label>
+                        <input type="text" class="form-control" name="appKey" placeholder="appKey" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">secret</label>
+                        <input type="password" class="form-control" name="secret" placeholder="secret" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">签名</label>
+                        <input type="text" class="form-control" name="SmsFreeSignName" placeholder="签名" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">发送给</label>
+                        <input type="text" class="form-control" name="RecNum" placeholder="多个号码以,隔开" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">模板</label>
+                        <input type="text" class="form-control" name="SmsTemplateCode" placeholder="阿里大于模板,例如:SMS_27330149" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">模板参数</label>
+                        <input type="text" class="form-control" name="SmsParam" placeholder="例如:{number:'123456'}" required />
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-sm btn-primary m-t-n-xs">
+                            <strong>发送消息</strong>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    //登录前js验证
+    function ValidateLog() {
+
+    }
+
+    //登录回调函数
+    function tips(data) {
+        var d = dialog({
+            fixed: true,
+            content: data.msg,
+            padding: 30
+
+        });
+        d.show();
+        //关闭提示模态框
+        setTimeout(function () {
+            d.close().remove();
+        }, 2000);
+    }
+</script>

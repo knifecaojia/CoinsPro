@@ -1,0 +1,63 @@
+﻿<#@ template language="c#" HostSpecific="True" #>
+<#@ output extension= ".cs" #>
+<#
+	TableHost host = (TableHost)(Host);		
+	string ModelSpace = host.NameSpace+".Model."+ host.GetModelClass(host.TableName);
+	string DALSpace= host.NameSpace+".DAL."+ host.GetDALClass(host.TableName);
+	ColumnInfo identityKey=host.IdentityKey;
+	string returnValue = "void";
+    if (identityKey!=null)
+    {         
+         returnValue = CodeCommon.DbTypeToCS(identityKey.TypeName);              
+    }
+#>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using DAO.DAL;
+using DAO.IDAL;
+using Domain;
+using NHibernate.Criterion;
+namespace <#= host.NameSpace #>.BLL <# if( host.Folder.Length > 0){ #>.<#= host.Folder #><# } #>
+{
+	public partial class <#= host.GetBLLClass(host.TableName) #>
+	{
+		private readonly I<#= host.GetModelClass(host.TableName) #> dal = new D_<#= host.GetModelClass(host.TableName) #>();
+		public <#= host.GetBLLClass(host.TableName) #>()
+		{}
+		
+		#region  Method
+        public IList<<#= host.NameSpace #>.<#= host.TableName #>> GetList(List<SearchTemplate> st, List<Order> order) 
+        {
+            return dal.GetList(st,order);
+        }
+
+        public int GetCount(List<SearchTemplate> st) 
+        {
+            return dal.GetCount(st);
+        }
+        
+        public int Save(<#= host.NameSpace #>.<#= host.TableName #> model) 
+        {
+            return Convert.ToInt32(dal.Save(model));
+        }
+        
+        public <#= host.NameSpace #>.<#= host.TableName #> Get(object id) 
+        {
+            return dal.Get(id);
+        }
+        
+        public void Delete(object id) 
+        {
+             dal.Delete(id);
+        }
+        
+        public void Update(<#= host.NameSpace #>.<#= host.TableName #> model) 
+        {
+            dal.Update(model);
+        }
+		#endregion
+   
+	}
+}

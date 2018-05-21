@@ -1,0 +1,111 @@
+﻿@using Common;
+@using Web.helper;
+@using (Ajax.BeginForm("AddNav", new { }, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "tips(data)", OnBegin = "ValidateLog" }))
+{
+    <div class="modal fade bs-example-modal-sm" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="z-index:1000">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新增</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" class="form-control" id="id">
+                    <div class="form-group">
+                        <label for="txt_departmentname">上级标识</label>
+                        @Html.Raw(Html.select_nav())
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_departmentname">图标</label>
+                        <br />
+                        <i id="font_i" onclick="font_pic()" class="fa fa-hand-pointer-o" title="选择图标"></i>
+                        <input type="hidden" name="txt_icon_url" class="form-control" id="txt_icon_url" placeholder="图标">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">标题</label>
+                        <input type="text" name="txt_title" class="form-control" id="txt_title" placeholder="标题" required="">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">路径</label>
+                        <input type="text" name="txt_link_url" class="form-control" id="txt_link_url" placeholder="路径" required="">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">排序</label>
+                        <input type="text" name="txt_sort_id" class="form-control" id="txt_sort_id" value="99" placeholder="数字越小越靠前" required="" onkeyup="value=value.replace(/[^\d]/g,'')">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_departmentlevel">显示</label>
+                        <input type="hidden" id="txt_is_lock" name="txt_is_lock" value="√" /> @*用一个隐藏元素保存选中状态*@
+                        <div class="rdo">
+                            <input type="radio" name="rdo" class="rdolist" checked="checked" />
+                            <label class="rdobox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">显示</span>
+                            </label>
+                            <input type="radio" name="rdo" class="rdolist" />
+                            <label class="rdobox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">隐藏</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="txt_parentdepartment">权限</label>
+                        <input type="hidden" id="txt_action_type" name="txt_action_type" value="√" /> @*用一个隐藏元素保存选中状态*@
+                        <!-- 多选 -->
+                        <div class="fuxuan">
+
+                            <input type="checkbox" name="chk" class="chklist" checked="checked" />
+                            <!--  -->
+                            <label class="chkbox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">@EnumBase.Authorize.查看.Description()</span>
+                            </label>
+                            <!--  -->
+                            <input type="checkbox" name="chk" class="chklist" />
+                            <!--  -->
+                            <label class="chkbox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">@EnumBase.Authorize.添加.Description()</span>
+                            </label>
+                            <!--  -->
+                            <input type="checkbox" name="chk" class="chklist" />
+                            <!--  -->
+                            <label class="chkbox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">@EnumBase.Authorize.修改.Description()</span>
+                            </label>
+                            <!--  -->
+                            <input type="checkbox" name="chk" class="chklist" />
+                            <!--  -->
+                            <label class="chkbox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">@EnumBase.Authorize.删除.Description()</span>
+                            </label>
+                            <!--  -->
+                            <input type="checkbox" name="chk" class="chklist" />
+                            <!--  -->
+                            <label class="chkbox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">@EnumBase.Authorize.审核.Description()</span>
+                            </label>
+                            <!--  -->
+                            <input type="checkbox" name="chk" class="chklist" />
+                            <!--  -->
+                            <label class="chkbox">
+                                <span class="check-image"></span>
+                                <span class="radiobox-content">@EnumBase.Authorize.下载.Description()</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>关闭</button>
+                    <button class="btn btn-primary block full-width m-b" id="btn_submit" onclick="onck()"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span>保存</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}

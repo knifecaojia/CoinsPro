@@ -1,0 +1,84 @@
+﻿@{
+    ViewBag.Title = "帮助文档";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using Web.helper;
+@{
+    var actionName = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+    var manager_id = User.Identity.Name;
+}
+@section head
+{
+
+}
+@section list
+{
+    <div class="panel-body" style="padding-bottom:0px;">
+        @Html.Raw(Html.select_auth(manager_id, actionName))
+        <table id="tb_departments"></table>
+    </div>
+
+}
+@section add
+{
+    @RenderPage("~/Areas/NewInfo/Views/Wiki/_edit.cshtml")
+}
+@section js
+{
+
+    <script src="~/js/lsj/wiki.js"></script>
+
+    <script>
+
+    //提交的onclick,此时还可以修改表单里面的值,且后台可以获取
+    function onck() {
+        $('.selectpicker').selectpicker('refresh');//不加这个,默认显示无法获取
+    }
+
+    //登录前js验证
+    function ValidateLog() {
+
+        $.loading(true);
+    }
+
+
+    //登录回调函数
+    function tips(data) {
+        $.loading(false);
+
+        if (data.status == 0) {
+            //添加成功
+
+            //显示模态框
+            $.dialog(data.msg, 0);
+            //先关闭主窗体
+            $('#myModal').modal('hide')
+            //刷新数据
+            $('#tb_departments').bootstrapTable('refresh', { url: '/Wiki/GetWikiList' });
+
+        } else if (data.pitchId != "") {
+            point(data.pitchId, data.msg);
+        } else {
+            //添加失败
+            $.dialog(data.msg, -1);
+        }
+    }
+
+    //输出提示信息
+    function point(id, content) {
+        var follow = document.getElementById(id);
+        var d = dialog({
+            align: 'bottom',
+            content: '<span class="label label-warning">!</span> ' + content
+        });
+        d.show(follow);
+        setTimeout(function () {
+            d.close().remove();
+        }, 2000);
+    }
+
+    </script>
+}
+
+
+

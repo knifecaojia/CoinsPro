@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>BootStrap Table使用</title>
+    <link href="~/css/bootstrap-select.css" rel="stylesheet" />
+    <link href="~/css/bootstrap-table.css" rel="stylesheet" />
+    <link href="~/css/bootstrap.css" rel="stylesheet" />
+    <link href="~/css/ui-dialog.css" rel="stylesheet" />
+    <link href="/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="~/css/labelauty.css" rel="stylesheet" />
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/bootstrap-table.js"></script>
+    <script src="~/js/bootstrap-select.js"></script>
+    <script src="~/js/bootstrap-table-zh-CN.js"></script>
+    <script src="~/js/jquery.unobtrusive-ajax.js"></script>
+    <script src="/js/content.min.js?v=1.0.0"></script>
+    <script src="~/js/dialog-plus-min.js"></script>
+    <script src="~/js/bootstrap-table-export.js"></script>
+    <script src="~/js/tableExport.js"></script>
+    <script src="~/js/labelauty.js"></script>
+    <script src="~/js/lsj/navigation.js"></script>
+</head>
+
+
+
+<body>
+    <div class="panel-body" style="padding-bottom:0px;">
+        @using Web.helper;
+        @{
+            var actionName = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+            var manager_id = User.Identity.Name;
+        }
+        @Html.Raw(Html.select_auth(manager_id, actionName))
+        <table id="tb_departments"></table>
+    </div>
+
+
+
+    @using Common;
+    @RenderPage("~/Areas/SystemManager/Views/Navigation/_edit.cshtml")
+    <script>
+        $(document).ready(function () {
+            //参数{input类名，选择类型(单选or多选)}
+            $(".rdolist").labelauty("rdolist", "rdo");
+            $(".chklist").labelauty("chklist", "check");
+
+            $(".rdobox").click(function () {
+                if ($(this).html() == $(".rdobox:first").html()) {
+                    //显示
+                    $("#txt_is_lock").val("√");
+                } else
+                {
+                    //隐藏
+                    $("#txt_is_lock").val("×");
+                }
+            })
+        });
+        $('#myModal').on('show.bs.modal', function (e) {
+            $(".chkbox").each(function () {
+                $(this).prev().prop("checked", "");
+                $(this).removeClass("checked");
+                $(this).addClass("unchecked");
+                $(this).children(".check-image").css("background", "url(../img/input-unchecked.png)");
+            });
+        })
+
+    </script>
+
+</body>
+</html>
+<script>
+    //提交的onclick,此时还可以修改表单里面的值,且后台可以获取
+    function onck()
+    {
+        $('.selectpicker').selectpicker('refresh');//不加这个,默认显示无法获取
+
+        //获取多选的值
+        var action_type = "";
+        $(".chkbox").each(function () {
+            if ($(this).prev().prop("checked") == true) {
+                action_type += $(this).children(".radiobox-content").html() + ",";
+            }
+        })
+        if (action_type.length > 0)
+        {
+            action_type = action_type.substring(0, action_type.length - 1);
+            $("#txt_action_type").val(action_type);
+
+        } else
+        {
+            $("#txt_action_type").val('');
+        }
+    }
+    //加载框
+    var loading = dialog({
+        content: '<i class="fa fa-spinner fa-spin"></i>玩命加载中...',
+    });
+
+    //登录前js验证,此时修改表单里面的值后台无法获取
+    function ValidateLog() {
+        loading.show();
+    }
+
+
+    //回调函数
+    function tips(data) {
+
+        loading.close();
+
+        var d = dialog({
+            padding: 30,
+            content: data.msg
+        });
+
+        if (data.status == 0) {
+            //添加成功
+
+            //显示模态框
+            d.show();
+            //先关闭主窗体
+            $('#myModal').modal('hide')
+            //刷新数据
+            $('#tb_departments').bootstrapTable('refresh', { url: '/Navigation/GetNavList' });
+            //关闭提示模态框
+            setTimeout(function () {
+                d.close().remove();
+            }, 2000);
+        } else if (data.pitchId != "") {
+            point(data.pitchId, data.msg);
+        } else {
+            //添加失败
+            d = dialog({
+                padding:30,
+                content: data.msg
+            });
+            //关闭提示模态框
+            setTimeout(function () {
+                d.close().remove();
+            }, 2000);
+        }
+    }
+
+    //输出提示信息
+    function point(id,content)
+    {
+        var follow = document.getElementById(id);
+        var d = dialog({
+            align: 'bottom',
+            content: '<span class="label label-warning">!</span> ' + content
+        });
+        d.show(follow);
+        setTimeout(function () {
+            d.close().remove();
+        }, 2000);
+    }
+    function font_pic()
+    {
+        var video = dialog({
+            title: '选择图标',
+            url: '/Navigation/GetFont',
+            width: 960,
+            height: 600,
+            data: window, //传入当前窗口
+            onclose: function () {
+
+            }
+        }).showModal();
+    }
+</script>

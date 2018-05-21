@@ -1,0 +1,12 @@
+﻿@model  List<ZTreeNode>
+
+<link href="~/SiteFiles/uicomponents/ztree_v3/css/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+<script src="~/SiteFiles/uicomponents/ztree_v3/js/jquery.ztree.all.js"></script>
+
+<script type="text/javascript">
+    var setting = { data: { simpleData: { enable: true } } };
+    var zNodes = JSON.parse('@Html.Raw(Json.Encode(Model))');
+    $(function () { $.fn.zTree.init($("#treeDemo"), setting, zNodes); })
+	</script>
+
+<ul id="treeDemo" class="ztree"></ul>

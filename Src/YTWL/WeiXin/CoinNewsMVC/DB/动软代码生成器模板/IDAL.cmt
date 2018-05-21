@@ -1,0 +1,68 @@
+﻿<#@ template language="c#" HostSpecific="True" #>
+<#@ output extension= ".cs" #>
+<#
+	TableHost host = (TableHost)(Host);		
+	string ModelSpace = host.GetModelClass(host.TableName);
+	ColumnInfo identityKey=host.IdentityKey;
+	string returnValue = "void";
+    if (identityKey!=null)
+    {         
+         returnValue = CodeCommon.DbTypeToCS(identityKey.TypeName);              
+    }
+#>
+using NHibernate;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Domain;
+using System.Linq.Expressions;
+using NHibernate.Criterion;
+namespace <#= host.NameSpace #>.IDAL <# if( host.Folder.Length > 0){ #>.<#= host.Folder #><# } #>
+{
+	/// <summary>
+	/// 接口层<#= host.GetDALClass(host.TableName) #>
+	/// </summary>
+	public interface I<#= host.TableName #>
+	{
+		#region  成员方法
+		/// <summary>
+		/// 是否存在该记录
+		/// </summary>
+		bool Exists(object id);
+		/// <summary>
+		/// 增加一条数据
+		/// </summary>
+		object  Save(<#= ModelSpace #> model);
+		/// <summary>
+		/// 更新一条数据
+		/// </summary>
+		void Update(<#= ModelSpace #> model);
+		/// <summary>
+		/// 删除数据
+		/// </summary>
+		void Delete(object id);
+		/// <summary>
+		/// 删除数据
+		/// </summary>
+		void Delete(<#= ModelSpace #> model);
+		/// <summary>
+		/// 得到一个对象实体
+		/// </summary>
+		<#= ModelSpace #> Get(object id);
+		/// <summary>
+		/// 获得数据列表
+		/// </summary>
+		IList<<#= ModelSpace #>> LoadAll();
+		/// <summary>
+		/// 获得前几行数据
+		/// </summary>
+		IList<<#= ModelSpace #>> GetList(List<SearchTemplate> st, List<Order> order);
+		
+		/// <summary>
+		/// 获得总条数
+		/// </summary>
+		int GetCount(List<SearchTemplate> st);
+		#endregion  成员方法
+	} 
+}

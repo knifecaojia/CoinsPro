@@ -1,0 +1,32 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Tab</title>
+    <style type="text/css">
+        .recommend-list-header { width: 100%; overflow: auto; margin-bottom: 1rem; }
+        .recommend-list-header > div { width: 50rem; height: 3.5rem; background: #fff; }
+        .recommend-list-header > div > a { display: inline-block; color: #333; text-align: center; line-height: 3.5rem; font-size: 1.2rem; float: left; padding: 0 .8rem; }
+        .recommend-list-header > div > a.on { color: #1FC2FE; border-bottom: .4rem solid #1FC2FE; }
+    </style>
+
+</head>
+<body>
+    <div>
+        <div class="recommend-list-header">
+            <div>
+                <a class="on" href="@Url.Action("SignedList", "NewhouseTrade")">房产资讯</a>
+                <a href="@Url.Action("SecondIndex")">居家生活</a>
+                <a href="@Url.Action("Index", "TenementTrade")">装修知识</a>
+                <a href="@Url.Action("Index", "TenementTrade")">住在武汉</a>
+                <a href="@Url.Action("Index", "TenementTrade")">租房</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

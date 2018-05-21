@@ -1,0 +1,35 @@
+﻿@model List<HuiEF.Data.HuiEntity.Login_Log>
+@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+@section header{
+    <style type="text/css">
+    </style>
+    <script>
+        $(function () {
+            setInterval(function () {
+                window.location.reload();
+            }, 5000)
+        })
+    </script>
+}
+
+<div class="container">
+    <div class="alert alert-info">
+        <p>@(DateTime.Now.ToString("yyyy-MM-dd HH:mm")) 来自 【湖北-武汉】的网友访问了你的系统 </p>
+    </div>
+
+
+    @foreach (var item in Model)
+    {
+        if (!string.IsNullOrEmpty(item.province))
+        {
+            <div class="alert alert-info">
+                <p>@item.create_time.ToString("yyyy-MM-dd HH:mm") 来自 【@item.province-@item.city】的网友访问了你的系统 </p>
+            </div>
+        }
+
+    }
+
+</div>

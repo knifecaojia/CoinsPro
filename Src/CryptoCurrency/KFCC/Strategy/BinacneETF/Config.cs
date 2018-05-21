@@ -26,7 +26,10 @@ namespace BinacneETF
         public static CommonLab.Log Log = new CommonLab.Log(@"log\" + DateTime.Now.ToString("yyyyMMdd")+".txt");
         public delegate void UpdateConsoleEventHandle(System.Drawing.Color c, string Msg);
         public static event UpdateConsoleEventHandle UpdateConsoleEvent;
+        public delegate void UpdateServiceStatusEventHandle(System.Drawing.Color c, string Msg);
+        public static event UpdateServiceStatusEventHandle UpdateServiceStatusEvent;
         public static void RaiseUpdateConsoleEvent(System.Drawing.Color c, string Msg) { if(UpdateConsoleEvent!=null) UpdateConsoleEvent(c, Msg); Config.Log.log(Msg); }
+        public static void RaiseUpdateServiceStatusEvent(System.Drawing.Color c, string Msg) { if (UpdateServiceStatusEvent != null) UpdateServiceStatusEvent(c, Msg); Config.Log.log(Msg); }
         public static MyEventClass Events = MyEventClass.Instance;
         public delegate void UpdateTickersHandle();
         public static event UpdateTickersHandle UpdateTickerEvent;

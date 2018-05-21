@@ -1,0 +1,20 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="Manager" table="Manager">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>      		    
+    <many-to-one name="manager_role" column="role_id"  cascade="none" lazy="false" />
+    
+		<property name="role_type" column="role_type" type="int"  />
+		<property name="user_name" column="user_name" type="string"  />
+		<property name="password" column="password" type="string"  />
+		<property name="salt" column="salt" type="string"  />
+		<property name="real_name" column="real_name" type="string"  />
+		<property name="mobile" column="mobile" type="string"  />
+		<property name="email" column="email" type="string"  />
+		<property name="is_lock" column="is_lock" type="string"  />
+		<property name="add_time" column="add_time" type="DateTime"  />
+				
+	</class>
+</hibernate-mapping>

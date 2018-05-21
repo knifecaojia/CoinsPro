@@ -19,6 +19,12 @@ namespace BinacneETF
         {
             InitializeComponent();
             Config.UpdateConsoleEvent += Config_UpdateConsoleEvent;
+            Config.UpdateServiceStatusEvent += Config_UpdateServiceStatusEvent;
+        }
+
+        private void Config_UpdateServiceStatusEvent(Color c, string Msg)
+        {
+            ServiceStatusInfo(c, Msg);
         }
 
         private void Config_UpdateConsoleEvent(Color c, string Msg)
@@ -29,6 +35,30 @@ namespace BinacneETF
         private void MainWindow_Load(object sender, EventArgs e)
         {
 
+        }
+        private delegate void UpdateServiceStatusEventHandle(Color c, string msg);
+        private void UpdateServiceStatusMethod(Color c, string msg)
+        {
+           
+            try
+            {
+                label2.ForeColor = c;
+                label2.Text = msg;
+            }
+            catch
+            { }
+        }
+        public void ServiceStatusInfo(Color c, string Msg)
+        {
+            if (label2.InvokeRequired)
+            {
+                UpdateServiceStatusEventHandle uc = new UpdateServiceStatusEventHandle(UpdateServiceStatusMethod);
+                label2.Invoke(uc, new object[] { (object)c, Msg });
+            }
+            else
+            {
+                UpdateServiceStatusMethod(c, Msg);
+            }
         }
         private delegate void UpdateConsole(Color c, string msg);
         private void UpdateConsoleMthod(Color c, string msg)
@@ -143,6 +173,7 @@ namespace BinacneETF
             Config.StrategyStartTime = DateTime.Now;
             Config.Exchange.LoadHisData(dateTimePicker1.Value);
             Config.UpdateTickerEvent += Config_UpdateTickerEvent;
+            label2.Text = "监测:" + Config.strategyConfig.SelectedSymbols.Count + "种币";
         }
 
         private void Config_UpdateTickerEvent()
@@ -155,6 +186,8 @@ namespace BinacneETF
             else
                 UpdateWatch(Color.Green, str);
         }
+
+
 
         private delegate void UpdateWatchHandle(Color c, string msg);
         private void UpdateWatchMthod(Color c, string msg)
@@ -173,6 +206,17 @@ namespace BinacneETF
             else
             {
                 UpdateWatchMthod(c, Msg);
+            }
+        }
+
+        private void ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int i = 1;
+            foreach ( TradingSymbol item in Config.Exchange.Symbols)
+            {
+                Config.Exchange.GetHisData(item.Symbol, new DateTime(2018, 1, 1));
+                Config.RaiseUpdateConsoleEvent(Color.Black, i+"/"+Config.Exchange.Symbols.Count+"读取"+item.Symbol+"Kline信息");
+                i++;
             }
         }
     }

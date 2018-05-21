@@ -1,0 +1,47 @@
+﻿@{
+    ViewBag.Title = "爬虫演示";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<style type="text/css">
+    .container { padding: 10px; }
+</style>
+<script>
+    $(function () {
+        $(".btn-spider").click(function () {
+            $.post("@Url.Action( "DownHtml")", $(".form-spider").serialize(), function (result) {
+                $(".result-html .alert").empty().append(result.data);
+            })
+        }).click();
+
+    })
+</script>
+<div class="container">
+    <form class="form-horizontal form-spider">
+        <div class="form-group col-sm-10">
+            <div class="alert alert-danger">
+                <h1>只需三步，无所不能爬</h1>
+
+                <p>1打开网站--2审查元素--3复制xpath</p>
+                @*<img src="~/SiteFiles/images/spider2.jpg" />
+                    <img src="~/SiteFiles/images/spider3.png" />*@
+            </div>
+        </div>
+        <div class="form-group col-sm-7">
+            <input class="form-control" type="text" name="url" placeholder="请输入地址" value="http://www.qiushibaike.com/" />
+        </div>
+        <div class="form-group col-sm-3">
+            @{
+                var xpath = "//*[@id='content-left']";
+            }
+            <input class="form-control" type="text" placeholder="请输入 xpath" name="xpath" value="@xpath" />
+        </div>
+        <div class="form-group col-sm-2">
+            <a class="btn btn-danger btn-spider">开始爬</a>
+        </div>
+        <div class="form-group col-sm-10 result-html">
+            <div class="alert alert-info">
+
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0"  encoding="utf-8" ?>
+<hibernate-mapping xmlns="urn:nhibernate-mapping-2.2" assembly="Domain" namespace="Domain">
+	<class name="Organization" table="Organization" lazy="false">
+		<id name="id" column="id" type="int" unsaved-value="0">
+      			<generator class="native" />       			
+      	</id>      		
+		<property name="name" column="name" type="string"  />
+		<property name="parent_ids" column="parent_ids" type="string"  />
+		<property name="parent_id" column="parent_id" type="int"  />
+    <many-to-one name="orgtype" column="orgtype_id"  cascade="none" lazy="false" />
+		<property name="sort_id" column="sort_id" type="int"  />
+    <many-to-one name="add_manager" column="add_manager_id"  cascade="none" lazy="false" />
+		<property name="add_time" column="add_time" type="DateTime"  />
+    <many-to-one name="del_manager" column="del_manager_id"  cascade="none" lazy="false" />
+		<property name="del_time" column="del_time" type="DateTime"  />
+		<property name="status" column="status" type="int"  />
+    <property name="levels" column="levels" type="int"  />
+  </class>
+</hibernate-mapping>

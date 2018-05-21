@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>BootStrap Table使用</title>
+    <link href="~/css/bootstrap-table.css" rel="stylesheet" />
+    <link href="~/css/bootstrap.css" rel="stylesheet" />
+    <link href="~/css/ui-dialog.css" rel="stylesheet" />
+    <link href="/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
+    <link href="~/css/lsj.css" rel="stylesheet" />
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/bootstrap-table.js"></script>
+    <script src="~/js/bootstrap-table-zh-CN.js"></script>
+    <script src="~/js/jquery.unobtrusive-ajax.js"></script>
+    <script src="/js/content.min.js?v=1.0.0"></script>
+    <script src="~/js/dialog-plus-min.js"></script>
+    <script src="~/js/lsj/organization_type.js"></script>
+    <link href="~/css/bootstrap-treeview.css" rel="stylesheet" />
+    <script src="~/js/bootstrap-treeview.js"></script>
+</head>
+
+
+
+<body>
+    <div class="col-lg-2 center-vertical" style="margin-top:2%">
+        <div class="panel panel-primary">
+
+            <div id="tree">
+
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-10 center-vertical" style="margin-top:2%">
+        <div id="txt_content" class="panel panel-primary" style="padding-bottom:0px;padding:10px">
+
+        </div>
+    </div>
+
+</body>
+</html>
+<script>
+    var defaultData = [
+             {
+                 text: '系统字典',
+                 href: '#',
+                 tags: ['8'],
+                 type: 0,
+                 state: {
+                     expanded: tree, //设置是否展开
+                     selected: false //设置是否选中
+                 },
+                 nodes: [
+                   {
+                       text: '系统日志',
+                       href: '0',//这个地方写枚举集合的索引
+                       type: 1,
+                       state: {
+                           expanded: true, //设置是否展开
+                           selected: true //设置是否选中
+                       }
+                   },
+                   {
+                       text: '审核状态',
+                       type: 1,
+                       href: '4'
+                   },
+                   {
+                       text: '证件名称',
+                       type: 1,
+                       href: '#'
+                   },
+                   {
+                       text: '学历',
+                       type: 1,
+                       href: '#'
+                   },
+                   {
+                       text: '婚姻',
+                       type: 1,
+                       href: '#'
+                   },
+                   {
+                       text: '生育',
+                       type: 1,
+                       href: '#'
+                   },
+                   {
+                       text: '民族',
+                       type: 1,
+                       href: '#'
+                   },
+                   {
+                       text: '性别',
+                       type: 1,
+                       href: '#'
+                   }
+                 ]
+             },
+             {
+                 text: '自定义字典',
+                 href: '#',
+                 type: 0,
+                 tags: ['6'],
+                 state: {
+                     expanded: false, //设置是否展开
+                     selected: false //设置是否选中
+                 },
+                 nodes: [
+                   {
+                       text: '机构类型',
+                       href: '0',//这个地方写枚举集合的索引
+                       state: {
+                           expanded: tree, //设置是否展开
+                           selected: false//设置是否选中
+                       },
+                       type: "2"
+                   },
+                   {
+                       text: 'XXXX',
+                       href: '#',
+                       type: "3"
+                   },
+                   {
+                       text: 'XXXX',
+                       href: '#',
+                       type: "4"
+                   },
+                   {
+                       text: 'XXXX',
+                       href: '#',
+                       type: "5"
+                   },
+                   {
+                       text: 'XXXX',
+                       href: '#',
+                       type: "6"
+                   },
+                   {
+                       text: 'XXXX',
+                       href: '#',
+                       type: "7"
+                   }
+                 ]
+             }
+    ];
+
+    $('#tree').treeview({
+        color: "#428bca",
+        expandIcon: 'glyphicon glyphicon-chevron-right',
+        collapseIcon: 'glyphicon glyphicon-chevron-down',
+        showTags: true,
+        data: defaultData,
+        showBorder: false,
+        onNodeSelected: function (event, data) {
+            if (data.type == 0) return;
+            var url = "";
+            if (data.type == 1) {
+                url = '/Diction/GetWord?id=' + data.href;
+            } else if (data.type == 2) {
+                url = '/Diction/Organization_type';
+            } else {
+                url = '/Diction/GetWord?id=' + data.href;
+            }
+            $('#txt_content').load(url, function () {
+
+            })
+        }
+        //onNodeExpanded:function(event, node)
+        //{
+        //    alert(node.text);
+        //}
+    });
+    $('#txt_content').load('/Diction/GetWord?id=0', function () {
+
+    })
+
+</script>

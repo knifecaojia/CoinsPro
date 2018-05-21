@@ -1,0 +1,210 @@
+﻿@model Interface
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="/sitefiles/bairong/jquery/jquery-1.9.1.min.js"></script>
+    <script src="/sitefiles/bairong/scripts/datepicker/wdatepicker.js"></script>
+    <script src="/SiteFiles/bairong/JQuery/validation/jquery.validate.min.js"></script>
+    <script src="/SiteFiles/bairong/JQuery/validation/localization/messages_zh.min.js"></script>
+    <script src="/SiteFiles/admin/scripts/security.js"></script>
+    <script src="~/SiteFiles/admin/scripts/common.js"></script>
+    <script src="/sitefiles/bairong/jquery/bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/sitefiles/bairong/jquery/bootstrap/css/bootstrap.min.css">
+    <!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/sitefiles/bairong/jquery/bootstrap/ie/ie.css"><![endif]-->
+    <!--[if lt IE 9]><script src="/sitefiles/bairong/jquery/html5shiv/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" type="text/css" href="/sitefiles/bairong/jquery/toastr/toastr.min.css">
+    <link rel="stylesheet" href="/sitefiles/admin/css/css.css" type="text/css" />
+    <link href="/sitefiles/admin/scripts/lib/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <script>
+
+        $(function () {
+            $("#btnSubmit").click(checkInput);
+            $("#btnBack").click(function () {
+                window.location.href = "@Url.Action("Index")";
+            });
+
+            /**设置验证完成默认值**/
+            $.validator.setDefaults({
+                success: function (errorLabel, inputElement) {
+                    var c = $(errorLabel);
+                    c.addClass("valid").html("&nbsp;");
+                }
+            });
+
+            $("#form1").validate({
+                invalidHandler: function (event, validator) {
+                    var errors = validator.numberOfInvalids();
+                    if (errors > 0) {
+                        $(document).scrollTop(0);
+                        window.top.showMessage(
+                            "验证提示", "表单输入信息不完整，请检查各输入项是否完整!");
+                    }
+                }
+            });
+
+            $(document).on("change", "#callType", function () {
+                var calltype = $("#callType").val();
+                if (calltype == "2") {
+                    $(".jumpclass").css("display", "");
+                    $("#notifyUrl").attr("disabled", false);
+                    $("#returnUrl").attr("disabled", false);
+                }
+                else {
+                    $(".jumpclass").css("display", "none");
+                    $("#notifyUrl").attr("disabled", "disabled");
+                    $("#returnUrl").attr("disabled", "disabled");
+                }
+            });
+
+        });
+
+        var checkInput = function () {
+            var b = $("#form1").valid();
+            if (b) {
+                showLoadingBox();
+            }
+            return b;
+        }
+
+    </script>
+
+    @{
+        string error = ViewBag.Error;
+        if (!string.IsNullOrEmpty(error))
+        {
+            <script>
+            $(function () {
+                window.top.showMessage("系统提示", "@error");
+            });
+            </script>
+        }
+    }
+
+</head>
+
+<body>
+    <form id="form1" method="post" class="form-inline" enctype="multipart/form-data">
+        <ul class="breadcrumb">
+            <li>应用管理 <span class="divider">/</span></li>
+            <li>接口信息管理 <span class="divider">/</span></li>
+            <li class="active">添加接口信息</li>
+        </ul>
+        <div class="popover popover-static">
+            <h3 class="popover-title">添加接口信息</h3>
+            <div class="popover-content">
+                <table class="table table-fixed noborder" style="position: relative; top: -30px;">
+                    <tr>
+                        <td width="100">&nbsp;</td>
+                        <td></td>
+                        <td width="100"></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>接口名称：</td>
+                        <td colspan="3">
+                            @Html.TextBoxFor(s => s.name, new { @class = "input_text", required = "true" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>接口分类：</td>
+                        <td colspan="3">
+                            @Html.DropDownListFor(s => s.categoryId, (List<SelectListItem>)ViewData["CategoryList"], new { required = "true" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>接口地址：</td>
+                        <td colspan="3">
+                            @Html.TextBoxFor(s => s.url, new { @class = "input_text", required = "true" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>请求方式：</td>
+                        <td colspan="3">
+                            @Html.RadioButton("method", "Post", true) Post
+                            @Html.RadioButton("method", "Get") Get
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>执行方式：</td>
+                        <td colspan="3">
+                            @Html.DropDownListFor(s => s.callType, (List<SelectListItem>)ViewData["CalltypeList"], new { required = "true" })
+                        </td>
+                    </tr>
+                    <tr class="jumpclass" style="display: none;">
+                        <td>通知地址：</td>
+                        <td colspan="3">
+                            @Html.TextBoxFor(s => s.notifyUrl, new { @class = "input_text" })
+                        </td>
+                    </tr>
+                    <tr class="jumpclass" style="display: none;">
+                        <td>回掉地址：</td>
+                        <td colspan="3">
+                            @Html.TextBoxFor(s => s.returnUrl, new { @class = "input_text" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>接口文档：</td>
+                        <td colspan="3">
+                            <script>
+                                $(function () {
+                                    window.opts_ueditor = {
+                                        //removeForamtTags标签
+                                        removeFormatTags: 'b,big,code,del,dfn,em,font,i,ins,kbd,q,samp,small,span,strike,strong,sub,sup,tt,u,var',
+                                        //removeFormatAttributes属性
+                                        removeFormatAttributes: 'style,lang,width,height,align,hspace,valign',
+                                        //自动排版参数
+                                        autotypeset: {
+                                            mergeEmptyline: true,         //合并空行
+                                            removeClass: true,           //去掉冗余的class
+                                            removeEmptyline: false,      //去掉空行
+                                            textAlign: "left",           //段落的排版方式，可以是 left,right,center,justify 去掉这个属性表示不执行排版
+                                            imageBlockLine: 'center',      //图片的浮动方式，独占一行剧中,左右浮动，默认: center,left,right,none 去掉这个属性表示不执行排版
+                                            pasteFilter: true,            //根据规则过滤没事粘贴进来的内容
+                                            clearFontSize: true,          //去掉所有的内嵌字号，使用编辑器默认的字号
+                                            clearFontFamily: true,        //去掉所有的内嵌字体，使用编辑器默认的字体
+                                            removeEmptyNode: false,       // 去掉空节点
+                                            //可以去掉的标签
+                                            //removeTagNames : {标签名字:1},
+                                            indent: true,                 // 行首缩进
+                                            indentValue: '2em'             //行首缩进的大小
+                                        },
+                                        enterTag: 'br', //换行标签（p,br）
+                                        iframeCssUrl: window.UEDITOR_HOME_URL + "/themes/openplatform/common.css"
+                                    };
+                                });
+                            </script>
+
+                            @Html.InitUEditor()
+                            @Html.UEditor("description", "opts_ueditor")
+                            @Html.TextAreaFor(s => s.description,
+                            new { @class = "input_text", value = "", style = "width: 800px;height:400px;display:none;" })<br />
+                            &nbsp;
+                        </td>
+                    </tr>
+                </table>
+                <hr />
+                <table class="table noborder">
+                    <tr>
+                        <td class="center">
+                            <input type="submit" name="btnSubmit" value="确 定" id="btnSubmit" class="btn btn-primary" itemindex="1" />
+                            <input class="btn" id="btnBack" type="button" value="返 回" />
+
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+    </form>
+</body>
+</html>

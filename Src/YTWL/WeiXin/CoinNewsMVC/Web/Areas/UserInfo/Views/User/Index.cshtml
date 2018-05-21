@@ -1,0 +1,90 @@
+﻿@{
+    ViewBag.Title = "会员列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section list
+{
+    <div class="panel-body" style="padding-bottom:0px;">
+    <div class="panel panel-default">
+        <div class="panel-heading">查询条件</div>
+        <div class="panel-body">
+            <form id="formSearch" class="form-horizontal">
+                <div class="form-group" style="margin-top:15px">
+                    <label class="control-label col-sm-1" for="txt_search_departmentname">用户名</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="user_name" required>
+                    </div>
+                    <label class="control-label col-sm-1" for="txt_search_statu">手机号</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="mobile">
+                    </div>
+                    <div class="col-sm-4" style="text-align:left;">
+                        <button type="button" style="margin-left:50px" id="btn_query" class="btn btn-primary">查询</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+      
+
+    @using Web.helper;
+    @{
+        var actionName = ViewContext.RouteData.Values["controller"].ToString().ToLower();
+        var manager_id = User.Identity.Name;
+    }
+    @Html.Raw(Html.select_auth(manager_id, actionName))
+    <table id="tb_departments"></table>
+</div>
+}
+ @section add
+{
+    @RenderPage("~/Areas/UserInfo/Views/User/_edit.cshtml")
+}
+@section js
+{
+<script src="~/js/lsj/user.js"></script>
+<script>
+    //登录前js验证
+    function ValidateLog() {
+        if ($("#txt_password").val() != $("#txt_passwords").val())
+        {
+            point("txt_passwords", "两次输入密码不一致!");
+            return false;
+        }
+            $.loading(true);
+    }
+
+
+
+    function tips(data) {
+        $.loading(false);
+        if (data.status == 0) {
+            //显示模态框
+            $.dialog(data.msg, 0);
+            //先关闭主窗体
+            $('#myModal').modal('hide')
+            //刷新数据
+            $('#tb_departments').bootstrapTable('refresh', { url: '/User/GetUserList' });
+        } else if (data.pitchId != "") {
+            point(data.pitchId, data.msg);
+        } else {
+            $.dialog(data.msg, -1);
+        }
+    }
+
+    //输出提示信息
+    function point(id,content)
+    {
+        var follow = document.getElementById(id);
+        var d = dialog({
+            align: 'bottom',
+            content: '<span class="label label-warning">!</span> ' + content
+        });
+        d.show(follow);
+        setTimeout(function () {
+            d.close().remove();
+        }, 2000);
+    }
+</script>
+}

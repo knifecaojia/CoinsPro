@@ -1,0 +1,76 @@
+﻿@{
+    ViewBag.Title = "IIS Session共享";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section list
+{
+<h2>IIS Session共享</h2>
+    @using (Ajax.BeginForm("", new { }, new AjaxOptions() { HttpMethod = "Post", OnSuccess = "tips(data)", OnBegin = "ValidateLog" }))
+    {
+        <button class="btn btn-default" data-dismiss="modal" onclick="Set()">SetSession</button>
+        <button class="btn btn-primary block full-width m-b" id="btn_submit" onclick="Get()">GetSession</button>
+        <button class="btn btn-primary block full-width m-b" id="btn_submit" onclick="pj()">破解</button>
+    }
+}
+@section add
+{
+
+}
+@section js
+{
+    <script>
+
+        function Set()
+        {
+            $("#form0").attr("action", "/Home/SetSession");
+        }
+        function Get()
+        {
+            $("#form0").attr("action", "/Home/GetSession");
+        }
+
+        function pj()
+        {
+            $.post("http://admin.3-chuang.com/sys/login.aspx?action=login", null, function (data)
+            {
+                alert(data);
+            }, "jsonp")
+        }
+
+        //登录前js验证
+        function ValidateLog() {
+        }
+
+
+
+        //function tips(data) {
+        //    $.loading(false);
+        //    if (data.status == 0) {
+        //        //显示模态框
+        //        $.dialog(data.msg, 0);
+        //    } else if (data.pitchId != "") {
+        //        point(data.pitchId, data.msg);
+        //    } else {
+        //        $.dialog(data.msg, -1);
+        //    }
+        //}
+
+        function tips(data)
+        {
+            alert(data);
+        }
+
+        //输出提示信息
+        function point(id, content) {
+            var follow = document.getElementById(id);
+            var d = dialog({
+                align: 'bottom',
+                content: '<span class="label label-warning">!</span> ' + content
+            });
+            d.show(follow);
+            setTimeout(function () {
+                d.close().remove();
+            }, 2000);
+        }
+    </script>
+}

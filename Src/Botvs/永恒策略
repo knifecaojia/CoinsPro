@@ -1,0 +1,4 @@
+# botvs@7190d0470fa27a9a68d3f4a6e700197a
+def main():
+    Log(exchange.GetAccount())
+    水电费的说法是分散
