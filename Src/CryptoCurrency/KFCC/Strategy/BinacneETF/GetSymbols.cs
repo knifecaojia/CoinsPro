@@ -89,6 +89,13 @@ namespace BinacneETF
             Config.RaiseUpdateConsoleEvent(System.Drawing.Color.Black, "开始监测交易所价格信息...");
             wsshelper.StartListen();
         }
+        public void StartCollectTrade(List<string> Symbols)
+        {
+            if (wsshelper == null)
+                wsshelper = new WssHelper();
+            Config.RaiseUpdateConsoleEvent(System.Drawing.Color.Red, "开始监测成交信息...");
+            wsshelper.StartListenTrade(Symbols);
+        }
         public void Stop()
         {
             wsshelper.Stop();

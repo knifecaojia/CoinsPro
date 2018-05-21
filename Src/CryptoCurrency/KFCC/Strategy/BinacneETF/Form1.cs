@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -218,6 +219,31 @@ namespace BinacneETF
                 Config.RaiseUpdateConsoleEvent(Color.Black, i+"/"+Config.Exchange.Symbols.Count+"读取"+item.Symbol+"Kline信息");
                 i++;
             }
+        }
+
+
+        long totall = 0;
+        int num = 0;
+        DateTime s;
+        private void Config_UpdateTradeEvent(CommonLab.Trade t)
+        {
+            double sec = (DateTime.Now - s).TotalSeconds;
+            if (sec == 0) sec = 1;
+            num++;
+            string jsont = JsonConvert.SerializeObject(t);
+            totall += jsont.Length;
+            Config.RaiseUpdateConsoleEvent(System.Drawing.Color.Blue, t.ToString() + "\r\n avglen:" + totall / num+" deals:"+num/sec);
+        }
+
+        private void toolStripMenuItem6_Click(object sender, EventArgs e)
+        {
+            s = DateTime.Now;
+            Config.UpdateTradeEvent += Config_UpdateTradeEvent;
+            List<string> symbols = new List<string>();
+            symbols.Add("ethbtc");
+            Config.Exchange.StartCollectTrade(symbols);
+
+
         }
     }
     public class TradingSymbol

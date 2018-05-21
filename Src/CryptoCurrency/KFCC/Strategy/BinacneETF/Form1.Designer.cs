@@ -32,10 +32,12 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.开始监测ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.TradeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
             this.aPIKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.使用帮助ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.textBox1 = new System.Windows.Forms.RichTextBox();
@@ -51,7 +53,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -70,10 +72,11 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem1,
             this.toolStripMenuItem2,
-            this.开始监测ToolStripMenuItem,
+            this.ToolStripMenuItem4,
             this.toolStripMenuItem3,
             this.aPIKeyToolStripMenuItem,
-            this.使用帮助ToolStripMenuItem});
+            this.ToolStripMenuItem5,
+            this.toolStripMenuItem6});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1059, 25);
@@ -95,12 +98,27 @@
             this.toolStripMenuItem2.Text = "初始化";
             this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
-            // 开始监测ToolStripMenuItem
+            // ToolStripMenuItem
             // 
-            this.开始监测ToolStripMenuItem.Name = "开始监测ToolStripMenuItem";
-            this.开始监测ToolStripMenuItem.Size = new System.Drawing.Size(68, 21);
-            this.开始监测ToolStripMenuItem.Text = "开始监测";
-            this.开始监测ToolStripMenuItem.Click += new System.EventHandler(this.开始监测ToolStripMenuItem_Click);
+            this.ToolStripMenuItem.Name = "ToolStripMenuItem";
+            this.ToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.ToolStripMenuItem.Text = "抓取历史数据";
+            this.ToolStripMenuItem.Click += new System.EventHandler(this.ToolStripMenuItem_Click);
+            // 
+            // ToolStripMenuItem4
+            // 
+            this.ToolStripMenuItem4.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TradeToolStripMenuItem});
+            this.ToolStripMenuItem4.Name = "ToolStripMenuItem4";
+            this.ToolStripMenuItem4.Size = new System.Drawing.Size(68, 21);
+            this.ToolStripMenuItem4.Text = "开始监测";
+            this.ToolStripMenuItem4.Click += new System.EventHandler(this.开始监测ToolStripMenuItem_Click);
+            // 
+            // TradeToolStripMenuItem
+            // 
+            this.TradeToolStripMenuItem.Name = "TradeToolStripMenuItem";
+            this.TradeToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.TradeToolStripMenuItem.Text = "监测Trade";
             // 
             // toolStripMenuItem3
             // 
@@ -115,11 +133,11 @@
             this.aPIKeyToolStripMenuItem.Size = new System.Drawing.Size(63, 21);
             this.aPIKeyToolStripMenuItem.Text = "API key";
             // 
-            // 使用帮助ToolStripMenuItem
+            // ToolStripMenuItem5
             // 
-            this.使用帮助ToolStripMenuItem.Name = "使用帮助ToolStripMenuItem";
-            this.使用帮助ToolStripMenuItem.Size = new System.Drawing.Size(68, 21);
-            this.使用帮助ToolStripMenuItem.Text = "使用帮助";
+            this.ToolStripMenuItem5.Name = "ToolStripMenuItem5";
+            this.ToolStripMenuItem5.Size = new System.Drawing.Size(68, 21);
+            this.ToolStripMenuItem5.Text = "使用帮助";
             // 
             // splitContainer1
             // 
@@ -281,12 +299,12 @@
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
-            // ToolStripMenuItem
+            // toolStripMenuItem6
             // 
-            this.ToolStripMenuItem.Name = "ToolStripMenuItem";
-            this.ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.ToolStripMenuItem.Text = "抓取历史数据";
-            this.ToolStripMenuItem.Click += new System.EventHandler(this.ToolStripMenuItem_Click);
+            this.toolStripMenuItem6.Name = "toolStripMenuItem6";
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(68, 21);
+            this.toolStripMenuItem6.Text = "交易监测";
+            this.toolStripMenuItem6.Click += new System.EventHandler(this.toolStripMenuItem6_Click);
             // 
             // MainWindow
             // 
@@ -325,14 +343,14 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem2;
-        private System.Windows.Forms.ToolStripMenuItem 开始监测ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem4;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.ToolStripMenuItem aPIKeyToolStripMenuItem;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ToolStripMenuItem 使用帮助ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem5;
         private System.Windows.Forms.RichTextBox textBox1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
         private System.Windows.Forms.Panel panel2;
@@ -345,6 +363,8 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripMenuItem ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem TradeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
     }
 }
 
