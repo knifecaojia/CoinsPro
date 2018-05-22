@@ -40,7 +40,7 @@ namespace BinacneETF
         private delegate void UpdateServiceStatusEventHandle(Color c, string msg);
         private void UpdateServiceStatusMethod(Color c, string msg)
         {
-           
+
             try
             {
                 label2.ForeColor = c;
@@ -83,7 +83,7 @@ namespace BinacneETF
             {
                 textBox1.AppendText("\n");
                 textBox1.SelectionColor = c;
-                textBox1.AppendText(DateTime.Now.ToString()+msg);
+                textBox1.AppendText(DateTime.Now.ToString() + msg);
                 textBox1.Select(textBox1.TextLength, 0);//设置光标的位置到文本尾  
                 textBox1.ScrollToCaret();//滚动到控件光标处  
             }
@@ -181,7 +181,7 @@ namespace BinacneETF
         {
             string str = "";
             double index = Config.Exchange.CacCoinIndex();
-            str = "监测时间:" + DateTime.Now.ToString() + " CoinIndex:"+ index;
+            str = "监测时间:" + DateTime.Now.ToString() + " CoinIndex:" + index;
             if (index > 1)
                 UpdateWatch(Color.Red, str);
             else
@@ -213,10 +213,10 @@ namespace BinacneETF
         private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             int i = 1;
-            foreach ( TradingSymbol item in Config.Exchange.Symbols)
+            foreach (TradingSymbol item in Config.Exchange.Symbols)
             {
                 Config.Exchange.GetHisData(item.Symbol, new DateTime(2018, 1, 1));
-                Config.RaiseUpdateConsoleEvent(Color.Black, i+"/"+Config.Exchange.Symbols.Count+"读取"+item.Symbol+"Kline信息");
+                Config.RaiseUpdateConsoleEvent(Color.Black, i + "/" + Config.Exchange.Symbols.Count + "读取" + item.Symbol + "Kline信息");
                 i++;
             }
         }
@@ -225,25 +225,25 @@ namespace BinacneETF
         long totall = 0;
         int num = 0;
         DateTime s;
-        private void Config_UpdateTradeEvent(CommonLab.Trade t)
+        private void Config_UpdateTradeEvent(string symbol,CommonLab.Trade t)
         {
             double sec = (DateTime.Now - s).TotalSeconds;
             if (sec == 0) sec = 1;
             num++;
             string jsont = JsonConvert.SerializeObject(t);
             totall += jsont.Length;
-            Config.RaiseUpdateConsoleEvent(System.Drawing.Color.Blue, t.ToString() + "\r\n avglen:" + totall / num+" deals:"+num/sec);
+            Config.RaiseUpdateConsoleEvent(System.Drawing.Color.Blue, t.ToString() + "\r\n avglen:" + totall / num + " deals:" + num / sec);
         }
 
         private void toolStripMenuItem6_Click(object sender, EventArgs e)
         {
+            //测试获取localbitcoin获取法币均价
+            //double avg = CommonLab.LocalBitcoinPrice.getLocalBitcoinPrice("CNY",Config.Proxy);
             s = DateTime.Now;
             Config.UpdateTradeEvent += Config_UpdateTradeEvent;
             List<string> symbols = new List<string>();
             symbols.Add("ethbtc");
             Config.Exchange.StartCollectTrade(symbols);
-
-
         }
     }
     public class TradingSymbol

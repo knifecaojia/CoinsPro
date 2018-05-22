@@ -56,6 +56,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BianaceTest", "Strategy\Bia
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinacneETF", "Strategy\BinacneETF\BinacneETF.csproj", "{404414E8-D8B6-413D-ACDD-47670F95D0FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinanceMon", "Strategy\BinanceMon\BinanceMon.csproj", "{7085EF67-4878-471E-B56F-54AF0449AA6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +132,10 @@ Global
 		{404414E8-D8B6-413D-ACDD-47670F95D0FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{404414E8-D8B6-413D-ACDD-47670F95D0FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{404414E8-D8B6-413D-ACDD-47670F95D0FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7085EF67-4878-471E-B56F-54AF0449AA6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7085EF67-4878-471E-B56F-54AF0449AA6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7085EF67-4878-471E-B56F-54AF0449AA6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7085EF67-4878-471E-B56F-54AF0449AA6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +158,7 @@ Global
 		{6436878D-95F9-4AD5-86C4-E5822C374DC0} = {96C27084-FDD4-4FA8-8115-F5335D79EACA}
 		{1B96C615-1CC5-4151-892A-8BDEDEA58B24} = {B6FAD211-CABD-49C4-AACA-DCE75DC92169}
 		{404414E8-D8B6-413D-ACDD-47670F95D0FD} = {B6FAD211-CABD-49C4-AACA-DCE75DC92169}
+		{7085EF67-4878-471E-B56F-54AF0449AA6E} = {B6FAD211-CABD-49C4-AACA-DCE75DC92169}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D44D9903-B24D-4444-9B68-DB6D9049FA17}

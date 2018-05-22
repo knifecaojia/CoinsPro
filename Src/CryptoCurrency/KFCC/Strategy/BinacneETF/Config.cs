@@ -32,11 +32,11 @@ namespace BinacneETF
         public static void RaiseUpdateServiceStatusEvent(System.Drawing.Color c, string Msg) { if (UpdateServiceStatusEvent != null) UpdateServiceStatusEvent(c, Msg); Config.Log.log(Msg); }
         public static MyEventClass Events = MyEventClass.Instance;
         public delegate void UpdateTickersHandle();
-        public delegate void UpdateTradeHandle(CommonLab.Trade t);
+        public delegate void UpdateTradeHandle(string symbol,CommonLab.Trade t);
         public static event UpdateTradeHandle UpdateTradeEvent;
         public static event UpdateTickersHandle UpdateTickerEvent;
         public static void RaiseUpdateTickerEvent() { if (UpdateTickerEvent != null) UpdateTickerEvent(); }
-        public static void RaiseUpdateTradeEvent(CommonLab.Trade t) { if (UpdateTradeEvent != null) UpdateTradeEvent(t); }
+        public static void RaiseUpdateTradeEvent(string symbol,CommonLab.Trade t) { if (UpdateTradeEvent != null) UpdateTradeEvent(symbol,t); }
 
         #region ReadCoinConfig
         #endregion

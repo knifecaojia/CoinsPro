@@ -114,6 +114,7 @@ namespace BinacneETF
                        
                         JObject trade = JObject.Parse(rawData);
                         CommonLab.Trade t = new CommonLab.Trade();
+                        
                         t.Amount = Convert.ToDouble(trade["q"].ToString());
                         t.Price = Convert.ToDouble(trade["p"].ToString());
                         t.TradeID = trade["t"].ToString();
@@ -125,7 +126,7 @@ namespace BinacneETF
                             t.Type = CommonLab.TradeType.Sell;
                         t.ExchangeTimeStamp = Convert.ToDouble(trade["T"].ToString())/1000;
                         t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
-                        Config.RaiseUpdateTradeEvent(t);
+                        Config.RaiseUpdateTradeEvent(symbol,t);
                         //UpdateTicker(tradingpair, t);
 
 
