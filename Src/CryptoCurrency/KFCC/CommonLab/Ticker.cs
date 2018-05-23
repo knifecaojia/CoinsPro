@@ -192,10 +192,15 @@ namespace CommonLab
         /// <summary>
         /// 这一分钟的交易笔数
         /// </summary>
-        public int tradecount;
-        public double quoteSymbolVolum;//定价币种成交量
-        public double baseSymbolVolum;//交易币种成交量
-        public double CNYVolum;//成交cny市价计量 价格取自localbitcoin 15个报价平均值
+        public int tradecountBuy=0;
+        public double quoteSymbolVolumBuy;//定价币种成交量
+        public double baseSymbolVolumBuy;//交易币种成交量
+        public double CNYVolumBuy;//成交cny市价计量 价格取自localbitcoin 15个报价平均值
+
+        public int tradecountSell=0;
+        public double quoteSymbolVolumSell;//定价币种成交量
+        public double baseSymbolVolumSell;//交易币种成交量
+        public double CNYVolumSell;//成交cny市价计量 价格取自localbitcoin 15个报价平均值
         /// <summary>
         /// 
         /// </summary>
@@ -205,17 +210,39 @@ namespace CommonLab
         public TradePerMin(string s, Trade t,double ex)
         {
             symbol = s;
-            baseSymbolVolum = t.Amount;
-            quoteSymbolVolum = t.Price * t.Amount;
-            CNYVolum = quoteSymbolVolum * ex;
-            tradecount = 1;
+            if (t.Type == TradeType.Buy)
+            {
+                baseSymbolVolumBuy = t.Amount;
+                quoteSymbolVolumBuy = t.Price * t.Amount;
+                CNYVolumBuy = quoteSymbolVolumBuy * ex;
+                tradecountBuy = 1;
+            }
+            else
+            {
+                baseSymbolVolumSell = t.Amount;
+                quoteSymbolVolumSell = t.Price * t.Amount;
+                CNYVolumSell = quoteSymbolVolumSell * ex;
+                tradecountSell = 1;
+            }
+
         }
         public void Update(Trade t,double ex)
         {
-            tradecount++;
-            baseSymbolVolum+= t.Amount;
-            quoteSymbolVolum+= t.Price * t.Amount;
-            CNYVolum += quoteSymbolVolum * ex;
+            if (t.Type == TradeType.Buy)
+            {
+                baseSymbolVolumBuy += t.Amount;
+                quoteSymbolVolumBuy += t.Price * t.Amount;
+                CNYVolumBuy += quoteSymbolVolumBuy * ex;
+                tradecountBuy++;
+            }
+            else
+            {
+                baseSymbolVolumSell += t.Amount;
+                quoteSymbolVolumSell += t.Price * t.Amount;
+                CNYVolumSell += quoteSymbolVolumSell * ex;
+                tradecountSell++;
+            }
+           
         }
     }
 }

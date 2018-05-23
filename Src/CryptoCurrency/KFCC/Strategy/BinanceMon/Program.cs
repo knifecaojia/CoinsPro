@@ -49,6 +49,9 @@ namespace BinanceMon
             LastConnectTimeHour = DateTime.Now;
             BinacneETF.Config.Exchange.StartCollectTrade(Symbols);//收集交易信息
             tradeDataManage.Start();
+            ReConnectThread = new Thread(new ThreadStart(CheckReconnect));
+            ReConnectThread.IsBackground = true;
+            ReConnectThread.Start();
             while (!(Console.ReadKey().KeyChar.ToString() == "q"))
             {
 
@@ -59,11 +62,11 @@ namespace BinanceMon
         {
             while (true)
             {
-                if ((DateTime.Now - LastConnectTimeHour).TotalHours > 4)
+                if ((DateTime.Now - LastConnectTimeHour).TotalHours > 2)
                 {
                     log.log("Reconnect Binance Wss Services.");
                     Config.Exchange.Stop();
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                     BinacneETF.Config.Exchange.StartCollectTrade(Symbols);//收集交易信息
                     tradeDataManage.Start();
                     LastConnectTimeHour = DateTime.Now;
@@ -172,10 +175,8 @@ namespace BinanceMon
         /// <param name="t"></param>
         public void AddTrade(string symbol, CommonLab.Trade t)
         {
-            string direction = "IN";
-            if (t.Type == CommonLab.TradeType.Sell)
-                direction = "OUT";
-            string key = "TradePerMin@" + symbol + "@" + CommonLab.TimerHelper.ConvertStringToDateTime(t.ExchangeTimeStamp).ToString("yyyy.MM.dd HH:mm") + "@" + direction;
+           
+            string key = CommonLab.RedisKeyConvert.GetRedisKey(CommonLab.RedisKeyType.TradeM, CommonLab.ExchangeNameConvert.GetShortExchangeName("Binance"), symbol, CommonLab.TimerHelper.ConvertStringToDateTime(t.ExchangeTimeStamp));
             lock (LockObject)
             {
                 if (Data.ContainsKey(key))
@@ -213,6 +214,7 @@ namespace BinanceMon
                                 keys.Add(item.Key);
                                 string jsont = JsonConvert.SerializeObject(item.Value);
                                 db.StringSet(item.Key, jsont);
+                                 
                                 //Data.Remove(item.Key);
                                 Console.WriteLine(DateTime.UtcNow.ToString() + "- WI" + item.Key + " into redis.");
                             }

@@ -42,5 +42,38 @@ namespace CommonLab
         {
             return GetTimeStamp(DateTime.Now).ToString();
         }
+        /// <summary>
+        /// 根据时间间隔返回redis需要的时间key 该函数应该也可以使用到文件目录中
+        /// </summary>
+        /// <param name="tp"></param>
+        /// <param name="inputTimeStamp"></param>
+        /// <returns></returns>
+        static public DateTime GetStartTimeStampByPreiod(TimePreiod tp,DateTime inputTimeStamp)
+        {
+            int min = 0;
+            switch (tp)
+            {
+                case TimePreiod.m1:
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, inputTimeStamp.Hour, inputTimeStamp.Minute, 0);
+                case TimePreiod.m5:
+                    min = inputTimeStamp.Minute- inputTimeStamp.Minute%5;
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, inputTimeStamp.Hour, min, 0);
+                case TimePreiod.m10:
+                    min = inputTimeStamp.Minute - inputTimeStamp.Minute % 10;
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, inputTimeStamp.Hour, min, 0);
+                case TimePreiod.m30:
+                    min = inputTimeStamp.Minute - inputTimeStamp.Minute % 30;
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, inputTimeStamp.Hour, min, 0);
+                case TimePreiod.h1:
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, inputTimeStamp.Hour, 0, 0);
+                case TimePreiod.h4:
+                    int hour = inputTimeStamp.Hour - inputTimeStamp.Hour % 4;
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, hour, 0, 0);
+                case TimePreiod.d1:
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, 0, 0, 0);
+                default:
+                    return new DateTime(inputTimeStamp.Year, inputTimeStamp.Month, inputTimeStamp.Day, inputTimeStamp.Hour, inputTimeStamp.Minute, 0);
+            }
+        }
     }
 }
