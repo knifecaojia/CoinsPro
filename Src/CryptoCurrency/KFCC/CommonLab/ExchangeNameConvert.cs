@@ -27,8 +27,8 @@ namespace CommonLab
             {
                 switch (_input)
                 {
-                    case "BN":
-                        return "Binance";
+                    case "bn":
+                        return "binance";
                     default:
                         return "";
                 }
@@ -37,8 +37,8 @@ namespace CommonLab
             {
                 switch (_input)
                 {
-                    case "Binance":
-                        return "BN";
+                    case "binance":
+                        return "bn";
                     default:
                         return "";
                 }

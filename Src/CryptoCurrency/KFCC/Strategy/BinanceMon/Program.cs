@@ -7,21 +7,25 @@ using System.Threading;
 using BinacneETF;
 using StackExchange.Redis;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace BinanceMon
 {
     class Program
     {
-        static TradeDataManage tradeDataManage;
+        static DataManage tradeDataManage;
         static Thread GetCnyPrice;
         static Thread ReConnectThread;//币安24小时切断wss连接，需要重连
         static DateTime LastConnectTimeHour;//上次连接时间
         //上述计价信息通过线程每分钟更新一次
         static List<string> Symbols;
         static CommonLab.Log log = new CommonLab.Log("loginfo.txt");
+        const string DataPath = "ExchangeDataFiles";
         static void Main(string[] args)
         {
-            tradeDataManage = new TradeDataManage(log);
+            if (!Directory.Exists(DataPath))//如果不存在就创建file文件夹　　             　　                
+                Directory.CreateDirectory(DataPath);//创建该文件夹　　    
+            tradeDataManage = new DataManage(log);
             Symbols = new List<string>();
             Console.Write("Monitoring:");
             log.log("Start");
@@ -104,6 +108,17 @@ namespace BinanceMon
             {
                 tradeDataManage.USDT2BTCPrice =1/btcusdt[0].Ticker.Last;
             }
+            try
+            {
+                foreach (BinacneETF.TradingSymbol symbol in BinacneETF.Config.Exchange.Symbols)
+                {
+                    tradeDataManage.AddTicker(symbol.Symbol, symbol.Ticker);
+                }
+            }
+            catch (Exception e)
+            {
+                log.log(e.Message + e.StackTrace);
+            }
 
         }
 
@@ -111,7 +126,6 @@ namespace BinanceMon
         {
             try
             {
-
                 tradeDataManage.AddTrade(symbol, t);
             }
             catch (Exception e)
@@ -121,16 +135,18 @@ namespace BinanceMon
             
         }
     }
-    public class TradeDataManage
+    public class DataManage
     {
         public double CNYPrice = 1;//人民币计价 每十分钟刷新一次；
         public  double ETH2BTCPrice;//eth的btc计价
         public  double BNB2BTCPrice;//bnb的btc 计价
         public  double USDT2BTCPrice;//usdt的btc计价
         static object LockObject = new object();
+        static object LockTickObject = new object();
         static CommonLab.Log log;
         private Thread UpdateRedisThread;
-        public TradeDataManage(CommonLab.Log _log)
+        private Thread UpdateDiskFileThread;
+        public DataManage(CommonLab.Log _log)
         {
             log = _log;
         }
@@ -154,8 +170,9 @@ namespace BinanceMon
                 return CNYPrice;
             }
         }
-        public Dictionary<string, CommonLab.TradePerMin> Data = new Dictionary<string, CommonLab.TradePerMin>();
-        private ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("10.18.20.108:9527");
+        public Dictionary<string, BinacneETF.BATicker> TickerData = new Dictionary<string, BinacneETF.BATicker>();
+        public Dictionary<string, CommonLab.TradePeriod> TradeData = new Dictionary<string, CommonLab.TradePeriod>();
+        private ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("10.18.20.108:9527,abortConnect=false,ssl=false,password=...");
         IDatabase db = null;
         public void Start()
         {
@@ -165,9 +182,34 @@ namespace BinanceMon
             UpdateRedisThread = new Thread(new ThreadStart(UpdateRedis));
             UpdateRedisThread.IsBackground = true;
             UpdateRedisThread.Start();
-            
+            UpdateDiskFileThread = new Thread(new ThreadStart(ExportTodisk));
+            UpdateDiskFileThread.IsBackground = true;
+            UpdateDiskFileThread.Start();
         }
-    
+
+        public void AddTicker(string symbol, BinacneETF.BATicker t)
+        {
+            
+            DateTime timeStamp = CommonLab.TimerHelper.ConvertStringToDateTime(t.ExchangeTimeStamp);
+            if (timeStamp.Year < 2018)
+                return;
+            foreach (CommonLab.TimePeriodType type in Enum.GetValues(typeof(CommonLab.TimePeriodType)))
+            {
+                string key = CommonLab.RedisKeyConvert.GetRedisKey(CommonLab.RedisKeyType.Ticker, type, CommonLab.ExchangeNameConvert.GetShortExchangeName("binance"), symbol, timeStamp);
+                lock (LockTickObject)
+                {
+                    if (TickerData.ContainsKey(key))
+                    {
+                        TickerData[key].UpdateTickerByTicker(t);
+                    }
+                    else
+                    {
+                       // CommonLab.Ticker ticker = new CommonLab.TradePeriod(symbol, t, GetLegalCurrency(symbol));
+                        TickerData.Add(key, t);
+                    }
+                }
+            }
+        }
         /// <summary>
         /// 新增交易信息
         /// </summary>
@@ -175,22 +217,140 @@ namespace BinanceMon
         /// <param name="t"></param>
         public void AddTrade(string symbol, CommonLab.Trade t)
         {
-           
-            string key = CommonLab.RedisKeyConvert.GetRedisKey(CommonLab.RedisKeyType.TradeM, CommonLab.ExchangeNameConvert.GetShortExchangeName("Binance"), symbol, CommonLab.TimerHelper.ConvertStringToDateTime(t.ExchangeTimeStamp));
-            lock (LockObject)
+            DateTime timeStamp = CommonLab.TimerHelper.ConvertStringToDateTime(t.ExchangeTimeStamp);
+            if (timeStamp.Year < 2018)
+                return;
+            foreach (CommonLab.TimePeriodType type in Enum.GetValues(typeof(CommonLab.TimePeriodType)))
             {
-                if (Data.ContainsKey(key))
+                string key = CommonLab.RedisKeyConvert.GetRedisKey(CommonLab.RedisKeyType.Trade, type, CommonLab.ExchangeNameConvert.GetShortExchangeName("binance"), symbol, timeStamp);
+                lock (LockObject)
                 {
-                    Data[key].Update(t, GetLegalCurrency(symbol));
-                }
-                else
-                {
-                    CommonLab.TradePerMin tpm = new CommonLab.TradePerMin(symbol, t, GetLegalCurrency(symbol));
-                    Data.Add(key, tpm);
+                    if (TradeData.ContainsKey(key))
+                    {
+                        TradeData[key].Update(t, GetLegalCurrency(symbol));
+                    }
+                    else
+                    {
+                        CommonLab.TradePeriod tpm = new CommonLab.TradePeriod(symbol, t, GetLegalCurrency(symbol));
+                        TradeData.Add(key, tpm);
+                    }
                 }
             }
+            
+            
         }
+        private void ExportTodisk()
+        {
+            while (true)
+            {
+                List<string> keys = new List<string>();
+                // string key = "TradePerMin@" + symbol + "@" + CommonLab.TimerHelper.ConvertStringToDateTime(t.ExchangeTimeStamp).ToString("yyMMddHHmm") + "@" + direction;
+                lock (LockTickObject)
+                {
+                    try
+                    {
 
+                        foreach (KeyValuePair<string, BinacneETF.BATicker> item in TickerData)
+                        {
+                            string Key = item.Key.ToString();
+                            //string str = redisKeyType+ "@" + timePeriod + "@" +exchangename+"@"+ symbol.ToLower()+"@"+ t.ToString("yyyy.MM.dd HH:mm");
+
+                            DateTime t = Convert.ToDateTime(Key.Split('@')[4]);
+                            string type = Key.Split('@')[0];
+                            string period = Key.Split('@')[1];
+                            string exchangename = CommonLab.ExchangeNameConvert.GetLongExchangeName(Key.Split('@')[2]);
+                            string symbol = Key.Split('@')[3];
+                            CommonLab.TimePeriodType periodType = (CommonLab.TimePeriodType)Enum.Parse(typeof(CommonLab.TimePeriodType), period);
+                            // bool FlushFlag = false;
+                            switch (periodType)
+                            {
+                                case CommonLab.TimePeriodType.m1:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 1)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.m5:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 5)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.m10:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 10)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.m30:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 30)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.h1:
+                                    if ((DateTime.UtcNow - t).TotalHours >= 1)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.h4:
+                                    if ((DateTime.UtcNow - t).TotalHours >= 4)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.d1:
+                                    if ((DateTime.UtcNow - t).TotalHours >= 24)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                            string jsont = item.Value.ToOCHLString();
+                            if (CommonLab.RedisKeyConvert.GetRedisKeyExpiredTime(periodType) == -1)
+                            {
+                                db.StringSet(item.Key, jsont);
+                            }
+                            else
+                                db.KeyExpire(item.Key, DateTime.UtcNow.AddMinutes(48 * 60));
+
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        log.log(e.Message + e.StackTrace);
+                    }
+
+
+                    foreach (string key in keys)
+                    {
+                        DateTime t = Convert.ToDateTime(key.Split('@')[4]);
+                        string year = t.Year.ToString();
+                        string month = t.Month.ToString();
+                        string day = t.Day.ToString();
+                        string type = key.Split('@')[0];
+                        string period = key.Split('@')[1];
+                        string exchangename = CommonLab.ExchangeNameConvert.GetLongExchangeName(key.Split('@')[2]);
+                        string symbol = key.Split('@')[3];
+
+                        string file = "ExchangeDataFiles" + @"/" + type + "/" + period + "/" + "/" + exchangename + "/" + symbol + "/" + year + @"/" + month + @"/" + day + ".txt";
+                        CommonLab.Log log = new CommonLab.Log(file);
+
+                        //double ts= CommonLab.TimerHelper.GetTimeStamp(exporttime.AddSeconds(-exporttime.Second).ToUniversalTime());
+
+                        log.RawLog(TickerData[key].ToOCHLString());
+                        TickerData.Remove(key);
+                    }
+                }
+                Thread.Sleep(60 * 1000);
+            }
+           
+           
+        }
         private void UpdateRedis()
         {
             while (true)
@@ -202,22 +362,82 @@ namespace BinanceMon
                     try
                     {
 
-
-
-                        foreach (KeyValuePair<string, CommonLab.TradePerMin> item in Data)
+                        foreach (KeyValuePair<string, CommonLab.TradePeriod> item in TradeData)
                         {
                             string Key = item.Key.ToString();
-                            DateTime t = Convert.ToDateTime(Key.Split('@')[2]);
-                            if ((DateTime.UtcNow - t).TotalMinutes >= 1)
+                            DateTime t = Convert.ToDateTime(Key.Split('@')[4]);
+                            string type = Key.Split('@')[0];
+                            string period = Key.Split('@')[1];
+                            string exchangename = CommonLab.ExchangeNameConvert.GetLongExchangeName(Key.Split('@')[2]);
+                            string symbol = Key.Split('@')[3];
+                            CommonLab.TimePeriodType periodType = (CommonLab.TimePeriodType)Enum.Parse(typeof(CommonLab.TimePeriodType), period);
+                            switch (periodType)
                             {
-                                //需要存入redis之后移除
-                                keys.Add(item.Key);
-                                string jsont = JsonConvert.SerializeObject(item.Value);
-                                db.StringSet(item.Key, jsont);
-                                 
-                                //Data.Remove(item.Key);
-                                Console.WriteLine(DateTime.UtcNow.ToString() + "- WI" + item.Key + " into redis.");
+                                case CommonLab.TimePeriodType.m1:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 1)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.m5:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 5)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.m10:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 10)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.m30:
+                                    if ((DateTime.UtcNow - t).TotalMinutes >= 30)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.h1:
+                                    if ((DateTime.UtcNow - t).TotalHours >= 1)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.h4:
+                                    if ((DateTime.UtcNow - t).TotalHours >= 4)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                case CommonLab.TimePeriodType.d1:
+                                    if ((DateTime.UtcNow - t).TotalHours >= 24)
+                                    {
+                                        keys.Add(item.Key);
+                                    }
+                                    break;
+                                default:
+                                    break;
                             }
+
+                            //需要存入redis之后移除
+
+                            keys.Add(item.Key);
+                            string jsont = JsonConvert.SerializeObject(item.Value);
+                            if (CommonLab.RedisKeyConvert.GetRedisKeyExpiredTime(periodType) == -1)
+                            {
+                                db.StringSet(item.Key, jsont);
+                            }
+                            else
+                            {
+                                db.StringSet(item.Key, jsont);
+
+                                db.KeyExpire(item.Key, DateTime.UtcNow.AddMinutes(48 * 60));
+                            }
+
+
+                            //Data.Remove(item.Key);
+                            Console.WriteLine(DateTime.UtcNow.ToString() + "- WI" + item.Key + " into redis.");
+
 
 
                         }
@@ -229,9 +449,9 @@ namespace BinanceMon
                 }
                 foreach (string key in keys)
                 {
-                    Data.Remove(key);
+                    TradeData.Remove(key);
                 }
-                Thread.Sleep(5 * 1000);
+                Thread.Sleep(30 * 1000);
             }
         }
 

@@ -49,6 +49,18 @@ namespace CommonLab
         {
             return Open + "," + Last + "," + High + "," + Low + "," + Buy + "," + Sell + "," + Volume + "," + ExchangeTimeStamp;
         }
+        public void UpdateTickerPeriod(Ticker t)
+        {
+            if (t.High > High)
+                High = t.High;
+            if (t.Low < Low)
+                Low = t.Low;
+            Sell = t.Sell;
+            Buy = t.Buy;
+            Last = t.Last;
+            Volume = t.Volume;//存疑
+            ExchangeTimeStamp = t.ExchangeTimeStamp;
+        }
         public Ticker Clone()
         {
             Ticker t = new Ticker();
@@ -186,7 +198,7 @@ namespace CommonLab
     /// <summary>
     /// 每分钟成交数据 用于redis存储 
     /// </summary>
-    public class TradePerMin
+    public class TradePeriod
     {
         public string symbol;
         /// <summary>
@@ -207,10 +219,22 @@ namespace CommonLab
         /// <param name="s">symbol</param>
         /// <param name="t">trade 信息</param>
         /// <param name="ex">汇率</param>
-        public TradePerMin(string s, Trade t,double ex)
+        public TradePeriod(string s, Trade t,double ex)
         {
             symbol = s;
-            if (t.Type == TradeType.Buy)
+            if (t == null)
+            {
+                baseSymbolVolumBuy = 0;
+                quoteSymbolVolumBuy = 0;
+                CNYVolumBuy =0;
+                tradecountBuy = 0;
+                baseSymbolVolumSell = 0;
+                quoteSymbolVolumSell = 0;
+                CNYVolumSell = 0;
+                tradecountSell = 0;
+                return;
+            }
+             if (t.Type == TradeType.Buy)
             {
                 baseSymbolVolumBuy = t.Amount;
                 quoteSymbolVolumBuy = t.Price * t.Amount;

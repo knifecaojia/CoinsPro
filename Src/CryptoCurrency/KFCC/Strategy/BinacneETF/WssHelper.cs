@@ -55,7 +55,7 @@ namespace BinacneETF
                                 t.PriceChange = Convert.ToDouble(ticker["p"].ToString());
                                 t.PriceChangePct = Convert.ToDouble(ticker["P"].ToString());
                                 t.Open = Convert.ToDouble(ticker["o"].ToString());
-                                t.ExchangeTimeStamp = Convert.ToDouble(ticker["E"].ToString());
+                                t.ExchangeTimeStamp = Convert.ToDouble(ticker["E"].ToString())/1000;
                                 t.LocalServerTimeStamp = CommonLab.TimerHelper.GetTimeStampMilliSeconds(DateTime.Now);
                                 if (tvar.ToArray()[0].HisTicker == null)
                                     tvar.ToArray()[0].HisTicker = t.Clone();

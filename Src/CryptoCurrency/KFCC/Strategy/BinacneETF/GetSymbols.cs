@@ -193,6 +193,7 @@ namespace BinacneETF
         public double ExchangeTimeStamp;//时间戳 交易所返回的
         public double LocalServerTimeStamp;//本地时间戳
         public double Delay;
+        
         public DateTime ExchangeTime { get { return CommonLab.TimerHelper.ConvertStringToDateTime(ExchangeTimeStamp/1000); } }
         public BATicker()
         { }
@@ -209,6 +210,18 @@ namespace BinacneETF
             LocalServerTimeStamp = t.LocalServerTimeStamp;
             Delay = t.Delay;
          
+        }
+        public void UpdateTickerByTicker(BATicker t)
+        {
+            if (t.High > High)
+                High = t.High;
+            if (t.Low < Low)
+                Low = t.Low;
+            Sell = t.Sell;
+            Buy = t.Buy;
+            Last = t.Last;
+            Volume = t.Volume;//存疑
+            ExchangeTimeStamp = t.ExchangeTimeStamp;
         }
         public void UpdateTickerBuyTrade(Trade t)
         {

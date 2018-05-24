@@ -143,5 +143,15 @@ namespace BinacneETF
                 //e.Handled = true;
             }
         }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                string symbol = dataGridView1.SelectedRows[0].Cells[0].Value.ToString().ToLower() + SymbolQuoteKey.ToLower();
+                FundsDetailsDLG fdlg = new FundsDetailsDLG(symbol);
+                fdlg.Show();
+            }
+        }
     }
 }
