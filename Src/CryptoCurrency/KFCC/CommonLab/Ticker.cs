@@ -201,6 +201,7 @@ namespace CommonLab
     public class TradePeriod
     {
         public string symbol;
+        private string _lastTradeID;//上次收到的交易ID
         /// <summary>
         /// 这一分钟的交易笔数
         /// </summary>
@@ -232,6 +233,7 @@ namespace CommonLab
                 quoteSymbolVolumSell = 0;
                 CNYVolumSell = 0;
                 tradecountSell = 0;
+                _lastTradeID = "";
                 return;
             }
              if (t.Type == TradeType.Buy)
@@ -240,6 +242,7 @@ namespace CommonLab
                 quoteSymbolVolumBuy = t.Price * t.Amount;
                 CNYVolumBuy = quoteSymbolVolumBuy * ex;
                 tradecountBuy = 1;
+               
             }
             else
             {
@@ -248,22 +251,24 @@ namespace CommonLab
                 CNYVolumSell = quoteSymbolVolumSell * ex;
                 tradecountSell = 1;
             }
-
+            _lastTradeID = t.TradeID;
         }
         public void Update(Trade t,double ex)
         {
+            if (_lastTradeID == t.TradeID)
+                return;
             if (t.Type == TradeType.Buy)
             {
                 baseSymbolVolumBuy += t.Amount;
                 quoteSymbolVolumBuy += t.Price * t.Amount;
-                CNYVolumBuy += quoteSymbolVolumBuy * ex;
+                CNYVolumBuy += t.Price * t.Amount * ex;
                 tradecountBuy++;
             }
             else
             {
                 baseSymbolVolumSell += t.Amount;
                 quoteSymbolVolumSell += t.Price * t.Amount;
-                CNYVolumSell += quoteSymbolVolumSell * ex;
+                CNYVolumSell += t.Price * t.Amount * ex;
                 tradecountSell++;
             }
            
