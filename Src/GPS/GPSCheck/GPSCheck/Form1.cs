@@ -97,8 +97,9 @@ namespace GPSCheck
 		private ContextMenuStrip contextMenuStrip1;
 
 		private ToolStripMenuItem exportxlsxToolStripMenuItem;
-
-		private Button button3;
+        private ToolStripMenuItem playBackToolStripMenuItem;
+        private System.Windows.Forms.Timer timer2;
+        private Button button3;
 
 		public Form1()
 		{
@@ -323,47 +324,36 @@ namespace GPSCheck
 		private void Run()
 		{
 			RunState = 1;
-			for (int i = 0; i < SelectedDevices.Count; i++)
-			{
-				try
-				{
-					DateTime value = dateTimePicker1.Value;
-					int num = value.DayOfYear;
-					while (true)
-					{
-						int num2 = num;
-						value = dateTimePicker2.Value;
-						if (num2 <= value.DayOfYear)
-						{
-							string jsonarrstr = GetDataTable(dateTimePicker1.Value.ToString("yyyyMMdd"),dateTimePicker2.Value.ToString("yyyyMMdd"), SelectedDevices[i].KeyID);
-                            if (jsonarrstr.Length > 10)
-                            {
-                                JArray rawarray = JArray.Parse(jsonarrstr);
-                                for (int j = 0; j < rawarray.Count; j++)
-                                {
-                                    JObject pt = JObject.Parse(rawarray[j].ToString());
-                                    GPSPoint gpt = new GPSPoint();
-                                    gpt.Direction = Convert.ToInt32(pt["d"].ToString());
-                                    gpt.Lat= Convert.ToDouble(pt["y"].ToString());
-                                    gpt.Lat_old = Convert.ToDouble(pt["y"].ToString());
-                                    gpt.Lon = Convert.ToDouble(pt["x"].ToString());
-                                    gpt.Lon_old = Convert.ToDouble(pt["x"].ToString());
-                                    gpt.Speed = Convert.ToDouble(pt["s"].ToString());
-                                    gpt.Time = Convert.ToDateTime(pt["t"].ToString());
-                                    SelectedDevices[i].GpsPoints.Add(gpt);
-                                }
-                            }
-							num++;
-							continue;
-						}
-						break;
-					}
-				}
-				catch
-				{
-				}
-				TotalDataReadDeviceCount++;
-			}
+            for (int i = 0; i < SelectedDevices.Count; i++)
+            {
+                try
+                {
+
+                    string jsonarrstr = GetDataTable(dateTimePicker1.Value.ToString("yyyyMMdd"), dateTimePicker2.Value.ToString("yyyyMMdd"), SelectedDevices[i].KeyID);
+                    if (jsonarrstr.Length > 10)
+                    {
+                        JArray rawarray = JArray.Parse(jsonarrstr);
+                        for (int j = 0; j < rawarray.Count; j++)
+                        {
+                            JObject pt = JObject.Parse(rawarray[j].ToString());
+                            GPSPoint gpt = new GPSPoint();
+                            gpt.Direction = Convert.ToInt32(pt["d"].ToString());
+                            gpt.Lat = Convert.ToDouble(pt["y"].ToString());
+                            gpt.Lat_old = Convert.ToDouble(pt["y"].ToString());
+                            gpt.Lon = Convert.ToDouble(pt["x"].ToString());
+                            gpt.Lon_old = Convert.ToDouble(pt["x"].ToString());
+                            gpt.Speed = Convert.ToDouble(pt["s"].ToString());
+                            gpt.Time = Convert.ToDateTime(pt["t"].ToString());
+                            SelectedDevices[i].GpsPoints.Add(gpt);
+                        }
+                    }
+
+                }
+                catch(Exception ex)
+                {
+                }
+                TotalDataReadDeviceCount++;
+            }
 			RunState = 2;
 			ResaultDT.Rows.Clear();
 			for (int j = 0; j < SelectedDevices.Count; j++)
@@ -434,7 +424,7 @@ namespace GPSCheck
 					dataRow[5] = num6;
 					ResaultDT.Rows.Add(dataRow);
 				}
-				catch
+				catch(Exception ex)
 				{
 				}
 				TotalAnalysisedDevicesCount++;
@@ -640,8 +630,91 @@ namespace GPSCheck
 				DrawLine(Convert.ToInt32(dataGridView1.Rows[e.RowIndex].Cells[0].Value) - 1, 1);
 			}
 		}
+        private int PlayBackIndex;
+        private int PlayBackPointIndex;
+        private bool PlayingBack = false;
+        GMapOverlay PlaybackOverlay = null;
+        //GmapMarkerWithLabel PlaybackMarker = null;
+        private void DrawPlayBackMarker()
+        {
+            gMapControl1.Overlays.Clear();
+            if (PlayBackIndex >= 0 && PlayBackIndex < SelectedDevices.Count)
+            {
 
-		private void DrawLine(int index, int show)
+                if (PlaybackOverlay == null)
+                {
+                    PlaybackOverlay = new GMapOverlay("pboverlay");
+                    gMapControl1.Overlays.Add(PlaybackOverlay);
+                   GmapMarkerWithLabel PlaybackMarker = new GmapMarkerWithLabel(new PointLatLng(SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Lat, SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Lon), SelectedDevices[PlayBackIndex].Name+" at:"+SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Time.ToLongDateString(), GMarkerGoogleType.blue_dot);
+                    PlaybackOverlay.Markers.Add(PlaybackMarker);
+                }
+                else
+                {
+                    PlaybackOverlay.Markers.Clear();//
+                    gMapControl1.Overlays.Add(PlaybackOverlay);
+                    //[0].Position = new PointLatLng(SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Lat, SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Lon);
+                    GmapMarkerWithLabel PlaybackMarker = new GmapMarkerWithLabel(new PointLatLng(SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Lat, SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Lon), SelectedDevices[PlayBackIndex].Name + " at:" + SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Time.ToLongDateString(), GMarkerGoogleType.blue_dot);
+                    PlaybackOverlay.Markers.Add(PlaybackMarker);
+                }
+                GlobalVar.RaiseUpdatePointEvent(SelectedDevices[PlayBackIndex].GpsPoints[PlayBackPointIndex].Time);
+                gMapControl1.ZoomAndCenterMarkers("pboverlay");
+            }
+        }
+        private void Play()
+        {
+            if (!PlayingBack)
+                return;
+            DrawPlayBackMarker();
+            PlayBackPointIndex++;
+
+        }
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            if (PlayBackPointIndex == SelectedDevices[PlayBackIndex].GpsPoints.Count - 1)
+            {
+                PlayingBack = false;
+                timer2.Stop();
+            }
+            else
+            {
+                Play();
+            }
+        }
+        private void playBackToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedCells.Count > 0)
+            {
+                PlayControl pc = new PlayControl();
+                pc.Show();
+                
+                PlayBackIndex = dataGridView1.SelectedCells[0].RowIndex;
+                PlayBackPointIndex = 0;
+                GlobalVar.PlayPointEvent += GlobalVar_PlayPointEvent;
+                GlobalVar.StartPlayEvent += GlobalVar_StartPlayEvent;
+                GlobalVar.PausePlayEvent += GlobalVar_PausePlayEvent;
+                timer2.Start();
+            }
+        }
+
+        private void GlobalVar_PausePlayEvent()
+        {
+            PlayingBack = false;
+        }
+
+        private void GlobalVar_StartPlayEvent()
+        {
+            PlayingBack = true;
+        }
+
+        private void GlobalVar_PlayPointEvent(double pct)
+        {
+            PlayBackPointIndex = (int)(SelectedDevices[PlayBackIndex].GpsPoints.Count * pct);
+            if (PlayBackPointIndex == SelectedDevices[PlayBackIndex].GpsPoints.Count)
+                PlayBackPointIndex--;
+            DrawPlayBackMarker();
+        }
+
+        private void DrawLine(int index, int show)
 		{
 			if (SelectedDevices[index].img != null && show == 1)
 			{
@@ -1090,6 +1163,8 @@ namespace GPSCheck
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.playBackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.timer2 = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -1297,9 +1372,10 @@ namespace GPSCheck
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exportxlsxToolStripMenuItem});
+            this.exportxlsxToolStripMenuItem,
+            this.playBackToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(152, 26);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 70);
             // 
             // exportxlsxToolStripMenuItem
             // 
@@ -1335,6 +1411,17 @@ namespace GPSCheck
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // playBackToolStripMenuItem
+            // 
+            this.playBackToolStripMenuItem.Name = "playBackToolStripMenuItem";
+            this.playBackToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.playBackToolStripMenuItem.Text = "PlayBack";
+            this.playBackToolStripMenuItem.Click += new System.EventHandler(this.playBackToolStripMenuItem_Click);
+            // 
+            // timer2
+            // 
+            this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1365,6 +1452,6 @@ namespace GPSCheck
 
 		}
 
-  
+
     }
 }

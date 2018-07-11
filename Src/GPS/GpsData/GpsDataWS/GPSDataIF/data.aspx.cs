@@ -51,7 +51,8 @@ namespace GPSDataIF
                     string tablename = "gps_coords_"+starttime.Year+starttime.ToString("MM")+ starttime.ToString("dd") ;
                    
                     DataTable Group = GetDataTable("select location_x,location_y,location_direction,location_speed,location_time from "+ tablename + " where device_id = '" + keyid + "'");
-
+                    if (Group == null)
+                        continue;
                     if (Group.Rows.Count > 0)
                     {
                         if (all == null)
@@ -87,7 +88,13 @@ namespace GPSDataIF
                 GetSchema(connString, str, out data, out schema);
                 DataSet ds = new DataSet();
                 ds.ReadXml(new XmlTextReader(new StringReader(data)));
-                return ds.Tables[0];
+                if (ds.Tables.Count > 0)
+                {
+                    return ds.Tables[0];
+                }
+                else
+                    return null;
+               
             }
             catch (Exception ex)
             {
